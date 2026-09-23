@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FightHub Admin — Fighters</title>
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-page">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+      <a href="index.html" class="admin-sidebar-brand">
+        <div class="brand-icon">🥋</div>
+        <div>
+          <div class="brand-text">FightHub</div>
+          <div class="brand-sub">Back-Office</div>
+        </div>
+      </a>
+      
+      <nav class="admin-nav">
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">Core Management</div>
+          <a href="index.html" id="nav-dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+          <a href="fighters.html" id="nav-fighters"><span class="nav-icon">🥊</span> Fighters</a>
+          <a href="articles.html" id="nav-articles"><span class="nav-icon">📰</span> Articles</a>
+          <a href="events.html" id="nav-events"><span class="nav-icon">📅</span> Events</a>
+          <a href="rankings.html" id="nav-rankings"><span class="nav-icon">🏆</span> Rankings</a>
+        </div>
+        
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">Content & Tools</div>
+          <a href="gyms.html" id="nav-gyms"><span class="nav-icon">👟</span> Find Clubs</a>
+          <a href="martial-arts.html" id="nav-martial-arts"><span class="nav-icon">🥋</span> Martial Arts</a>
+          <a href="training.html" id="nav-training"><span class="nav-icon">🏋️</span> Training</a>
+        </div>
+
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">System</div>
+          <a href="settings.html" id="nav-settings"><span class="nav-icon">⚙️</span> Settings</a>
+          <a href="#" id="btn-logout"><span class="nav-icon">🚪</span> Logout</a>
+        </div>
+      </nav>
+
+      <div class="admin-sidebar-footer">
+        <div class="admin-user-info">
+          <div class="admin-user-avatar">AD</div>
+          <div>
+            <div class="admin-user-name">Admin User</div>
+            <div class="admin-user-role">Administrator</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+      
+      <!-- List View Section -->
+      <section id="list-section">
+        <header class="admin-header">
+          <div>
+            <h1>Fighters Database</h1>
+            <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-top: 4px;">View, search, add, edit, and delete fighter profiles in FightHub.</p>
+          </div>
+          <div class="admin-header-actions">
+            <button id="btn-add-fighter" class="btn-admin-primary">➕ Add New Fighter</button>
+          </div>
+        </header>
+
+        <!-- Search & Filters Toolbar -->
+        <div class="admin-toolbar">
+          <div class="admin-search">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Search fighters by name, nickname, style...">
+          </div>
+          <div class="admin-filters">
+            <select id="filter-weight">
+              <option value="">All Weight Classes</option>
+              <option value="Strawweight">Strawweight</option>
+              <option value="Flyweight">Flyweight</option>
+              <option value="Bantamweight">Bantamweight</option>
+              <option value="Featherweight">Featherweight</option>
+              <option value="Lightweight">Lightweight</option>
+              <option value="Welterweight">Welterweight</option>
+              <option value="Middleweight">Middleweight</option>
+              <option value="Light Heavyweight">Light Heavyweight</option>
+              <option value="Heavyweight">Heavyweight</option>
+              <option value="Super Middleweight">Super Middleweight</option>
+              <option value="Super Bantamweight">Super Bantamweight</option>
+            </select>
+            <select id="filter-status">
+              <option value="">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Retired">Retired</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="admin-panel">
+          <div class="admin-table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Weight Class</th>
+                  <th>Record (W-L-D)</th>
+                  <th>Method (KO/Sub/Dec)</th>
+                  <th>Style</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="fighters-table-body">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Pagination -->
+          <div class="admin-pagination">
+            <div class="pagination-info" id="pagination-info">
+              Showing 0-0 of 0 entries
+            </div>
+            <div class="pagination-buttons" id="pagination-buttons">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Add/Edit Form Section -->
+      <section id="form-section" style="display: none;">
+        <header class="admin-header">
+          <div>
+            <h1 id="form-title">Add Fighter</h1>
+            <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-top: 4px;">Fill in the fighter profile details. Highlights and championships support multiple entries.</p>
+          </div>
+          <div class="admin-header-actions">
+            <button id="btn-back" class="btn-admin-secondary">🔙 Back to List</button>
+          </div>
+        </header>
+
+        <div class="admin-panel" style="padding: var(--space-xl);">
+          <form id="fighter-form" class="admin-form">
+            <input type="hidden" id="fighter-id">
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="fighter-name">Full Name *</label>
+                <input type="text" id="fighter-name" placeholder="Khabib Nurmagomedov" required>
+              </div>
+              <div class="form-group">
+                <label for="fighter-nickname">Nickname</label>
+                <input type="text" id="fighter-nickname" placeholder="The Eagle">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="fighter-nationality">Nationality Emoji</label>
+                <input type="text" id="fighter-nationality" placeholder="🇷🇺">
+              </div>
+              <div class="form-group">
+                <label for="fighter-country">Country Name</label>
+                <input type="text" id="fighter-country" placeholder="Russia">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="fighter-weight-class">Weight Class *</label>
+                <select id="fighter-weight-class" required>
+                  <option value="Strawweight">Strawweight</option>
+                  <option value="Flyweight">Flyweight</option>
+                  <option value="Bantamweight">Bantamweight</option>
+                  <option value="Featherweight">Featherweight</option>
+                  <option value="Lightweight">Lightweight</option>
+                  <option value="Welterweight">Welterweight</option>
+                  <option value="Middleweight">Middleweight</option>
+                  <option value="Light Heavyweight">Light Heavyweight</option>
+                  <option value="Heavyweight">Heavyweight</option>
+                  <option value="Super Middleweight">Super Middleweight</option>
+                  <option value="Super Bantamweight">Super Bantamweight</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="fighter-status-select">Status</label>
+                <select id="fighter-status-select">
+                  <option value="Active">Active</option>
+                  <option value="Retired">Retired</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row" style="grid-template-columns: repeat(3, 1fr);">
+              <div class="form-group">
+                <label for="fighter-wins">Wins *</label>
+                <input type="number" id="fighter-wins" min="0" value="0" required>
+              </div>
+              <div class="form-group">
+                <label for="fighter-losses">Losses *</label>
+                <input type="number" id="fighter-losses" min="0" value="0" required>
+              </div>
+              <div class="form-group">
+                <label for="fighter-draws">Draws *</label>
+                <input type="number" id="fighter-draws" min="0" value="0" required>
+              </div>
+            </div>
+
+            <div class="form-row" style="grid-template-columns: repeat(3, 1fr);">
+              <div class="form-group">
+                <label for="fighter-ko">KO/TKO Wins</label>
+                <input type="number" id="fighter-ko" min="0" value="0">
+              </div>
+              <div class="form-group">
+                <label for="fighter-sub">Submission Wins</label>
+                <input type="number" id="fighter-sub" min="0" value="0">
+              </div>
+              <div class="form-group">
+                <label for="fighter-dec">Decision Wins</label>
+                <input type="number" id="fighter-dec" min="0" value="0">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="fighter-style">Fighting Style</label>
+                <input type="text" id="fighter-style" placeholder="Sambo / Wrestling">
+              </div>
+              <div class="form-group">
+                <label for="fighter-team">Gym / Team</label>
+                <input type="text" id="fighter-team" placeholder="AKA">
+              </div>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="fighter-photo">Photo URL</label>
+              <input type="url" id="fighter-photo" placeholder="https://example.com/fighter.jpg">
+            </div>
+
+            <div class="form-group full-width">
+              <label for="fighter-bio">Short Biography</label>
+              <textarea id="fighter-bio" placeholder="Provide a brief summary of the fighter's history, records, and style..."></textarea>
+            </div>
+
+            <!-- Dynamic Highlights List -->
+            <div class="form-group full-width">
+              <label>Career Highlights</label>
+              <div class="dynamic-list" id="highlights-list">
+                <!-- Populated dynamically -->
+              </div>
+              <div style="margin-top: var(--space-xs);">
+                <button type="button" class="add-item-btn" id="btn-add-highlight">➕ Add Highlight Item</button>
+              </div>
+            </div>
+
+            <!-- Dynamic Championships List -->
+            <div class="form-group full-width">
+              <label>Championship Titles Won</label>
+              <div class="dynamic-list" id="championships-list">
+                <!-- Populated dynamically -->
+              </div>
+              <div style="margin-top: var(--space-xs);">
+                <button type="button" class="add-item-btn" id="btn-add-championship">➕ Add Championship Item</button>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-admin-primary">💾 Save Fighter Profile</button>
+              <button type="button" class="btn-admin-secondary" id="btn-cancel">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../js/data-defaults.js"></script>
+  <script src="../js/datastore.js"></script>
+  <script src="../js/admin-app.js"></script>
+  <script src="../js/admin-fighters.js"></script>
+</body>
+</html>

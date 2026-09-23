@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FightHub Admin — Articles</title>
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-page">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+      <a href="index.html" class="admin-sidebar-brand">
+        <div class="brand-icon">🥋</div>
+        <div>
+          <div class="brand-text">FightHub</div>
+          <div class="brand-sub">Back-Office</div>
+        </div>
+      </a>
+      
+      <nav class="admin-nav">
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">Core Management</div>
+          <a href="index.html" id="nav-dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+          <a href="fighters.html" id="nav-fighters"><span class="nav-icon">🥊</span> Fighters</a>
+          <a href="articles.html" id="nav-articles"><span class="nav-icon">📰</span> Articles</a>
+          <a href="events.html" id="nav-events"><span class="nav-icon">📅</span> Events</a>
+          <a href="rankings.html" id="nav-rankings"><span class="nav-icon">🏆</span> Rankings</a>
+        </div>
+        
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">Content & Tools</div>
+          <a href="gyms.html" id="nav-gyms"><span class="nav-icon">👟</span> Find Clubs</a>
+          <a href="martial-arts.html" id="nav-martial-arts"><span class="nav-icon">🥋</span> Martial Arts</a>
+          <a href="training.html" id="nav-training"><span class="nav-icon">🏋️</span> Training</a>
+        </div>
+
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">System</div>
+          <a href="settings.html" id="nav-settings"><span class="nav-icon">⚙️</span> Settings</a>
+          <a href="#" id="btn-logout"><span class="nav-icon">🚪</span> Logout</a>
+        </div>
+      </nav>
+
+      <div class="admin-sidebar-footer">
+        <div class="admin-user-info">
+          <div class="admin-user-avatar">AD</div>
+          <div>
+            <div class="admin-user-name">Admin User</div>
+            <div class="admin-user-role">Administrator</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+      
+      <!-- List View Section -->
+      <section id="list-section">
+        <header class="admin-header">
+          <div>
+            <h1>Articles Management</h1>
+            <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-top: 4px;">Write news, announcements, fight predictions, and martial arts guides.</p>
+          </div>
+          <div class="admin-header-actions">
+            <button id="btn-add-article" class="btn-admin-primary">➕ Write Article</button>
+          </div>
+        </header>
+
+        <!-- Search & Filters Toolbar -->
+        <div class="admin-toolbar">
+          <div class="admin-search">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Search by title, excerpt, tags...">
+          </div>
+          <div class="admin-filters">
+            <select id="filter-category">
+              <option value="">All Categories</option>
+              <option value="UFC">UFC</option>
+              <option value="Boxing">Boxing</option>
+              <option value="ONE">ONE Championship</option>
+              <option value="PFL">PFL</option>
+              <option value="Muay Thai">Muay Thai</option>
+              <option value="BJJ">BJJ</option>
+              <option value="Training">Training</option>
+            </select>
+            <select id="filter-status">
+              <option value="">All Statuses</option>
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="admin-panel">
+          <div class="admin-table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Author</th>
+                  <th>Category</th>
+                  <th>Date</th>
+                  <th>Stats (Likes/Comments)</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="articles-table-body">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Pagination -->
+          <div class="admin-pagination">
+            <div class="pagination-info" id="pagination-info">
+              Showing 0-0 of 0 entries
+            </div>
+            <div class="pagination-buttons" id="pagination-buttons">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Add/Edit Form Section -->
+      <section id="form-section" style="display: none;">
+        <header class="admin-header">
+          <div>
+            <h1 id="form-title">Write New Article</h1>
+            <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-top: 4px;">Compose your article content, write an excerpt, assign categories and publication status.</p>
+          </div>
+          <div class="admin-header-actions">
+            <button id="btn-back" class="btn-admin-secondary">🔙 Back to List</button>
+          </div>
+        </header>
+
+        <div class="admin-panel" style="padding: var(--space-xl);">
+          <form id="article-form" class="admin-form">
+            <input type="hidden" id="article-id">
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="article-title">Article Title *</label>
+                <input type="text" id="article-title" placeholder="UFC 315 Main Event Predictions" required>
+              </div>
+              <div class="form-group">
+                <label for="article-slug">URL Slug *</label>
+                <input type="text" id="article-slug" placeholder="ufc-315-main-event-predictions" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="article-category">Category *</label>
+                <select id="article-category" required>
+                  <option value="UFC">UFC</option>
+                  <option value="Boxing">Boxing</option>
+                  <option value="ONE">ONE Championship</option>
+                  <option value="PFL">PFL</option>
+                  <option value="Muay Thai">Muay Thai</option>
+                  <option value="BJJ">BJJ</option>
+                  <option value="Training">Training</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="article-author">Author *</label>
+                <input type="text" id="article-author" placeholder="Admin Editor" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="article-date">Publish Date *</label>
+                <input type="date" id="article-date" required>
+              </div>
+              <div class="form-group">
+                <label for="article-status-select">Status</label>
+                <select id="article-status-select">
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="article-tags">Tags (Comma-separated)</label>
+              <input type="text" id="article-tags" placeholder="ufc, main-event, lightweight, prediction">
+            </div>
+
+            <div class="form-group full-width">
+              <label for="article-image">Feature Image URL</label>
+              <input type="url" id="article-image" placeholder="https://example.com/images/ufc-315.jpg">
+            </div>
+
+            <div class="form-group full-width">
+              <label for="article-excerpt">Short Summary / Excerpt *</label>
+              <textarea id="article-excerpt" placeholder="Write a short summary (1-2 sentences) of the article for list views..." required style="min-height: 80px;"></textarea>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="article-body">Body Content *</label>
+              <!-- Rich text control helpers -->
+              <div style="background: var(--admin-sidebar); border: 1px solid var(--admin-border); border-bottom: none; padding: 10px; display: flex; gap: var(--space-sm); border-radius: var(--radius-sm) var(--radius-sm) 0 0;">
+                <button type="button" class="btn-admin-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="insertTag('**', '**')"><strong>B</strong></button>
+                <button type="button" class="btn-admin-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="insertTag('*', '*')"><em>I</em></button>
+                <button type="button" class="btn-admin-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="insertTag('# ', '')">H1</button>
+                <button type="button" class="btn-admin-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="insertTag('## ', '')">H2</button>
+                <button type="button" class="btn-admin-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="insertTag('[Link Text](', ')')">🔗 Link</button>
+                <button type="button" class="btn-admin-secondary" style="padding: 4px 10px; font-size: 0.8rem;" onclick="insertTag('> ', '')">❝ Quote</button>
+              </div>
+              <textarea id="article-body" placeholder="Write the main article content (markdown supported)..." required style="min-height: 350px; border-radius: 0 0 var(--radius-sm) var(--radius-sm); font-family: monospace; line-height: 1.6;"></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-admin-primary">💾 Save Article</button>
+              <button type="button" class="btn-admin-secondary" id="btn-cancel">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../js/data-defaults.js"></script>
+  <script src="../js/datastore.js"></script>
+  <script src="../js/admin-app.js"></script>
+  <script>
+    // Rich Text basic tag inserter helper
+    function insertTag(prefix, suffix) {
+      const textarea = document.getElementById('article-body');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      const selected = text.substring(start, end);
+      const replacement = prefix + selected + suffix;
+      textarea.value = text.substring(0, start) + replacement + text.substring(end);
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+    }
+  </script>
+  <script src="../js/admin-articles.js"></script>
+</body>
+</html>

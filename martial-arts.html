@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Martial Arts Hub — FightHub</title>
+  <meta name="description" content="Explore different martial arts styles, their histories, techniques, and equipment on FightHub.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+  <!-- Sticky Glass Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <div class="brand-icon">🥋</div>
+        <div class="brand-text">Fight<span class="text-accent">Hub</span></div>
+      </a>
+      <div class="navbar-links">
+        <a href="index.html">Home</a>
+        <a href="martial-arts.html" class="active">Martial Arts</a>
+        <a href="fighters.html">Fighters</a>
+        <a href="news.html">News</a>
+        <a href="events.html">Events</a>
+        <a href="rankings.html">Rankings</a>
+        <a href="training.html">Training</a>
+        <a href="gyms.html">Clubs</a>
+        <a href="admin/login.html" class="btn btn-secondary btn-sm" style="margin-left: 10px;">Admin Portal</a>
+      </div>
+      <div style="display: flex; align-items: center;">
+        <button class="theme-toggle" aria-label="Toggle Dark/Light Mode">☀️</button>
+        <div class="mobile-toggle" aria-label="Toggle Mobile Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Hero -->
+  <header class="page-hero">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="separator">/</span>
+        <span>Martial Arts</span>
+      </div>
+      <h1>Martial <span class="text-accent">Arts</span></h1>
+      <p>Explore the history, core techniques, and essential gear of the world's most popular combat sports and self-defense systems.</p>
+    </div>
+  </header>
+
+  <!-- Martial Arts Grid Section -->
+  <section class="section">
+    <div class="container">
+      <div class="grid grid-3" id="martial-arts-grid">
+        <!-- Dynamically loaded -->
+        <div class="text-center" style="grid-column: 1/-1; padding: 40px 0;">
+          <p>Loading martial arts styles...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Info Modal for other martial arts -->
+  <div class="modal-backdrop" id="ma-modal-backdrop"></div>
+  <div class="modal" id="ma-modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Martial Art Info</h3>
+      <button class="modal-close" id="modal-close-btn">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-body-content">
+      <!-- Dynamically filled -->
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="index.html" class="footer-brand">
+            <span class="brand-icon">🥋</span> FightHub
+          </a>
+          <p class="footer-desc">A premium portal for combat sports news, rankings, event trackers, fighter profile database, and interactive training tools.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Facebook">FB</a>
+            <a href="#" aria-label="Twitter">TW</a>
+            <a href="#" aria-label="Instagram">IG</a>
+            <a href="#" aria-label="YouTube">YT</a>
+          </div>
+        </div>
+        <div>
+          <h4>Pages</h4>
+          <div class="footer-links">
+            <a href="martial-arts.html">Martial Arts</a>
+            <a href="fighters.html">Fighter Database</a>
+            <a href="news.html">News & Articles</a>
+            <a href="events.html">Upcoming Events</a>
+          </div>
+        </div>
+        <div>
+          <h4>Tools</h4>
+          <div class="footer-links">
+            <a href="training.html">Round Timer</a>
+            <a href="training.html">BMI Calculator</a>
+            <a href="training.html">Calorie Calculator</a>
+            <a href="gyms.html">Find Clubs</a>
+          </div>
+        </div>
+        <div>
+          <h4>Newsletter</h4>
+          <p class="footer-desc" style="margin-bottom: 10px;">Get weekly fight predictions and training breakdowns in your inbox.</p>
+          <div class="footer-newsletter">
+            <input type="email" placeholder="Enter your email" aria-label="Email for Newsletter">
+            <button type="button" onclick="showToast('Subscribed to newsletter!', 'success')">Subscribe</button>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>&copy; 2026 FightHub. All rights reserved. Built for combat sports practitioners.</div>
+        <div><a href="admin/login.html">Admin CRM Panel</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/data-defaults.js"></script>
+  <script src="js/datastore.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await dataStore.ready;
+      
+      const grid = document.getElementById('martial-arts-grid');
+      const modal = document.getElementById('ma-modal');
+      const backdrop = document.getElementById('ma-modal-backdrop');
+      const closeBtn = document.getElementById('modal-close-btn');
+      
+      // Load all martial arts
+      const mArts = await dataStore.getAll('martialArts');
+      
+      if (!mArts || mArts.length === 0) {
+        grid.innerHTML = '<div class="text-center" style="grid-column: 1/-1;"><p>No martial arts found.</p></div>';
+        return;
+      }
+      
+      // Color schemes for background gradient of martial arts cards
+      const gradients = {
+        'ma1': 'linear-gradient(135deg, #111 0%, #3a0007 100%)', // MMA - Red
+        'ma2': 'linear-gradient(135deg, #111 0%, #203a00 100%)', // Muay Thai - Green
+        'ma3': 'linear-gradient(135deg, #111 0%, #00223a 100%)', // BJJ - Blue
+        'ma4': 'linear-gradient(135deg, #111 0%, #3c3c00 100%)', // Boxing - Yellow
+        'ma5': 'linear-gradient(135deg, #111 0%, #24003c 100%)', // Wrestling - Purple
+        'ma6': 'linear-gradient(135deg, #111 0%, #003c37 100%)', // Judo - Teal
+        'ma7': 'linear-gradient(135deg, #111 0%, #3a1f00 100%)', // Karate - Orange
+        'ma8': 'linear-gradient(135deg, #111 0%, #3c0024 100%)', // Taekwondo - Magenta
+        'ma9': 'linear-gradient(135deg, #111 0%, #00123c 100%)', // Kickboxing - Dark Blue
+        'ma10': 'linear-gradient(135deg, #111 0%, #3a0f12 100%)', // Sambo - Crimson
+        'ma11': 'linear-gradient(135deg, #111 0%, #1c1c1c 100%)', // Krav Maga - Dark Grey
+      };
+
+      grid.innerHTML = '';
+      
+      mArts.forEach(ma => {
+        const card = document.createElement('div');
+        card.className = 'ma-card animate-on-scroll';
+        
+        let clickHandler = '';
+        if (ma.id === 'ma1') {
+          clickHandler = "window.location.href='mma.html'";
+        } else if (ma.id === 'ma2') {
+          clickHandler = "window.location.href='muay-thai.html'";
+        } else if (ma.id === 'ma3') {
+          clickHandler = "window.location.href='bjj.html'";
+        } else {
+          clickHandler = `openMaModal('${ma.id}')`;
+        }
+        
+        card.setAttribute('onclick', clickHandler);
+        
+        const imgUrl = ma.image || 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=800&q=80';
+        card.innerHTML = `
+          <img src="${imgUrl}" alt="${ma.name}">
+          <div class="ma-card-content">
+            <h3>${ma.name}</h3>
+            <p>${ma.description}</p>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      
+      // Initialize scroll animations
+      initScrollAnimations();
+      
+      // Close modal
+      const closeModal = () => {
+        modal.classList.remove('active');
+        backdrop.classList.remove('active');
+      };
+      
+      closeBtn.addEventListener('click', closeModal);
+      backdrop.addEventListener('click', closeModal);
+      
+      window.openMaModal = async (id) => {
+        const ma = await dataStore.getById('martialArts', id);
+        if (!ma) return;
+        
+        document.getElementById('modal-title').innerText = ma.fullName || ma.name;
+        
+        let techniquesHtml = '';
+        if (ma.techniques && ma.techniques.length > 0) {
+          techniquesHtml = ma.techniques.map(t => `<span class="badge badge-accent" style="margin: 3px;">${t}</span>`).join('');
+        }
+        
+        let equipmentHtml = '';
+        if (ma.equipment && ma.equipment.length > 0) {
+          equipmentHtml = ma.equipment.map(e => `<span class="badge badge-secondary" style="margin: 3px;">${e}</span>`).join('');
+        }
+
+        let famousHtml = '';
+        if (ma.famousFighters && ma.famousFighters.length > 0) {
+          famousHtml = ma.famousFighters.map(f => `<li>⭐ ${f}</li>`).join('');
+        }
+        
+        document.getElementById('modal-body-content').innerHTML = `
+          <div style="margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
+            <div class="badge badge-success">📍 Origin: ${ma.origin || 'Unknown'}</div>
+            <div class="badge badge-info">📅 Founded: ${ma.founded || 'Unknown'}</div>
+          </div>
+          
+          <h4 style="margin-bottom: 10px; color: var(--accent);">Description</h4>
+          <p>${ma.description}</p>
+          
+          <h4 style="margin-bottom: 10px; color: var(--accent); margin-top: 20px;">History</h4>
+          <p>${ma.history || 'History info coming soon.'}</p>
+          
+          <h4 style="margin-bottom: 10px; color: var(--accent); margin-top: 20px;">Core Techniques</h4>
+          <div style="margin-bottom: 15px;">${techniquesHtml || 'None specified.'}</div>
+          
+          <h4 style="margin-bottom: 10px; color: var(--accent); margin-top: 20px;">Required Equipment</h4>
+          <div style="margin-bottom: 15px;">${equipmentHtml || 'None specified.'}</div>
+          
+          <h4 style="margin-bottom: 10px; color: var(--accent); margin-top: 20px;">Famous Practitioners</h4>
+          <ul style="padding-left: 10px; list-style-type: none;">
+            ${famousHtml || '<li>Info coming soon.</li>'}
+          </ul>
+          
+          <div style="margin-top: 30px; text-align: right;">
+            <button class="btn btn-secondary" onclick="document.getElementById('ma-modal').classList.remove('active'); document.getElementById('ma-modal-backdrop').classList.remove('active');">Close</button>
+          </div>
+        `;
+        
+        modal.classList.add('active');
+        backdrop.classList.add('active');
+      };
+    });
+  </script>
+</body>
+</html>

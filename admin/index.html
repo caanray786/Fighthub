@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FightHub Admin — Dashboard</title>
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-page">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+      <a href="index.html" class="admin-sidebar-brand">
+        <div class="brand-icon">🥋</div>
+        <div>
+          <div class="brand-text">FightHub</div>
+          <div class="brand-sub">Back-Office</div>
+        </div>
+      </a>
+      
+      <nav class="admin-nav">
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">Core Management</div>
+          <a href="index.html" id="nav-dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+          <a href="fighters.html" id="nav-fighters"><span class="nav-icon">🥊</span> Fighters</a>
+          <a href="articles.html" id="nav-articles"><span class="nav-icon">📰</span> Articles</a>
+          <a href="events.html" id="nav-events"><span class="nav-icon">📅</span> Events</a>
+          <a href="rankings.html" id="nav-rankings"><span class="nav-icon">🏆</span> Rankings</a>
+        </div>
+        
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">Content & Tools</div>
+          <a href="gyms.html" id="nav-gyms"><span class="nav-icon">👟</span> Find Clubs</a>
+          <a href="martial-arts.html" id="nav-martial-arts"><span class="nav-icon">🥋</span> Martial Arts</a>
+          <a href="training.html" id="nav-training"><span class="nav-icon">🏋️</span> Training</a>
+        </div>
+
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">System</div>
+          <a href="settings.html" id="nav-settings"><span class="nav-icon">⚙️</span> Settings</a>
+          <a href="#" id="btn-logout"><span class="nav-icon">🚪</span> Logout</a>
+        </div>
+      </nav>
+
+      <div class="admin-sidebar-footer">
+        <div class="admin-user-info">
+          <div class="admin-user-avatar">AD</div>
+          <div>
+            <div class="admin-user-name">Admin User</div>
+            <div class="admin-user-role">Administrator</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+      
+      <!-- Header -->
+      <header class="admin-header">
+        <div>
+          <h1>Dashboard Overview</h1>
+          <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-top: 4px;">Welcome back! Here's what is happening with FightHub today.</p>
+        </div>
+        <div class="admin-header-actions">
+          <a href="../index.html" class="btn-admin-secondary" target="_blank">🌐 View Site</a>
+        </div>
+      </header>
+
+      <!-- Stat Cards -->
+      <section class="dashboard-grid">
+        <!-- Fighters -->
+        <div class="dashboard-card">
+          <div class="card-icon icon-accent">🥊</div>
+          <div class="card-value" id="stat-fighters">-</div>
+          <div class="card-label">Total Fighters</div>
+          <div class="mini-chart"></div>
+        </div>
+
+        <!-- Articles -->
+        <div class="dashboard-card">
+          <div class="card-icon icon-success">📰</div>
+          <div class="card-value" id="stat-articles">-</div>
+          <div class="card-label">Articles Published</div>
+          <div class="mini-chart"></div>
+        </div>
+
+        <!-- Events -->
+        <div class="dashboard-card">
+          <div class="card-icon icon-warning">📅</div>
+          <div class="card-value" id="stat-events">-</div>
+          <div class="card-label">Upcoming Events</div>
+          <div class="mini-chart"></div>
+        </div>
+
+        <!-- Find Clubs -->
+        <div class="dashboard-card">
+          <div class="card-icon icon-error">🏢</div>
+          <div class="card-value" id="stat-gyms">-</div>
+          <div class="card-label">Registered Gyms</div>
+          <div class="mini-chart"></div>
+        </div>
+      </section>
+
+      <!-- Dashboard Panels -->
+      <section class="dashboard-panels">
+        <!-- Activity Log -->
+        <div class="admin-panel">
+          <div class="admin-panel-header">
+            <h3>Recent Back-Office Activity</h3>
+          </div>
+          <div class="admin-panel-body" style="padding: 0 var(--space-xl);">
+            <ul class="activity-feed" id="recent-activity-list">
+              <!-- Rendered via JS -->
+              <li class="activity-item" style="justify-content: center; padding: 20px; color: var(--admin-text-muted);">
+                Loading activity log...
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Quick Actions & Shortcuts -->
+        <div class="admin-panel">
+          <div class="admin-panel-header">
+            <h3>Quick Actions</h3>
+          </div>
+          <div class="admin-panel-body">
+            <div class="quick-actions">
+              <a href="fighters.html?new=true" class="quick-action">
+                <span style="font-size: 1.2rem;">🥊</span>
+                <div>
+                  <strong>Add New Fighter</strong>
+                  <div style="font-size: 0.75rem; color: var(--admin-text-muted); margin-top: 2px;">Insert profile to DB</div>
+                </div>
+              </a>
+              <a href="articles.html?new=true" class="quick-action">
+                <span style="font-size: 1.2rem;">📰</span>
+                <div>
+                  <strong>Write Draft Article</strong>
+                  <div style="font-size: 0.75rem; color: var(--admin-text-muted); margin-top: 2px;">Create news or guide</div>
+                </div>
+              </a>
+              <a href="events.html?new=true" class="quick-action">
+                <span style="font-size: 1.2rem;">📅</span>
+                <div>
+                  <strong>Schedule Event</strong>
+                  <div style="font-size: 0.75rem; color: var(--admin-text-muted); margin-top: 2px;">Add promotion fight night</div>
+                </div>
+              </a>
+              <a href="settings.html" class="quick-action">
+                <span style="font-size: 1.2rem;">⚙️</span>
+                <div>
+                  <strong>Data Export & Settings</strong>
+                  <div style="font-size: 0.75rem; color: var(--admin-text-muted); margin-top: 2px;">Backup or restore data</div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../js/data-defaults.js"></script>
+  <script src="../js/datastore.js"></script>
+  <script src="../js/admin-app.js"></script>
+</body>
+</html>

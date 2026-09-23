@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FightHub Admin — Login</title>
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-page">
+
+  <div class="admin-login">
+    <div class="admin-login-card">
+      <div class="login-brand">🥋 Fight<span style="color: var(--admin-accent);">Hub</span></div>
+      <div class="login-subtitle">ADMIN CONTROL PANEL</div>
+      
+      <div id="login-error-msg" class="login-error"></div>
+      
+      <form id="admin-login-form" class="login-form">
+        <div class="form-group">
+          <label for="admin-password">Admin Password</label>
+          <input type="password" id="admin-password" placeholder="Enter password" required autofocus>
+        </div>
+        <button type="submit" class="btn-admin-primary" style="justify-content: center; width: 100%; margin-top: 10px;">
+          Log In ⚡
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../js/data-defaults.js"></script>
+  <script src="../js/datastore.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await dataStore.ready;
+      
+      const form = document.getElementById('admin-login-form');
+      const passwordInput = document.getElementById('admin-password');
+      const errorMsg = document.getElementById('login-error-msg');
+      
+      // If already logged in, redirect to index
+      if (dataStore.getAdminSession()) {
+        window.location.href = 'index.html';
+        return;
+      }
+      
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const pwd = passwordInput.value;
+        
+        if (dataStore.verifyAdmin(pwd)) {
+          dataStore.setAdminSession();
+          window.location.href = 'index.html';
+        } else {
+          errorMsg.textContent = 'Invalid password. Please try again.';
+          errorMsg.classList.add('show');
+          passwordInput.value = '';
+          passwordInput.focus();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

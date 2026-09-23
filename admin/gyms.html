@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FightHub Admin — Manage Gyms</title>
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-page">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+      <a href="index.html" class="admin-sidebar-brand">
+        <div class="brand-icon">🏢</div>
+        <div>
+          <div class="brand-text">FightHub</div>
+          <div class="brand-sub">Back-Office</div>
+        </div>
+      </a>
+      
+      <nav class="admin-nav">
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">Core Management</div>
+          <a href="index.html" id="nav-dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+          <a href="fighters.html" id="nav-fighters"><span class="nav-icon">🥊</span> Fighters</a>
+          <a href="articles.html" id="nav-articles"><span class="nav-icon">📰</span> Articles</a>
+          <a href="events.html" id="nav-events"><span class="nav-icon">📅</span> Events</a>
+          <a href="rankings.html" id="nav-rankings"><span class="nav-icon">🏆</span> Rankings</a>
+        </div>
+        
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">Content & Tools</div>
+          <a href="gyms.html" id="nav-gyms" class="active"><span class="nav-icon">🏢</span> Manage Gyms</a>
+          <a href="martial-arts.html" id="nav-martial-arts"><span class="nav-icon">🥋</span> Martial Arts</a>
+          <a href="training.html" id="nav-training"><span class="nav-icon">🏋️</span> Training</a>
+        </div>
+
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">System</div>
+          <a href="settings.html" id="nav-settings"><span class="nav-icon">⚙️</span> Settings</a>
+          <a href="#" id="btn-logout"><span class="nav-icon">🚪</span> Logout</a>
+        </div>
+      </nav>
+
+      <div class="admin-sidebar-footer">
+        <div class="admin-user-info">
+          <div class="admin-user-avatar">AD</div>
+          <div>
+            <div class="admin-user-name">Admin User</div>
+            <div class="admin-user-role">Administrator</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+      
+      <!-- List View Section -->
+      <section id="list-section">
+        <header class="admin-header">
+          <div>
+            <h1>Registered Gyms & Clubs</h1>
+            <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-top: 4px;">View, search, edit, and delete clubs directory entries.</p>
+          </div>
+          <div class="admin-header-actions">
+            <button id="btn-add-gym" class="btn-admin-primary">➕ Add New Gym</button>
+          </div>
+        </header>
+
+        <!-- Search & Filters Toolbar -->
+        <div class="admin-toolbar">
+          <div class="admin-search">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Search gyms by name, city, style...">
+          </div>
+          <div class="admin-filters">
+            <select id="filter-style">
+              <option value="">All Styles</option>
+              <option value="MMA">MMA</option>
+              <option value="Muay Thai">Muay Thai</option>
+              <option value="BJJ">BJJ</option>
+              <option value="Boxing">Boxing</option>
+              <option value="Wrestling">Wrestling</option>
+              <option value="Judo">Judo</option>
+              <option value="Karate">Karate</option>
+              <option value="Taekwondo">Taekwondo</option>
+              <option value="Kickboxing">Kickboxing</option>
+              <option value="Sambo">Sambo</option>
+              <option value="Krav Maga">Krav Maga</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Gyms List Table -->
+        <div class="admin-table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Gym Name</th>
+                <th>Location</th>
+                <th>Contact</th>
+                <th>Rating</th>
+                <th>Styles Offered</th>
+                <th style="text-align: right; width: 150px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="gyms-list-body">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 40px; color: var(--admin-text-muted);">Loading gyms...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Form View Section (Hidden by Default) -->
+      <section id="form-section" style="display: none;">
+        <header class="admin-header">
+          <div>
+            <h1 id="form-title">Add New Gym</h1>
+            <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-top: 4px;">Enter gym contact details, coordinates, and martial arts disciplines.</p>
+          </div>
+          <div class="admin-header-actions">
+            <button id="btn-cancel" class="btn-admin-secondary">Cancel</button>
+          </div>
+        </header>
+
+        <div class="admin-card">
+          <form id="gym-form">
+            <input type="hidden" id="gym-id">
+            
+            <div class="form-grid">
+              
+              <!-- Left side: Basic Info -->
+              <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+                <div class="form-group">
+                  <label for="gym-name">Gym Name <span style="color:var(--accent);">*</span></label>
+                  <input type="text" id="gym-name" required placeholder="e.g. Renzo Gracie Academy">
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="gym-phone">Phone</label>
+                    <input type="text" id="gym-phone" placeholder="e.g. +1 212-279-6724">
+                  </div>
+                  <div class="form-group">
+                    <label for="gym-email">Email</label>
+                    <input type="email" id="gym-email" placeholder="e.g. info@renzogracie.com">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="gym-website">Website URL</label>
+                    <input type="url" id="gym-website" placeholder="e.g. https://renzogracie.com">
+                  </div>
+                  <div class="form-group">
+                    <label for="gym-image">Photo Image URL</label>
+                    <input type="url" id="gym-image" placeholder="Unsplash or dynamic image URL">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="gym-rating">Rating (1.0 - 5.0)</label>
+                    <input type="number" id="gym-rating" step="0.1" min="1" max="5" value="4.8" required>
+                  </div>
+                  <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+                    <div>
+                      <label for="gym-lat">Latitude</label>
+                      <input type="number" id="gym-lat" step="0.0001" placeholder="40.7489">
+                    </div>
+                    <div>
+                      <label for="gym-lng">Longitude</label>
+                      <input type="number" id="gym-lng" step="0.0001" placeholder="-73.9926">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="gym-description">Description</label>
+                  <textarea id="gym-description" rows="4" placeholder="Brief summary of the training space, coaches, and lineage..."></textarea>
+                </div>
+              </div>
+
+              <!-- Right side: Address & Styles Offered -->
+              <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+                <div class="form-group">
+                  <label for="gym-address">Street Address <span style="color:var(--accent);">*</span></label>
+                  <input type="text" id="gym-address" required placeholder="e.g. 224 W 30th St">
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="gym-city">City <span style="color:var(--accent);">*</span></label>
+                    <input type="text" id="gym-city" required placeholder="e.g. New York">
+                  </div>
+                  <div class="form-group">
+                    <label for="gym-state">State / Province</label>
+                    <input type="text" id="gym-state" placeholder="e.g. NY">
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="gym-zip">Zip / Postal Code</label>
+                    <input type="text" id="gym-zip" placeholder="e.g. 10001">
+                  </div>
+                  <div class="form-group">
+                    <label for="gym-country">Country <span style="color:var(--accent);">*</span></label>
+                    <input type="text" id="gym-country" required placeholder="e.g. USA">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label style="display: block; margin-bottom: 10px; font-weight: bold;">Styles Offered <span style="color:var(--accent);">*</span></label>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;" id="styles-checkboxes">
+                    <div><label><input type="checkbox" name="gym-styles" value="MMA"> MMA</label></div>
+                    <div><label><input type="checkbox" name="gym-styles" value="Muay Thai"> Muay Thai</label></div>
+                    <div><label><input type="checkbox" name="gym-styles" value="BJJ"> BJJ (Jiu-Jitsu)</label></div>
+                    <div><label><input type="checkbox" name="gym-styles" value="Boxing"> Boxing</label></div>
+                    <div><label><input type="checkbox" name="gym-styles" value="Wrestling"> Wrestling</label></div>
+                    <div><label><input type="checkbox" name="gym-styles" value="Judo"> Judo</label></div>
+                    <div><label><input type="checkbox" name="gym-styles" value="Karate"> Karate</label></div>
+                    <div><label><input type="checkbox" name="gym-styles" value="Taekwondo"> Taekwondo</label></div>
+                    <div><label><input type="checkbox" name="gym-styles" value="Kickboxing"> Kickboxing</label></div>
+                    <div><label><input type="checkbox" name="gym-styles" value="Sambo"> Sambo</label></div>
+                    <div><label><input type="checkbox" name="gym-styles" value="Krav Maga"> Krav Maga</label></div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="form-actions" style="margin-top: var(--space-xl); border-top: 1px solid var(--border-color); padding-top: var(--space-lg); display: flex; justify-content: flex-end; gap: var(--space-md);">
+              <button type="button" id="btn-cancel-form" class="btn-admin-secondary">Cancel</button>
+              <button type="submit" class="btn-admin-primary">💾 Save Gym</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../js/data-defaults.js"></script>
+  <script src="../js/datastore.js"></script>
+  <script src="../js/admin-app.js"></script>
+  <script src="../js/admin-gyms.js"></script>
+</body>
+</html>

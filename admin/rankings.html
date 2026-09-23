@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FightHub Admin — Rankings</title>
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-page">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+      <a href="index.html" class="admin-sidebar-brand">
+        <div class="brand-icon">🥋</div>
+        <div>
+          <div class="brand-text">FightHub</div>
+          <div class="brand-sub">Back-Office</div>
+        </div>
+      </a>
+      
+      <nav class="admin-nav">
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">Core Management</div>
+          <a href="index.html" id="nav-dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+          <a href="fighters.html" id="nav-fighters"><span class="nav-icon">🥊</span> Fighters</a>
+          <a href="articles.html" id="nav-articles"><span class="nav-icon">📰</span> Articles</a>
+          <a href="events.html" id="nav-events"><span class="nav-icon">📅</span> Events</a>
+          <a href="rankings.html" id="nav-rankings"><span class="nav-icon">🏆</span> Rankings</a>
+        </div>
+        
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">Content & Tools</div>
+          <a href="gyms.html" id="nav-gyms"><span class="nav-icon">👟</span> Find Clubs</a>
+          <a href="martial-arts.html" id="nav-martial-arts"><span class="nav-icon">🥋</span> Martial Arts</a>
+          <a href="training.html" id="nav-training"><span class="nav-icon">🏋️</span> Training</a>
+        </div>
+
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">System</div>
+          <a href="settings.html" id="nav-settings"><span class="nav-icon">⚙️</span> Settings</a>
+          <a href="#" id="btn-logout"><span class="nav-icon">🚪</span> Logout</a>
+        </div>
+      </nav>
+
+      <div class="admin-sidebar-footer">
+        <div class="admin-user-info">
+          <div class="admin-user-avatar">AD</div>
+          <div>
+            <div class="admin-user-name">Admin User</div>
+            <div class="admin-user-role">Administrator</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+      
+      <header class="admin-header">
+        <div>
+          <h1>Rankings Manager</h1>
+          <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-top: 4px;">Reorder fighter rankings, toggle division champions, and manage weight class listings.</p>
+        </div>
+        <div class="admin-header-actions">
+          <button id="btn-save-rankings" class="btn-admin-primary">💾 Save Rankings</button>
+        </div>
+      </header>
+
+      <div class="dashboard-panels" style="grid-template-columns: 2fr 1fr;">
+        
+        <!-- Drag & Drop ranking panel -->
+        <div class="admin-panel">
+          <div class="admin-panel-header" style="justify-content: flex-start; gap: var(--space-md); flex-wrap: wrap;">
+            <h3>Select Weight Class:</h3>
+            <select id="select-weight-class" style="background: var(--admin-bg); border: 1px solid var(--admin-border); color: var(--admin-text); padding: var(--space-xs) var(--space-sm); border-radius: var(--radius-sm); font-size: 0.9rem;">
+              <option value="r-pfp">Pound-for-Pound</option>
+              <option value="r-hw">Heavyweight</option>
+              <option value="r-lhw">Light Heavyweight</option>
+              <option value="r-mw">Middleweight</option>
+              <option value="r-ww">Welterweight</option>
+              <option value="r-lw">Lightweight</option>
+              <option value="r-fw">Featherweight</option>
+              <option value="r-bw">Bantamweight</option>
+              <option value="r-flw">Flyweight</option>
+              <option value="r-sw">Strawweight</option>
+            </select>
+          </div>
+          
+          <div class="admin-panel-body">
+            <!-- Alert Tip -->
+            <div style="background: var(--admin-accent-light); color: var(--admin-text); border-left: 4px solid var(--admin-accent); padding: var(--space-md); border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: var(--space-lg);">
+              💡 <strong>How-To:</strong> Drag and drop the cards using the drag handles on the left. Toggle the <strong>👑 Champion</strong> button to assign the belt. To remove a fighter from the rankings, click the red <strong>✖</strong> icon on the right.
+            </div>
+
+            <!-- Drag container -->
+            <div class="ranking-drag-list" id="rankings-drag-container">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Fighter Panel -->
+        <div class="admin-panel">
+          <div class="admin-panel-header">
+            <h3>Add Fighter to Division</h3>
+          </div>
+          <div class="admin-panel-body">
+            <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+              <p style="font-size: 0.85rem; color: var(--admin-text-muted);">
+                Select an unranked fighter below to add them to the bottom of the current division rankings:
+              </p>
+              
+              <div class="form-group" style="display: flex; flex-direction: column; gap: var(--space-xs);">
+                <label for="select-unranked-fighter">Unranked Fighters</label>
+                <select id="select-unranked-fighter" style="width: 100%; background: var(--admin-bg); border: 1px solid var(--admin-border); color: var(--admin-text); padding: 0.7rem; border-radius: var(--radius-sm);">
+                  <!-- Loaded via JS -->
+                </select>
+              </div>
+
+              <button id="btn-add-to-rankings" class="btn-admin-secondary" style="width: 100%; border-color: var(--admin-accent); color: var(--admin-accent);">
+                ➕ Add to Rankings
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../js/data-defaults.js"></script>
+  <script src="../js/datastore.js"></script>
+  <script src="../js/admin-app.js"></script>
+  <script src="../js/admin-rankings.js"></script>
+</body>
+</html>

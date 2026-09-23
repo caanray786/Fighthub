@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FightHub Admin — Martial Arts</title>
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body class="admin-page">
+
+  <div class="admin-layout">
+    
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+      <a href="index.html" class="admin-sidebar-brand">
+        <div class="brand-icon">🥋</div>
+        <div>
+          <div class="brand-text">FightHub</div>
+          <div class="brand-sub">Back-Office</div>
+        </div>
+      </a>
+      
+      <nav class="admin-nav">
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">Core Management</div>
+          <a href="index.html" id="nav-dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+          <a href="fighters.html" id="nav-fighters"><span class="nav-icon">🥊</span> Fighters</a>
+          <a href="articles.html" id="nav-articles"><span class="nav-icon">📰</span> Articles</a>
+          <a href="events.html" id="nav-events"><span class="nav-icon">📅</span> Events</a>
+          <a href="rankings.html" id="nav-rankings"><span class="nav-icon">🏆</span> Rankings</a>
+        </div>
+        
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">Content & Tools</div>
+          <a href="gyms.html" id="nav-gyms"><span class="nav-icon">👟</span> Find Clubs</a>
+          <a href="martial-arts.html" id="nav-martial-arts"><span class="nav-icon">🥋</span> Martial Arts</a>
+          <a href="training.html" id="nav-training"><span class="nav-icon">🏋️</span> Training</a>
+        </div>
+
+        <div class="admin-nav-section">
+          <div class="admin-nav-section-title">System</div>
+          <a href="settings.html" id="nav-settings"><span class="nav-icon">⚙️</span> Settings</a>
+          <a href="#" id="btn-logout"><span class="nav-icon">🚪</span> Logout</a>
+        </div>
+      </nav>
+
+      <div class="admin-sidebar-footer">
+        <div class="admin-user-info">
+          <div class="admin-user-avatar">AD</div>
+          <div>
+            <div class="admin-user-name">Admin User</div>
+            <div class="admin-user-role">Administrator</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+      
+      <!-- List View Section -->
+      <section id="list-section">
+        <header class="admin-header">
+          <div>
+            <h1>Martial Arts Directory</h1>
+            <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-top: 4px;">Edit historic timelines, rules, training checklists, and famous profiles for the 11 major combat styles.</p>
+          </div>
+          <div class="admin-header-actions">
+            <button id="btn-add-ma" class="btn-admin-primary">➕ Add Martial Art</button>
+          </div>
+        </header>
+
+        <!-- Search Toolbar -->
+        <div class="admin-toolbar">
+          <div class="admin-search" style="min-width: 100%;">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Search martial arts by name, country, founded period...">
+          </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="admin-panel">
+          <div class="admin-table-wrapper">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Style Name</th>
+                  <th>Full Name</th>
+                  <th>Origin</th>
+                  <th>Founded Period</th>
+                  <th>Techniques Count</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ma-table-body">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Pagination -->
+          <div class="admin-pagination">
+            <div class="pagination-info" id="pagination-info">
+              Showing 0-0 of 0 entries
+            </div>
+            <div class="pagination-buttons" id="pagination-buttons">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Add/Edit Form Section -->
+      <section id="form-section" style="display: none;">
+        <header class="admin-header">
+          <div>
+            <h1 id="form-title">Edit Martial Art</h1>
+            <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-top: 4px;">Update descriptions, historical origin timelines, sparring rules, and technical advice.</p>
+          </div>
+          <div class="admin-header-actions">
+            <button id="btn-back" class="btn-admin-secondary">🔙 Back to List</button>
+          </div>
+        </header>
+
+        <div class="admin-panel" style="padding: var(--space-xl);">
+          <form id="ma-form" class="admin-form">
+            <input type="hidden" id="ma-id">
+            
+            <div class="form-row" style="grid-template-columns: 1fr 2fr 1fr;">
+              <div class="form-group">
+                <label for="ma-icon">Emoji Icon *</label>
+                <input type="text" id="ma-icon" placeholder="🥋" required>
+              </div>
+              <div class="form-group">
+                <label for="ma-name">Short Name *</label>
+                <input type="text" id="ma-name" placeholder="MMA" required>
+              </div>
+              <div class="form-group">
+                <label for="ma-origin">Origin Country *</label>
+                <input type="text" id="ma-origin" placeholder="Global" required>
+              </div>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="ma-image">Image URL</label>
+              <input type="url" id="ma-image" placeholder="https://images.unsplash.com/photo-...">
+            </div>
+
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ma-fullname">Full Name *</label>
+                <input type="text" id="ma-fullname" placeholder="Mixed Martial Arts" required>
+              </div>
+              <div class="form-group">
+                <label for="ma-founded">Founded Period *</label>
+                <input type="text" id="ma-founded" placeholder="1993 (modern)" required>
+              </div>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="ma-description">Short Description *</label>
+              <textarea id="ma-description" placeholder="Write a short summary overview of the martial art style..." required style="min-height: 80px;"></textarea>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="ma-history">History & Origins *</label>
+              <textarea id="ma-history" placeholder="Describe the roots, key historical figures, and evolution of the style..." required></textarea>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="ma-rules">Rules & Scoring *</label>
+              <textarea id="ma-rules" placeholder="Explain the main match rules, legal and illegal moves, scoring criteria, and rounds..." required></textarea>
+            </div>
+
+            <div class="form-group full-width">
+              <label for="ma-guide">Beginner Training Roadmap *</label>
+              <textarea id="ma-guide" placeholder="Provide step-by-step guidance on how a beginner should start learning..." required></textarea>
+            </div>
+
+            <!-- Dynamic Lists -->
+            <div class="form-row">
+              <!-- Techniques -->
+              <div class="form-group">
+                <label>Key Techniques</label>
+                <div class="dynamic-list" id="techniques-list">
+                  <!-- Populated dynamically -->
+                </div>
+                <div style="margin-top: var(--space-xs);">
+                  <button type="button" class="add-item-btn" id="btn-add-tech">➕ Add Technique</button>
+                </div>
+              </div>
+
+              <!-- Equipment -->
+              <div class="form-group">
+                <label>Required Equipment</label>
+                <div class="dynamic-list" id="equipment-list">
+                  <!-- Populated dynamically -->
+                </div>
+                <div style="margin-top: var(--space-xs);">
+                  <button type="button" class="add-item-btn" id="btn-add-equip">➕ Add Equipment</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <!-- Famous Fighters -->
+              <div class="form-group">
+                <label>Famous Fighters / Masters</label>
+                <div class="dynamic-list" id="fighters-list">
+                  <!-- Populated dynamically -->
+                </div>
+                <div style="margin-top: var(--space-xs);">
+                  <button type="button" class="add-item-btn" id="btn-add-fighter">➕ Add Fighter</button>
+                </div>
+              </div>
+
+              <!-- Tips -->
+              <div class="form-group">
+                <label>Training Tips</label>
+                <div class="dynamic-list" id="tips-list">
+                  <!-- Populated dynamically -->
+                </div>
+                <div style="margin-top: var(--space-xs);">
+                  <button type="button" class="add-item-btn" id="btn-add-tip">➕ Add Tip</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-admin-primary">💾 Save Martial Art</button>
+              <button type="button" class="btn-admin-secondary" id="btn-cancel">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../js/data-defaults.js"></script>
+  <script src="../js/datastore.js"></script>
+  <script src="../js/admin-app.js"></script>
+  <script src="../js/admin-martial-arts.js"></script>
+</body>
+</html>

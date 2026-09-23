@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clubs Directory — FightHub</title>
+  <meta name="description" content="Find martial arts clubs, academies, and training centers near you. Filter by location, distance, and style.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+  <!-- Sticky Glass Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <div class="brand-icon">🥋</div>
+        <div class="brand-text">Fight<span class="text-accent">Hub</span></div>
+      </a>
+      <div class="navbar-links">
+        <a href="index.html">Home</a>
+        <a href="martial-arts.html">Martial Arts</a>
+        <a href="fighters.html">Fighters</a>
+        <a href="news.html">News</a>
+        <a href="events.html">Events</a>
+        <a href="rankings.html">Rankings</a>
+        <a href="training.html">Training</a>
+        <a href="gyms.html" class="active">Clubs</a>
+        <a href="admin/login.html" class="btn btn-secondary btn-sm" style="margin-left: 10px;">Admin Portal</a>
+      </div>
+      <div style="display: flex; align-items: center;">
+        <button class="theme-toggle" aria-label="Toggle Dark/Light Mode">☀️</button>
+        <div class="mobile-toggle" aria-label="Toggle Mobile Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Hero -->
+  <header class="page-hero">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="separator">/</span>
+        <span>Clubs Directory</span>
+      </div>
+      <h1>Clubs <span class="text-accent">Near You</span></h1>
+      <p>Enter your location to discover elite academies, boxing rings, and combat sports gyms in your local area.</p>
+    </div>
+  </header>
+
+  <!-- Search & Filter Controls -->
+  <section class="section" style="padding-bottom: 0;">
+    <div class="container">
+      <div class="card card-glass" style="padding: var(--space-xl);">
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--space-md); flex-wrap: wrap;">
+          
+          <!-- Location Input -->
+          <div>
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted);">Your Location</label>
+            <div style="position: relative;">
+              <input type="text" id="location-input" placeholder="e.g. New York, London, Toronto, or Zip..." style="width: 100%; padding: 12px 15px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: var(--text-primary);">
+              <span style="position: absolute; right: 12px; top: 12px; color: var(--text-muted);">📍</span>
+            </div>
+          </div>
+
+          <!-- Style Select -->
+          <div>
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted);">Martial Art Style</label>
+            <select id="style-select" style="width: 100%; padding: 12px 15px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: var(--text-primary); cursor: pointer;">
+              <option value="all">All Styles</option>
+              <option value="MMA">MMA</option>
+              <option value="Muay Thai">Muay Thai</option>
+              <option value="BJJ">BJJ (Jiu-Jitsu)</option>
+              <option value="Boxing">Boxing</option>
+              <option value="Wrestling">Wrestling</option>
+              <option value="Judo">Judo</option>
+              <option value="Karate">Karate</option>
+              <option value="Taekwondo">Taekwondo</option>
+              <option value="Kickboxing">Kickboxing</option>
+              <option value="Sambo">Sambo</option>
+              <option value="Krav Maga">Krav Maga</option>
+            </select>
+          </div>
+
+          <!-- Radius Select -->
+          <div>
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted);">Search Radius</label>
+            <select id="radius-select" style="width: 100%; padding: 12px 15px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: var(--text-primary); cursor: pointer;">
+              <option value="5">Within 5 miles</option>
+              <option value="15">Within 15 miles</option>
+              <option value="50">Within 50 miles</option>
+              <option value="any" selected>Any Distance</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gyms Grid Section -->
+  <section class="section">
+    <div class="container">
+      <div id="gyms-grid" class="grid grid-3">
+        <!-- Loaded dynamically -->
+        <div class="text-center" style="grid-column: 1/-1; padding: 50px 0; color: var(--text-muted);">
+          <p>Loading gyms list...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Map Modal -->
+  <div class="modal-backdrop" id="map-modal-backdrop"></div>
+  <div class="modal modal-md" id="map-modal">
+    <div class="modal-header">
+      <h3 id="modal-gym-name">Gym Location Map</h3>
+      <button class="modal-close" id="map-modal-close">&times;</button>
+    </div>
+    <div class="modal-body" style="padding: var(--space-xl);">
+      <div style="width: 100%; height: 280px; background: #1a1a1a; border-radius: var(--radius-md); margin-bottom: var(--space-lg); border: 1px solid var(--border-color); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+        
+        <!-- Mock Map Visual Overlay -->
+        <div style="position: absolute; inset: 0; opacity: 0.15; background-image: radial-gradient(circle, var(--text-muted) 1px, transparent 1px); background-size: 20px 20px;"></div>
+        
+        <!-- Grid Streets -->
+        <div style="position: absolute; top: 40%; left: 0; right: 0; height: 20px; background: #2a2a2a;"></div>
+        <div style="position: absolute; top: 0; bottom: 0; left: 50%; width: 20px; background: #2a2a2a;"></div>
+        <div style="position: absolute; top: 70%; left: 0; right: 0; height: 15px; background: #222;"></div>
+        
+        <!-- Markers -->
+        <!-- User Location -->
+        <div style="position: absolute; top: 60%; left: 30%; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%);">
+          <div style="width: 12px; height: 12px; background: #00b4d8; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 10px #00b4d8;"></div>
+          <span style="font-size: 0.7rem; color: #00b4d8; margin-top: 3px; font-weight: bold; background: rgba(0,0,0,0.8); padding: 1px 4px; border-radius: 2px;">Your Location</span>
+        </div>
+
+        <!-- Gym Location -->
+        <div style="position: absolute; top: 38%; left: 52%; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%);">
+          <div style="font-size: 1.5rem; line-height: 1; animation: float 3s ease-in-out infinite;">📍</div>
+          <span style="font-size: 0.7rem; color: var(--accent); font-weight: bold; background: rgba(0,0,0,0.8); padding: 1px 4px; border-radius: 2px; margin-top: -2px;">Academy</span>
+        </div>
+
+        <div style="position: absolute; bottom: 10px; right: 10px; font-size: 0.75rem; color: var(--text-muted); background: rgba(0,0,0,0.7); padding: 4px 8px; border-radius: 4px;">Mock Interactive Map</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: var(--space-xs);">
+        <p><strong>Address:</strong> <span id="modal-gym-address">Address here</span></p>
+        <p><strong>Contact:</strong> <span id="modal-gym-phone">Phone</span> | <span id="modal-gym-email">Email</span></p>
+        <p><strong>Hours:</strong> Mon - Sat: 6:00 AM - 9:00 PM</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="index.html" class="footer-brand">
+            <span class="brand-icon">🥋</span> FightHub
+          </a>
+          <p class="footer-desc">A premium portal for combat sports news, rankings, event trackers, fighter profile database, and interactive training tools.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Facebook">FB</a>
+            <a href="#" aria-label="Twitter">TW</a>
+            <a href="#" aria-label="Instagram">IG</a>
+            <a href="#" aria-label="YouTube">YT</a>
+          </div>
+        </div>
+        <div>
+          <h4>Pages</h4>
+          <div class="footer-links">
+            <a href="martial-arts.html">Martial Arts</a>
+            <a href="fighters.html">Fighter Database</a>
+            <a href="news.html">News & Articles</a>
+            <a href="events.html">Upcoming Events</a>
+          </div>
+        </div>
+        <div>
+          <h4>Tools</h4>
+          <div class="footer-links">
+            <a href="training.html">Round Timer</a>
+            <a href="training.html">BMI Calculator</a>
+            <a href="training.html">Calorie Calculator</a>
+            <a href="gyms.html">Find Clubs</a>
+          </div>
+        </div>
+        <div>
+          <h4>Newsletter</h4>
+          <p class="footer-desc" style="margin-bottom: 10px;">Get weekly fight predictions and training breakdowns in your inbox.</p>
+          <div class="footer-newsletter">
+            <input type="email" placeholder="Enter your email" aria-label="Email for Newsletter">
+            <button type="button" onclick="showToast('Subscribed to newsletter!', 'success')">Subscribe</button>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>&copy; 2026 FightHub. All rights reserved. Built for combat sports practitioners.</div>
+        <div><a href="admin/login.html">Admin CRM Panel</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/data-defaults.js"></script>
+  <script src="js/datastore.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await dataStore.ready;
+      
+      const grid = document.getElementById('gyms-grid');
+      const locationInput = document.getElementById('location-input');
+      const styleSelect = document.getElementById('style-select');
+      const radiusSelect = document.getElementById('radius-select');
+      
+      const modal = document.getElementById('map-modal');
+      const backdrop = document.getElementById('map-modal-backdrop');
+      const closeBtn = document.getElementById('map-modal-close');
+      
+      let allGyms = [];
+      
+      // Load all gyms
+      try {
+        allGyms = await dataStore.getAll('gyms');
+      } catch (err) {
+        console.error("Error loading gyms:", err);
+      }
+      
+      function renderGyms(filtered) {
+        if (!filtered || filtered.length === 0) {
+          grid.innerHTML = `
+            <div class="text-center" style="grid-column: 1/-1; padding: 40px 0;">
+              <p style="color:var(--text-muted); font-size:1.1rem;">No gyms found matching your filters.</p>
+            </div>`;
+          return;
+        }
+        
+        grid.innerHTML = '';
+        filtered.forEach(gym => {
+          // Render styles badges
+          const styleBadges = gym.styles.map(s => `<span class="badge badge-info" style="margin-right:4px; margin-bottom:4px; font-size:0.75rem;">${s}</span>`).join('');
+          
+          // Generate rating stars
+          const ratingStars = '⭐'.repeat(Math.round(gym.rating)) + ` <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">(${gym.rating})</span>`;
+          
+          // Render distance
+          const searchLoc = locationInput.value.trim().toLowerCase();
+          let distanceHtml = `🌍 ${gym.city}, ${gym.country}`;
+          if (searchLoc && gym.city.toLowerCase().includes(searchLoc)) {
+            // Generate stable mock distance based on rating & name length
+            const mockDist = ((gym.name.length % 5) + 1.2).toFixed(1);
+            distanceHtml = `📍 ${mockDist} miles away (${gym.city})`;
+          }
+          
+          const card = document.createElement('div');
+          card.className = 'card card-glass animate-on-scroll';
+          card.style.display = 'flex';
+          card.style.flexDirection = 'column';
+          card.style.overflow = 'hidden';
+          card.style.padding = '0';
+          
+          card.innerHTML = `
+            <div style="width:100%; height:160px; overflow:hidden; position:relative;">
+              <img src="${gym.image || 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=800&q=80'}" alt="${gym.name}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;">
+              <span class="badge badge-accent" style="position:absolute; top:12px; left:12px;">${gym.styles[0]}</span>
+            </div>
+            
+            <div style="padding:var(--space-xl); display:flex; flex-direction:column; flex-grow:1; gap:10px;">
+              <h3 style="font-size:1.4rem; margin:0; font-family:var(--font-heading); color:var(--text-primary); text-transform:uppercase;">${gym.name}</h3>
+              <div style="font-size:0.9rem; color:var(--accent); font-weight:600; display:flex; align-items:center; gap:5px;">
+                ${distanceHtml}
+              </div>
+              <div style="margin-bottom:5px;">
+                ${ratingStars}
+              </div>
+              <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.5; margin:0; flex-grow:1;">${gym.description}</p>
+              
+              <div style="border-top:1px solid var(--border-color); padding-top:10px; margin-top:5px;">
+                <div style="display:flex; flex-wrap:wrap;">${styleBadges}</div>
+              </div>
+              
+              <div style="display:grid; grid-template-columns:1fr 1.2fr; gap:10px; margin-top:10px;">
+                <button class="btn btn-secondary btn-sm" onclick="openMapModal('${gym.id}')">View Map</button>
+                <a href="${gym.website}" target="_blank" class="btn btn-primary btn-sm text-center" style="display:flex; align-items:center; justify-content:center;">Visit Site</a>
+              </div>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+        
+        // Trigger animations
+        initScrollAnimations();
+      }
+      
+      function filterGyms() {
+        const searchLoc = locationInput.value.trim().toLowerCase();
+        const style = styleSelect.value;
+        const radius = radiusSelect.value;
+        
+        let filtered = allGyms;
+        
+        // 1. Filter by location or name
+        if (searchLoc) {
+          filtered = filtered.filter(gym => 
+            gym.city.toLowerCase().includes(searchLoc) || 
+            gym.name.toLowerCase().includes(searchLoc) ||
+            gym.address.toLowerCase().includes(searchLoc)
+          );
+        }
+        
+        // 2. Filter by style
+        if (style !== 'all') {
+          filtered = filtered.filter(gym => gym.styles.includes(style));
+        }
+        
+        // 3. Filter by distance range (mock logic)
+        if (radius !== 'any' && searchLoc) {
+          const maxDistance = parseFloat(radius);
+          filtered = filtered.filter(gym => {
+            // stable mock distance
+            const mockDist = (gym.name.length % 5) + 1.2;
+            return mockDist <= maxDistance;
+          });
+        }
+        
+        renderGyms(filtered);
+      }
+      
+      // Bind Events
+      locationInput.addEventListener('input', filterGyms);
+      styleSelect.addEventListener('change', filterGyms);
+      radiusSelect.addEventListener('change', filterGyms);
+      
+      // Map Modal Trigger
+      window.openMapModal = (id) => {
+        const gym = allGyms.find(g => g.id === id);
+        if (!gym) return;
+        
+        document.getElementById('modal-gym-name').innerText = gym.name;
+        document.getElementById('modal-gym-address').innerText = `${gym.address}, ${gym.city}, ${gym.state || ''} ${gym.zip || ''}`;
+        document.getElementById('modal-gym-phone').innerText = gym.phone || 'N/A';
+        document.getElementById('modal-gym-email').innerText = gym.email || 'N/A';
+        
+        modal.classList.add('active');
+        backdrop.classList.add('active');
+      };
+      
+      function closeMap() {
+        modal.classList.remove('active');
+        backdrop.classList.remove('active');
+      }
+      
+      closeBtn.addEventListener('click', closeMap);
+      backdrop.addEventListener('click', closeMap);
+      
+      // Initial render
+      renderGyms(allGyms);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fight Events Calendar — FightHub</title>
+  <meta name="description" content="Track upcoming UFC, boxing, ONE Championship, and PFL fights. Schedule and ticket links.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+  <!-- Sticky Glass Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <div class="brand-icon">🥋</div>
+        <div class="brand-text">Fight<span class="text-accent">Hub</span></div>
+      </a>
+      <div class="navbar-links">
+        <a href="index.html">Home</a>
+        <a href="martial-arts.html">Martial Arts</a>
+        <a href="fighters.html">Fighters</a>
+        <a href="news.html">News</a>
+        <a href="events.html" class="active">Events</a>
+        <a href="rankings.html">Rankings</a>
+        <a href="training.html">Training</a>
+        <a href="gyms.html">Clubs</a>
+        <a href="admin/login.html" class="btn btn-secondary btn-sm" style="margin-left: 10px;">Admin Portal</a>
+      </div>
+      <div style="display: flex; align-items: center;">
+        <button class="theme-toggle" aria-label="Toggle Dark/Light Mode">☀️</button>
+        <div class="mobile-toggle" aria-label="Toggle Mobile Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Hero -->
+  <header class="page-hero">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="separator">/</span>
+        <span>Events</span>
+      </div>
+      <h1>Fight <span class="text-accent">Calendar</span></h1>
+      <p>Never miss a fight. Track schedules, championship fight cards, venues, and ticket links across major combat promotions.</p>
+    </div>
+  </header>
+
+  <!-- Calendar and Event Listings Section -->
+  <section class="section">
+    <div class="container">
+      
+      <!-- Promotion Filter buttons -->
+      <div class="filter-bar animate-on-scroll" style="margin-bottom: var(--space-xl);">
+        <button class="tag active" data-promo="All">All Promotions</button>
+        <button class="tag" data-promo="UFC">UFC</button>
+        <button class="tag" data-promo="Boxing">Boxing</button>
+        <button class="tag" data-promo="ONE">ONE Championship</button>
+        <button class="tag" data-promo="PFL">PFL</button>
+      </div>
+
+      <!-- Calendar Layout Grid -->
+      <div style="display: grid; grid-template-columns: 1.2fr 1.8fr; gap: var(--space-xl);" id="events-layout-grid">
+        
+        <!-- Left: Calendar Widget -->
+        <div class="animate-on-scroll">
+          <div class="events-calendar">
+            <div class="calendar-header">
+              <h3 id="calendar-month-year">July 2026</h3>
+              <div class="calendar-nav">
+                <button id="prev-month" aria-label="Previous Month">&lt;</button>
+                <button id="next-month" aria-label="Next Month">&gt;</button>
+              </div>
+            </div>
+            
+            <div class="calendar-grid">
+              <!-- Weekday Headers -->
+              <div class="calendar-day-header">Sun</div>
+              <div class="calendar-day-header">Mon</div>
+              <div class="calendar-day-header">Tue</div>
+              <div class="calendar-day-header">Wed</div>
+              <div class="calendar-day-header">Thu</div>
+              <div class="calendar-day-header">Fri</div>
+              <div class="calendar-day-header">Sat</div>
+              
+              <!-- Days loaded dynamically -->
+              <div class="calendar-grid-days" style="display: contents;" id="calendar-days"></div>
+            </div>
+          </div>
+          
+          <div class="card card-glass" style="padding: 15px; font-size: 0.85rem; color: var(--text-muted);">
+            <p style="margin-bottom:0;">💡 Clicking a calendar day with a red dot <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--accent);"></span> will highlight that day's scheduled fights in the event view.</p>
+          </div>
+        </div>
+
+        <!-- Right: Event List Cards -->
+        <div class="animate-on-scroll" style="display:flex; flex-direction:column; gap: var(--space-md);">
+          <div class="flex-between">
+            <h3 style="font-family: var(--font-body); font-weight: 700; font-size: 1.25rem;" id="events-view-title">All Upcoming Events</h3>
+            <button class="btn btn-secondary btn-sm" id="reset-date-filter" style="display:none; padding:4px 8px; font-size:0.75rem;">Clear Date Filter</button>
+          </div>
+          
+          <div id="events-list-container" style="display:flex; flex-direction:column; gap: var(--space-md);">
+            <!-- Events loaded dynamically -->
+            <div class="text-center" style="padding: 40px 0;">
+              <p>Loading events schedule...</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="index.html" class="footer-brand">
+            <span class="brand-icon">🥋</span> FightHub
+          </a>
+          <p class="footer-desc">A premium portal for combat sports news, rankings, event trackers, fighter profile database, and interactive training tools.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Facebook">FB</a>
+            <a href="#" aria-label="Twitter">TW</a>
+            <a href="#" aria-label="Instagram">IG</a>
+            <a href="#" aria-label="YouTube">YT</a>
+          </div>
+        </div>
+        <div>
+          <h4>Pages</h4>
+          <div class="footer-links">
+            <a href="martial-arts.html">Martial Arts</a>
+            <a href="fighters.html">Fighter Database</a>
+            <a href="news.html">News & Articles</a>
+            <a href="events.html">Upcoming Events</a>
+          </div>
+        </div>
+        <div>
+          <h4>Tools</h4>
+          <div class="footer-links">
+            <a href="training.html">Round Timer</a>
+            <a href="training.html">BMI Calculator</a>
+            <a href="training.html">Calorie Calculator</a>
+            <a href="gyms.html">Find Clubs</a>
+          </div>
+        </div>
+        <div>
+          <h4>Newsletter</h4>
+          <p class="footer-desc" style="margin-bottom: 10px;">Get weekly fight predictions and training breakdowns in your inbox.</p>
+          <div class="footer-newsletter">
+            <input type="email" placeholder="Enter your email" aria-label="Email for Newsletter">
+            <button type="button" onclick="showToast('Subscribed to newsletter!', 'success')">Subscribe</button>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>&copy; 2026 FightHub. All rights reserved. Built for combat sports practitioners.</div>
+        <div><a href="admin/login.html">Admin CRM Panel</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/data-defaults.js"></script>
+  <script src="js/datastore.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/events.js"></script>
+  <script>
+    // Responsive stylesheet modifications for grid
+    const mediaQuery = window.matchMedia('(max-width: 900px)');
+    function handleTabletChange(e) {
+      const grid = document.getElementById('events-layout-grid');
+      if (e.matches) {
+        grid.style.gridTemplateColumns = '1fr';
+      } else {
+        grid.style.gridTemplateColumns = '1.2fr 1.8fr';
+      }
+    }
+    mediaQuery.addListener(handleTabletChange);
+    handleTabletChange(mediaQuery);
+  </script>
+</body>
+</html>

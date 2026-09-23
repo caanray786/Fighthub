@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Training Hub — FightHub</title>
+  <meta name="description" content="Access fight training programs, interactive round timers, BMI calculators, and daily calorie calculators.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+  <!-- Sticky Glass Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <div class="brand-icon">🥋</div>
+        <div class="brand-text">Fight<span class="text-accent">Hub</span></div>
+      </a>
+      <div class="navbar-links">
+        <a href="index.html">Home</a>
+        <a href="martial-arts.html">Martial Arts</a>
+        <a href="fighters.html">Fighters</a>
+        <a href="news.html">News</a>
+        <a href="events.html">Events</a>
+        <a href="rankings.html">Rankings</a>
+        <a href="training.html" class="active">Training</a>
+        <a href="gyms.html">Clubs</a>
+        <a href="admin/login.html" class="btn btn-secondary btn-sm" style="margin-left: 10px;">Admin Portal</a>
+      </div>
+      <div style="display: flex; align-items: center;">
+        <button class="theme-toggle" aria-label="Toggle Dark/Light Mode">☀️</button>
+        <div class="mobile-toggle" aria-label="Toggle Mobile Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Hero -->
+  <header class="page-hero">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span class="separator">/</span>
+        <span>Training</span>
+      </div>
+      <h1>Training <span class="text-accent">Portal</span></h1>
+      <p>Optimize your physical conditioning. Explore training plans, track rounds with our timer, and calculate fighter nutrition needs.</p>
+    </div>
+  </header>
+
+  <!-- Training Cards Grid -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <h2>Fighter <span class="text-accent">Conditioning Plans</span></h2>
+        <div class="section-line"></div>
+        <p>Explore customized workout guidelines, exercises, and dietary strategies. Click any card to view detailed exercise routines.</p>
+      </div>
+
+      <div class="grid grid-3" id="training-plans-grid" style="margin-bottom: var(--space-4xl);">
+        <!-- Loaded dynamically -->
+        <div class="text-center" style="grid-column: 1/-1; padding: 40px 0;">
+          <p>Loading conditioning plans...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Widgets Section -->
+  <section class="section" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="container">
+      <div class="section-header animate-on-scroll">
+        <h2>Fighter <span class="text-accent">Interactive Tools</span></h2>
+        <div class="section-line"></div>
+        <p>Manage your workout intervals and calculate your physiological metrics with precision.</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2xl);" id="widgets-layout-grid">
+        
+        <!-- Left Column: Round Timer -->
+        <div class="tool-card animate-on-scroll">
+          <h3 style="font-family: var(--font-body); font-weight: 700; font-size: 1.5rem; text-align: center; margin-bottom: var(--space-xl);">🥊 Round Timer</h3>
+          
+          <div class="timer-settings">
+            <div class="timer-setting">
+              <label for="timer-rounds">Rounds</label>
+              <input type="number" id="timer-rounds" min="1" max="15" value="3" aria-label="Rounds Count">
+            </div>
+            <div class="timer-setting">
+              <label for="timer-work">Work (Min)</label>
+              <input type="number" id="timer-work" min="1" max="10" value="3" aria-label="Work Time Minutes">
+            </div>
+            <div class="timer-setting">
+              <label for="timer-rest">Rest (Sec)</label>
+              <input type="number" id="timer-rest" min="5" max="120" value="60" aria-label="Rest Time Seconds">
+            </div>
+          </div>
+
+          <div class="timer-label" id="timer-status">ROUND 1</div>
+          <div class="timer-display" id="timer-time-display">03:00</div>
+
+          <div class="timer-controls">
+            <button class="btn btn-primary" id="timer-start-btn" style="min-width: 120px;">Start</button>
+            <button class="btn btn-secondary" id="timer-reset-btn">Reset</button>
+          </div>
+        </div>
+
+        <!-- Right Column: Calculators -->
+        <div style="display: flex; flex-direction: column; gap: var(--space-xl);" class="animate-on-scroll">
+          
+          <!-- BMI Calculator Card -->
+          <div class="tool-card" style="padding: var(--space-xl);">
+            <h3 style="font-family: var(--font-body); font-weight: 700; font-size: 1.25rem; margin-bottom: var(--space-lg);">⚖️ BMI Calculator</h3>
+            
+            <div class="calc-form">
+              <div style="display:flex; justify-content:flex-end; margin-bottom:-10px;">
+                <button class="btn btn-secondary btn-sm" id="bmi-unit-toggle" style="padding:4px 8px; font-size:0.75rem;">Switch to Imperial</button>
+              </div>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                <div class="calc-field">
+                  <label for="bmi-weight" id="lbl-weight">Weight (kg)</label>
+                  <input type="number" id="bmi-weight" placeholder="e.g. 75" value="70" step="any" required>
+                </div>
+                <div class="calc-field">
+                  <label for="bmi-height" id="lbl-height">Height (cm)</label>
+                  <input type="number" id="bmi-height" placeholder="e.g. 180" value="175" step="any" required>
+                </div>
+              </div>
+
+              <!-- BMI Visual Gauge -->
+              <div class="bmi-gauge">
+                <div class="gauge-marker" id="bmi-gauge-marker" style="left: 50%;"></div>
+              </div>
+
+              <div class="calc-result" style="padding: 10px; margin-top: 5px;">
+                <div class="result-value" id="bmi-val-display" style="font-size: 2.2rem;">22.9</div>
+                <div class="result-label" id="bmi-cat-display" style="margin-top:2px;">Normal Weight</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Calorie Calculator Card -->
+          <div class="tool-card" style="padding: var(--space-xl);">
+            <h3 style="font-family: var(--font-body); font-weight: 700; font-size: 1.25rem; margin-bottom: var(--space-lg);">🥗 Daily Calorie Calculator</h3>
+            
+            <div class="calc-form">
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                <div class="calc-field">
+                  <label for="cal-age">Age</label>
+                  <input type="number" id="cal-age" value="25" required>
+                </div>
+                <div class="calc-field">
+                  <label for="cal-gender">Gender</label>
+                  <select id="cal-gender" aria-label="Select Gender" style="padding: 0 8px; height:44px;">
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
+                </div>
+                <div class="calc-field">
+                  <label for="cal-activity">Activity Level</label>
+                  <select id="cal-activity" aria-label="Select Activity Level" style="padding: 0 8px; height:44px;">
+                    <option value="1.2">Sedentary</option>
+                    <option value="1.375">Light</option>
+                    <option value="1.55" selected>Moderate</option>
+                    <option value="1.725">Active</option>
+                    <option value="1.9">Athlete</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                <div class="calc-field">
+                  <label for="cal-weight">Weight (kg)</label>
+                  <input type="number" id="cal-weight" value="70" required>
+                </div>
+                <div class="calc-field">
+                  <label for="cal-height">Height (cm)</label>
+                  <input type="number" id="cal-height" value="175" required>
+                </div>
+              </div>
+
+              <div class="calc-result" style="padding: 15px; margin-top: 5px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                <div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Maintenance</div>
+                  <div style="font-family:var(--font-heading); font-size:1.8rem; color:var(--text-primary);" id="cal-maintain">2450</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted);">kcal/day</div>
+                </div>
+                <div style="border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color);">
+                  <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Cutting (Loss)</div>
+                  <div style="font-family:var(--font-heading); font-size:1.8rem; color:var(--accent);" id="cal-cut">1950</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted);">-500 kcal</div>
+                </div>
+                <div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Bulking (Gain)</div>
+                  <div style="font-family:var(--font-heading); font-size:1.8rem; color:var(--success);" id="cal-bulk">2950</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted);">+500 kcal</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Training Plan Exercises Modal -->
+  <div class="modal-backdrop" id="training-modal-backdrop"></div>
+  <div class="modal" id="training-modal">
+    <div class="modal-header">
+      <h3 id="modal-training-title">Workout Plan</h3>
+      <button class="modal-close" id="modal-training-close">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-training-body">
+      <!-- Dynamically filled -->
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="index.html" class="footer-brand">
+            <span class="brand-icon">🥋</span> FightHub
+          </a>
+          <p class="footer-desc">A premium portal for combat sports news, rankings, event trackers, fighter profile database, and interactive training tools.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Facebook">FB</a>
+            <a href="#" aria-label="Twitter">TW</a>
+            <a href="#" aria-label="Instagram">IG</a>
+            <a href="#" aria-label="YouTube">YT</a>
+          </div>
+        </div>
+        <div>
+          <h4>Pages</h4>
+          <div class="footer-links">
+            <a href="martial-arts.html">Martial Arts</a>
+            <a href="fighters.html">Fighter Database</a>
+            <a href="news.html">News & Articles</a>
+            <a href="events.html">Upcoming Events</a>
+          </div>
+        </div>
+        <div>
+          <h4>Tools</h4>
+          <div class="footer-links">
+            <a href="training.html">Round Timer</a>
+            <a href="training.html">BMI Calculator</a>
+            <a href="training.html">Calorie Calculator</a>
+            <a href="gyms.html">Find Clubs</a>
+          </div>
+        </div>
+        <div>
+          <h4>Newsletter</h4>
+          <p class="footer-desc" style="margin-bottom: 10px;">Get weekly fight predictions and training breakdowns in your inbox.</p>
+          <div class="footer-newsletter">
+            <input type="email" placeholder="Enter your email" aria-label="Email for Newsletter">
+            <button type="button" onclick="showToast('Subscribed to newsletter!', 'success')">Subscribe</button>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>&copy; 2026 FightHub. All rights reserved. Built for combat sports practitioners.</div>
+        <div><a href="admin/login.html">Admin CRM Panel</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/data-defaults.js"></script>
+  <script src="js/datastore.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/training.js"></script>
+  <script>
+    // Responsive layout configuration
+    const widgetQuery = window.matchMedia('(max-width: 900px)');
+    function handleWidgetLayoutChange(e) {
+      const grid = document.getElementById('widgets-layout-grid');
+      if (e.matches) {
+        grid.style.gridTemplateColumns = '1fr';
+      } else {
+        grid.style.gridTemplateColumns = '1fr 1fr';
+      }
+    }
+    widgetQuery.addListener(handleWidgetLayoutChange);
+    handleWidgetLayoutChange(widgetQuery);
+  </script>
+</body>
+</html>
