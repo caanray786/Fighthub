@@ -155,7 +155,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.innerHTML = isNowFav ? '❤️' : '🤍';
         btn.style.color = isNowFav ? 'var(--accent)' : 'rgba(255,255,255,0.4)';
         
-        showToast(isNowFav ? 'Added to favorites' : 'Removed from favorites', 'success');
       });
     });
 
@@ -357,7 +356,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         cardBtn.style.color = isNowFav ? 'var(--accent)' : 'rgba(255,255,255,0.4)';
       }
       
-      showToast(isNowFav ? 'Added to favorites' : 'Removed from favorites', 'success');
     });
 
     // Show modal

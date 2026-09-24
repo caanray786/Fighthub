@@ -179,7 +179,6 @@ function initTheme() {
       }
       
       themeToggleBtns.forEach(b => updateThemeIcon(b, newTheme));
-      showToast(`Switched to ${newTheme} mode`, 'info');
     });
   });
 }
@@ -278,6 +277,9 @@ function showToast(message, type = 'info') {
     container.className = 'toast-container';
     document.body.appendChild(container);
   }
+
+  // Only one toast at a time: a new message replaces the current one
+  container.querySelectorAll('.toast').forEach(t => t.remove());
 
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;

@@ -151,7 +151,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       btn.querySelector('span:first-child').innerText = isLikedNow ? '❤️' : '🤍';
       btn.querySelector('.like-count').innerText = (art.likes || 0) + (isLikedNow ? 1 : 0);
       
-      showToast(isLikedNow ? 'Liked article!' : 'Unliked article', 'success');
       
       // Update other occurrences (e.g. sync featured and grid if they share same article)
       document.querySelectorAll(`.like-btn[data-id="${CSS.escape(art.id)}"]`).forEach(otherBtn => {
@@ -289,7 +288,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         otherBtn.querySelector('.like-count').innerText = newCount;
       });
 
-      showToast(isLikedNow ? 'Liked article!' : 'Unliked article', 'success');
     });
 
     // Form Comment submit handler

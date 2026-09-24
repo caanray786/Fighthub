@@ -78,7 +78,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderCalendar();
         renderEventsList();
         
-        showToast(`Filtered by ${currentPromotion}`, 'info');
       });
     });
 
