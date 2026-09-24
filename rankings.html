@@ -60,18 +60,8 @@
       <!-- Selection Bar -->
       <div class="filter-bar animate-on-scroll" style="justify-content: space-between; align-items: center;">
         <div>
-          <label for="rankings-select" style="font-size:0.85rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:8px;">Choose Division</label>
-          <select id="rankings-select" aria-label="Select Weight Class Division">
-            <option value="Pound-for-Pound">Pound-for-Pound (P4P)</option>
-            <option value="Heavyweight">Heavyweight</option>
-            <option value="Middleweight">Middleweight</option>
-            <option value="Welterweight">Welterweight</option>
-            <option value="Lightweight">Lightweight</option>
-            <option value="Featherweight">Featherweight</option>
-            <option value="Bantamweight">Bantamweight</option>
-            <option value="Flyweight">Flyweight</option>
-            <option value="Strawweight">Strawweight</option>
-          </select>
+          <label for="rankings-select" style="font-size:0.85rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:8px;">Choose List</label>
+          <select id="rankings-select" aria-label="Select ranking list"></select>
         </div>
         <div style="text-align: right;" id="last-updated-container">
           <span style="font-size: 0.85rem; color: var(--text-muted);">Last Updated: <strong id="rankings-date">July 1, 2026</strong></span>
@@ -159,6 +149,7 @@
   </footer>
 
   <!-- Scripts -->
+  <script src="js/config.js"></script>
   <script src="js/data-defaults.js"></script>
   <script src="js/datastore.js"></script>
   <script src="js/app.js"></script>

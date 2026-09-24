@@ -13,23 +13,56 @@ document.addEventListener('DOMContentLoaded', async () => {
   function appendTerminalLog(msg) {
     if (pipelineTerminal) {
       const time = new Date().toLocaleTimeString();
-      pipelineTerminal.innerHTML += `<br>[${time}] ${msg}`;
+      pipelineTerminal.innerHTML += `<br>[${time}] ${escapeHtml(msg)}`;
       pipelineTerminal.scrollTop = pipelineTerminal.scrollHeight;
     }
   }
 
+  // Show what is actually configured instead of a fixed "connected" label
+  async function refreshPipelineStatus() {
+    const set = (id, ok, text) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = `${ok ? '🟢' : '⚪'} ${text}`;
+      el.style.color = ok ? '#22c55e' : 'var(--admin-text-muted)';
+    };
+    set('status-api-sports', !!fightAPIService.apiKey, fightAPIService.apiKey ? 'Key set' : 'No key (optional)');
+    set('status-rss', true, `${rssParserService.feeds.length} feeds configured`);
+    const orKey = await contentBotEngine.getApiKey();
+    set('status-openrouter', !!orKey, orKey ? `Key set · ${contentBotEngine.model}` : 'No key: briefs only');
+  }
+  refreshPipelineStatus();
+
+  // Database connection panel
+  (async () => {
+    const panel = document.getElementById('db-connection-status');
+    if (!panel) return;
+    if (!dataStore.cloud) {
+      panel.innerHTML = '⚪ <strong>Local mode</strong>: content is stored in this browser only. Add the Supabase URL and anon key to <code>js/config.js</code> to go live.';
+      return;
+    }
+    try {
+      const count = await dataStore.count('fighters');
+      const email = await dataStore.getAdminEmail();
+      panel.innerHTML = `🟢 <strong>Connected to Supabase</strong> (${escapeHtml(new URL(dataStore.config.supabaseUrl).host)}) · ${count} fighters · signed in as ${escapeHtml(email || 'unknown')}`;
+    } catch (err) {
+      panel.innerHTML = `🔴 <strong>Cannot reach Supabase</strong>: ${escapeHtml(err.message)}`;
+    }
+  })();
+
   if (btnSetKeys) {
     btnSetKeys.addEventListener('click', async () => {
       const currentKey = await contentBotEngine.getApiKey();
-      const apiKey = prompt("Enter your OpenRouter / Gemini API Key for LLM fight preview generation (stored securely in cloud/dataStore):", currentKey);
+      const apiKey = prompt("Enter your OpenRouter API key. Note: until the server back end is set up (Phase 1), this is stored only in this browser. Use a key with a spending limit.", currentKey);
       if (apiKey !== null) {
         await contentBotEngine.setApiKey(apiKey.trim());
         const apiSportsKey = prompt("Enter your API-Sports Key (optional, press OK to use dynamic live feed):", fightAPIService.apiKey);
         if (apiSportsKey !== null) {
           fightAPIService.setApiKey(apiSportsKey.trim());
         }
-        showToast("API Credentials saved securely!", "success");
-        appendTerminalLog("🔑 API Keys updated and saved.");
+        showToast("API keys saved in this browser.", "success");
+        appendTerminalLog("🔑 API keys updated.");
+        refreshPipelineStatus();
       }
     });
   }
@@ -47,8 +80,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           appendTerminalLog(logMsg);
         });
 
-        appendTerminalLog(`🎉 Pipeline Execution Succeeded! ${result.previewsCount} fight previews & ${result.schedulesCount} fight cards loaded.`);
-        showToast("Automated Data Pipeline executed successfully!", "success");
+        appendTerminalLog(`🎉 Done: ${result.previewsCount} new articles, ${result.schedulesCount} fight cards.`);
+        showToast("Pipeline finished.", "success");
       } catch (err) {
         console.error("Pipeline error:", err);
         appendTerminalLog(`❌ Pipeline Error: ${err.message}`);
@@ -153,14 +186,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     passwordFeedback.style.display = 'none';
     passwordFeedback.className = '';
 
-    // Verify current password
-    if (!dataStore.verifyAdmin(oldPwd)) {
-      showPasswordFeedback('Current password is incorrect.', 'error');
-      oldPasswordInput.value = '';
-      oldPasswordInput.focus();
-      return;
-    }
-
     // Check matching confirm password
     if (newPwd !== confirmPwd) {
       showPasswordFeedback('New passwords do not match.', 'error');
@@ -170,8 +195,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Minimum password length validation
-    if (newPwd.length < 6) {
-      showPasswordFeedback('New password must be at least 6 characters long.', 'error');
+    if (newPwd.length < 10) {
+      showPasswordFeedback('New password must be at least 10 characters long.', 'error');
       newPasswordInput.value = '';
       confirmPasswordInput.value = '';
       newPasswordInput.focus();
@@ -179,14 +204,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-      // Save new password
-      dataStore.setAdminPassword(newPwd);
-      showPasswordFeedback('Admin password changed successfully!', 'success');
+      await dataStore.changeAdminPassword(oldPwd, newPwd);
+      showPasswordFeedback('Password changed successfully.', 'success');
       showToast('Password updated!', 'success');
       passwordForm.reset();
     } catch (err) {
-      console.error(err);
-      showPasswordFeedback('Failed to update administrative password.', 'error');
+      showPasswordFeedback(err.message || 'Failed to change password.', 'error');
+      oldPasswordInput.value = '';
+      oldPasswordInput.focus();
     }
   });
 

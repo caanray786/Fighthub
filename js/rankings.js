@@ -19,7 +19,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     allRankings = await dataStore.getAll('rankings');
     allFighters = await dataStore.getAll('fighters');
-    
+
+    // Build the list picker from whatever lists exist in the database
+    // Cross-sport pound-for-pound list first, then per-sport lists alphabetically
+    allRankings.sort((a, b) => (a.sport === 'All' ? -1 : b.sport === 'All' ? 1 : a.weightClass.localeCompare(b.weightClass)));
+    select.innerHTML = allRankings
+      .map(r => `<option value="${escapeHtml(r.weightClass)}">${escapeHtml(r.weightClass)}</option>`)
+      .join('');
+
     // Initial render
     switchDivision(select.value);
   } catch (err) {
@@ -30,7 +37,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 2. Dropdown Change Handler
   select.addEventListener('change', (e) => {
     switchDivision(e.target.value);
-    showToast(`Switched to ${e.target.value} rankings`, 'info');
   });
 
   // 3. Switch Division Rendering
@@ -45,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Set date
-    dateDisplay.innerText = formatDate(division.lastUpdated);
+    dateDisplay.innerText = parseLocalDate(division.lastUpdated).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
 
     // Setup Champion Spotlight
     renderChampionSpotlight(division.champion);
@@ -74,10 +80,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div>
             <div class="champion-badge" style="margin-bottom: 6px;">Divisional Champion</div>
             <h2 style="font-family: var(--font-body); font-weight: 800; font-size: 2rem; margin-bottom: 2px;">
-              ${champ.name} <span style="font-size: 1.5rem;">${champ.nationality || ''}</span>
+              ${escapeHtml(champ.name)} <span style="font-size: 1.5rem;">${escapeHtml(champ.nationality)}</span>
             </h2>
             <div style="font-size: 0.9rem; color: var(--text-muted); font-style: italic;">
-              ${champ.nickname ? `"${champ.nickname}"` : ''} &nbsp;|&nbsp; Style: <span class="text-accent">${champ.style}</span>
+              ${champ.nickname ? `"${escapeHtml(champ.nickname)}"` : ''} &nbsp;|&nbsp; Style: <span class="text-accent">${escapeHtml(champ.style)}</span>
             </div>
           </div>
         </div>
@@ -124,23 +130,23 @@ document.addEventListener('DOMContentLoaded', async () => {
               🥋
             </div>
             <div>
-              <div style="font-weight: 700; color: var(--text-primary);">${f.name}</div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">${f.nickname ? `"${f.nickname}"` : ''}</div>
+              <div style="font-weight: 700; color: var(--text-primary);">${escapeHtml(f.name)}</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">${f.nickname ? `"${escapeHtml(f.nickname)}"` : ''}</div>
             </div>
           </div>
         </td>
         <td>
-          <strong style="color: var(--text-secondary);">${f.wins} - ${f.losses} - ${f.draws}</strong>
-          <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 5px;">(${f.ko} KO, ${f.sub} SUB)</span>
+          <strong style="color: var(--text-secondary);">${escapeHtml(f.wins)} - ${escapeHtml(f.losses)} - ${escapeHtml(f.draws)}</strong>
+          <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 5px;">(${escapeHtml(f.ko)} KO, ${escapeHtml(f.sub)} SUB)</span>
         </td>
         <td>
-          <span class="badge badge-accent" style="font-size:0.7rem; font-weight:500; text-transform:none;">${f.style}</span>
+          <span class="badge badge-accent" style="font-size:0.7rem; font-weight:500; text-transform:none;">${escapeHtml(f.style)}</span>
         </td>
         <td>
-          <span style="font-size:1.1rem; margin-right:5px;">${f.nationality || ''}</span> <span style="font-size: 0.85rem; color: var(--text-secondary);">${f.country || ''}</span>
+          <span style="font-size:1.1rem; margin-right:5px;">${escapeHtml(f.nationality)}</span> <span style="font-size: 0.85rem; color: var(--text-secondary);">${escapeHtml(f.country)}</span>
         </td>
         <td>
-          <span class="badge ${f.status === 'Active' ? 'badge-success' : 'badge-error'}">${f.status}</span>
+          <span class="badge ${f.status === 'Active' ? 'badge-success' : 'badge-error'}">${escapeHtml(f.status)}</span>
         </td>
       `;
       
@@ -150,11 +156,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (window.initScrollAnimations) {
       window.initScrollAnimations();
     }
-  }
-
-  // Date Formatter Helper
-  function formatDate(dateStr) {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateStr).toLocaleDateString(undefined, options);
   }
 });

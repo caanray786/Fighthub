@@ -1,0 +1,6 @@
+# Files in the repo that are not part of the public website
+supabase/
+*.md
+*.ps1
+.env*
+images/README.txt

@@ -18,9 +18,13 @@
       <div id="login-error-msg" class="login-error"></div>
       
       <form id="admin-login-form" class="login-form">
+        <div class="form-group" id="email-group" style="display: none;">
+          <label for="admin-email">Email</label>
+          <input type="email" id="admin-email" placeholder="you@example.com" autocomplete="username">
+        </div>
         <div class="form-group">
-          <label for="admin-password">Admin Password</label>
-          <input type="password" id="admin-password" placeholder="Enter password" required autofocus>
+          <label for="admin-password">Password</label>
+          <input type="password" id="admin-password" placeholder="Enter password" required autocomplete="current-password">
         </div>
         <button type="submit" class="btn-admin-primary" style="justify-content: center; width: 100%; margin-top: 10px;">
           Log In ⚡
@@ -30,6 +34,7 @@
   </div>
 
   <!-- Scripts -->
+  <script src="../js/config.js"></script>
   <script src="../js/data-defaults.js"></script>
   <script src="../js/datastore.js"></script>
   <script>
@@ -37,27 +42,41 @@
       await dataStore.ready;
       
       const form = document.getElementById('admin-login-form');
+      const emailInput = document.getElementById('admin-email');
       const passwordInput = document.getElementById('admin-password');
       const errorMsg = document.getElementById('login-error-msg');
-      
+      const submitBtn = form.querySelector('button[type="submit"]');
+
+      // Cloud mode signs in with a Supabase account; local mode uses the dev password
+      if (dataStore.cloud) {
+        document.getElementById('email-group').style.display = '';
+        emailInput.required = true;
+        emailInput.focus();
+      } else {
+        passwordInput.focus();
+      }
+
       // If already logged in, redirect to index
-      if (dataStore.getAdminSession()) {
+      if (await dataStore.isAdminSignedIn()) {
         window.location.href = 'index.html';
         return;
       }
-      
-      form.addEventListener('submit', (e) => {
+
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const pwd = passwordInput.value;
-        
-        if (dataStore.verifyAdmin(pwd)) {
-          dataStore.setAdminSession();
+        submitBtn.disabled = true;
+        errorMsg.classList.remove('show');
+
+        try {
+          await dataStore.signInAdmin(emailInput.value.trim(), passwordInput.value);
           window.location.href = 'index.html';
-        } else {
-          errorMsg.textContent = 'Invalid password. Please try again.';
+        } catch (err) {
+          errorMsg.textContent = err.message;
           errorMsg.classList.add('show');
           passwordInput.value = '';
           passwordInput.focus();
+        } finally {
+          submitBtn.disabled = false;
         }
       });
     });

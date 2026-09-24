@@ -79,21 +79,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       tr.innerHTML = `
         <td>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 1.5rem;">${w.icon || '🏋️'}</span>
-            <strong>${w.title}</strong>
+            <span style="font-size: 1.5rem;">${escapeHtml(w.icon || '🏋️')}</span>
+            <strong>${escapeHtml(w.title)}</strong>
           </div>
         </td>
-        <td><span class="badge" style="background: rgba(59,130,246,0.1); color: var(--admin-accent); font-weight:600; font-size:0.75rem; padding: 2px 6px; border-radius: 4px;">${w.category}</span></td>
+        <td><span class="badge" style="background: rgba(59,130,246,0.1); color: var(--admin-accent); font-weight:600; font-size:0.75rem; padding: 2px 6px; border-radius: 4px;">${escapeHtml(w.category)}</span></td>
         <td><strong>${exercisesCount}</strong> steps</td>
         <td>
           <div style="white-space: normal; max-width: 400px; font-size: 0.85rem; color: var(--admin-text-muted);">
-            ${w.description}
+            ${escapeHtml(w.description)}
           </div>
         </td>
         <td>
           <div class="table-actions">
-            <button class="table-action btn-edit" data-id="${w.id}" title="Edit Program">✏️</button>
-            <button class="table-action delete btn-delete" data-id="${w.id}" title="Delete Program">🗑️</button>
+            <button class="table-action btn-edit" data-id="${escapeHtml(w.id)}" title="Edit Program">✏️ Edit</button>
+            <button class="table-action delete btn-delete" data-id="${escapeHtml(w.id)}" title="Delete Program">🗑️</button>
           </div>
         </td>
       `;

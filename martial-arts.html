@@ -128,6 +128,7 @@
   </footer>
 
   <!-- Scripts -->
+  <script src="js/config.js"></script>
   <script src="js/data-defaults.js"></script>
   <script src="js/datastore.js"></script>
   <script src="js/app.js"></script>
@@ -169,25 +170,21 @@
         const card = document.createElement('div');
         card.className = 'ma-card animate-on-scroll';
         
-        let clickHandler = '';
-        if (ma.id === 'ma1') {
-          clickHandler = "window.location.href='mma.html'";
-        } else if (ma.id === 'ma2') {
-          clickHandler = "window.location.href='muay-thai.html'";
-        } else if (ma.id === 'ma3') {
-          clickHandler = "window.location.href='bjj.html'";
-        } else {
-          clickHandler = `openMaModal('${ma.id}')`;
-        }
-        
-        card.setAttribute('onclick', clickHandler);
+        const detailPages = { ma1: 'mma.html', ma2: 'muay-thai.html', ma3: 'bjj.html' };
+        card.addEventListener('click', () => {
+          if (detailPages[ma.id]) {
+            window.location.href = detailPages[ma.id];
+          } else {
+            openMaModal(ma.id);
+          }
+        });
         
         const imgUrl = ma.image || 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=800&q=80';
         card.innerHTML = `
-          <img src="${imgUrl}" alt="${ma.name}">
+          <img src="${safeUrl(imgUrl)}" alt="${escapeHtml(ma.name)}">
           <div class="ma-card-content">
-            <h3>${ma.name}</h3>
-            <p>${ma.description}</p>
+            <h3>${escapeHtml(ma.name)}</h3>
+            <p>${escapeHtml(ma.description)}</p>
           </div>
         `;
         grid.appendChild(card);
@@ -214,30 +211,30 @@
         
         let techniquesHtml = '';
         if (ma.techniques && ma.techniques.length > 0) {
-          techniquesHtml = ma.techniques.map(t => `<span class="badge badge-accent" style="margin: 3px;">${t}</span>`).join('');
+          techniquesHtml = ma.techniques.map(t => `<span class="badge badge-accent" style="margin: 3px;">${escapeHtml(t)}</span>`).join('');
         }
         
         let equipmentHtml = '';
         if (ma.equipment && ma.equipment.length > 0) {
-          equipmentHtml = ma.equipment.map(e => `<span class="badge badge-secondary" style="margin: 3px;">${e}</span>`).join('');
+          equipmentHtml = ma.equipment.map(e => `<span class="badge badge-secondary" style="margin: 3px;">${escapeHtml(e)}</span>`).join('');
         }
 
         let famousHtml = '';
         if (ma.famousFighters && ma.famousFighters.length > 0) {
-          famousHtml = ma.famousFighters.map(f => `<li>⭐ ${f}</li>`).join('');
+          famousHtml = ma.famousFighters.map(f => `<li>⭐ ${escapeHtml(f)}</li>`).join('');
         }
         
         document.getElementById('modal-body-content').innerHTML = `
           <div style="margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
-            <div class="badge badge-success">📍 Origin: ${ma.origin || 'Unknown'}</div>
-            <div class="badge badge-info">📅 Founded: ${ma.founded || 'Unknown'}</div>
+            <div class="badge badge-success">📍 Origin: ${escapeHtml(ma.origin || 'Unknown')}</div>
+            <div class="badge badge-info">📅 Founded: ${escapeHtml(ma.founded || 'Unknown')}</div>
           </div>
           
           <h4 style="margin-bottom: 10px; color: var(--accent);">Description</h4>
-          <p>${ma.description}</p>
+          <p>${escapeHtml(ma.description)}</p>
           
           <h4 style="margin-bottom: 10px; color: var(--accent); margin-top: 20px;">History</h4>
-          <p>${ma.history || 'History info coming soon.'}</p>
+          <p>${escapeHtml(ma.history || 'History info coming soon.')}</p>
           
           <h4 style="margin-bottom: 10px; color: var(--accent); margin-top: 20px;">Core Techniques</h4>
           <div style="margin-bottom: 15px;">${techniquesHtml || 'None specified.'}</div>

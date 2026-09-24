@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const koInput = document.getElementById('fighter-ko');
   const subInput = document.getElementById('fighter-sub');
   const decInput = document.getElementById('fighter-dec');
+  const sportInput = document.getElementById('fighter-sport');
   const styleInput = document.getElementById('fighter-style');
   const teamInput = document.getElementById('fighter-team');
   const photoInput = document.getElementById('fighter-photo');
@@ -109,24 +110,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       tr.innerHTML = `
         <td>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="font-size: 1.5rem;">${flag}</div>
+            <div style="font-size: 1.5rem;">${escapeHtml(flag)}</div>
             <div>
-              <strong>${f.name}</strong>
-              ${f.nickname ? `<div style="font-size: 0.75rem; color: var(--admin-text-muted);">${f.nickname}</div>` : ''}
+              <strong>${escapeHtml(f.name)}</strong>
+              ${f.nickname ? `<div style="font-size: 0.75rem; color: var(--admin-text-muted);">${escapeHtml(f.nickname)}</div>` : ''}
             </div>
           </div>
         </td>
-        <td>${f.weightClass}</td>
-        <td><strong>${f.wins}-${f.losses}-${f.draws}</strong></td>
+        <td>${escapeHtml(f.weightClass)}</td>
+        <td><strong>${escapeHtml(f.wins)}-${escapeHtml(f.losses)}-${escapeHtml(f.draws)}</strong></td>
         <td style="font-size: 0.8rem; color: var(--admin-text-muted);">
           KO: ${f.ko || 0} | SUB: ${f.sub || 0} | DEC: ${f.dec || 0}
         </td>
-        <td>${f.style || 'N/A'}</td>
-        <td><span class="status-badge ${badgeClass}">${f.status}</span></td>
+        <td>${escapeHtml(f.style || 'N/A')}</td>
+        <td><span class="status-badge ${badgeClass}">${escapeHtml(f.status)}</span></td>
         <td>
           <div class="table-actions">
-            <button class="table-action btn-edit" data-id="${f.id}" title="Edit Fighter">✏️</button>
-            <button class="table-action delete btn-delete" data-id="${f.id}" title="Delete Fighter">🗑️</button>
+            <button class="table-action btn-edit" data-id="${escapeHtml(f.id)}" title="Edit Fighter">✏️ Edit</button>
+            <button class="table-action delete btn-delete" data-id="${escapeHtml(f.id)}" title="Delete Fighter">🗑️</button>
           </div>
         </td>
       `;
@@ -198,6 +199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       koInput.value = fighter.ko || 0;
       subInput.value = fighter.sub || 0;
       decInput.value = fighter.dec || 0;
+      sportInput.value = fighter.sport || 'MMA';
       styleInput.value = fighter.style || '';
       teamInput.value = fighter.team || '';
       photoInput.value = fighter.image || '';
@@ -297,6 +299,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       ko: ko,
       sub: sub,
       dec: dec,
+      sport: sportInput.value,
       style: styleInput.value.trim(),
       team: teamInput.value.trim(),
       image: photoInput.value.trim(),

@@ -7,7 +7,8 @@
 document.addEventListener('DOMContentLoaded', async () => {
   // 1. Authenticate check: redirect to login if session missing/expired
   await dataStore.ready;
-  checkAuthentication();
+  if (!(await checkAuthentication())) return;
+  showSignedInUser();
 
   // 2. Setup sidebar responsive toggle
   setupMobileToggle();
@@ -18,6 +19,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 4. Bind logout action
   setupLogout();
 
+  // 4b. Clicking anywhere on a table row opens that record's editor
+  setupRowClickToEdit();
+
   // 5. Dashboard Specific Logic (only runs if we are on index.html)
   const isDashboard = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || window.location.pathname.endsWith('/admin/');
   if (isDashboard) {
@@ -27,13 +31,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ---- Auth Verification ---- //
-function checkAuthentication() {
-  const session = dataStore.getAdminSession();
+async function checkAuthentication() {
   const isLoginPage = window.location.pathname.endsWith('login.html');
+  const signedIn = await dataStore.isAdminSignedIn();
 
-  if (!session && !isLoginPage) {
-    // Session is missing or expired, redirect to login page
+  if (!signedIn && !isLoginPage) {
+    // Session is missing, expired or not an admin: back to login
     window.location.href = 'login.html';
+    return false;
+  }
+  return true;
+}
+
+async function showSignedInUser() {
+  const email = await dataStore.getAdminEmail();
+  const nameEl = document.querySelector('.admin-user-name');
+  const avatarEl = document.querySelector('.admin-user-avatar');
+  if (email && nameEl) {
+    nameEl.textContent = email;
+    if (avatarEl) avatarEl.textContent = email.substring(0, 2).toUpperCase();
   }
 }
 
@@ -98,12 +114,29 @@ function highlightActiveNav() {
 function setupLogout() {
   const logoutBtn = document.getElementById('btn-logout');
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', (e) => {
+    logoutBtn.addEventListener('click', async (e) => {
       e.preventDefault();
-      dataStore.clearAdminSession();
+      await dataStore.signOutAdmin();
       window.location.href = 'login.html';
     });
   }
+}
+
+// ---- Row click opens the editor ---- //
+function setupRowClickToEdit() {
+  document.addEventListener('click', (e) => {
+    const row = e.target.closest('.admin-table tbody tr');
+    if (!row || e.target.closest('button, a, input, select, label')) return;
+    const editBtn = row.querySelector('.btn-edit');
+    if (editBtn) editBtn.click();
+  });
+
+  // Mark rows that have an editor so CSS can show a pointer cursor
+  new MutationObserver(() => {
+    document.querySelectorAll('.admin-table tbody tr').forEach(row => {
+      if (row.querySelector('.btn-edit')) row.setAttribute('data-editable', '');
+    });
+  }).observe(document.body, { childList: true, subtree: true });
 }
 
 // ---- Render Dashboard Stats ---- //
@@ -184,7 +217,7 @@ async function renderRecentActivity() {
     li.innerHTML = `
       <div class="activity-icon ${iconClass}">${iconText}</div>
       <div class="activity-text">
-        <strong>${log.action.toUpperCase()}</strong>: ${log.itemName} in <em>${collectionFriendly}</em>
+        <strong>${log.action.toUpperCase()}</strong>: ${escapeHtml(log.itemName)} in <em>${collectionFriendly}</em>
         <div class="activity-time">${timeString}</div>
       </div>
     `;

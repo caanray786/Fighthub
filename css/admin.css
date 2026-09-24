@@ -427,8 +427,30 @@
   gap: var(--space-sm);
 }
 
+/* Keep the Actions column pinned to the right so Edit/Delete are always
+   visible, even when the table is wider than the screen */
+.admin-table tbody td:last-child,
+.admin-table thead th:last-child {
+  position: sticky;
+  right: 0;
+  background: var(--admin-card);
+  box-shadow: -8px 0 12px -8px rgba(0, 0, 0, 0.6);
+}
+
+.admin-table tbody tr:hover td:last-child {
+  background: var(--admin-card-hover);
+}
+
+/* Rows open the editor when clicked */
+.admin-table tbody tr[data-editable] {
+  cursor: pointer;
+}
+
 .admin-table .table-action {
-  width: 32px;
+  min-width: 32px;
+  padding: 0 10px;
+  gap: 4px;
+  white-space: nowrap;
   height: 32px;
   border-radius: var(--radius-sm);
   display: flex;

@@ -41,34 +41,42 @@ function initHeroScrollAnimation() {
   if (!wrapper || !hero || !canvas) return;
 
   const ctx = canvas.getContext('2d');
-  const totalFrames = 151;
-  const images = [];
-  let loadedCount = 0;
+  const totalFrames = 76;
+  const images = new Array(totalFrames);
   let currentFrameIndex = -1;
 
-  // Preload all 151 images
-  for (let i = 1; i <= totalFrames; i++) {
+  // Visitors who ask for less motion or less data get a still first frame
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const saveData = navigator.connection && navigator.connection.saveData;
+  const animate = !reduceMotion && !saveData;
+
+  function loadFrame(i) {
     const img = new Image();
-    const frameNum = String(i).padStart(3, '0');
-    img.src = `images/ezgif-7de1013505be3838-png-split/ezgif-frame-${frameNum}.png`;
-    img.onload = () => {
-      loadedCount++;
-      if (i === 1) {
-        drawFrame(1);
-      }
-    };
-    img.onerror = () => {
-      loadedCount++;
-      console.warn(`Failed to load frame ${i}`);
-    };
-    images.push(img);
+    img.decoding = 'async';
+    img.src = `images/hero/frame-${String(i).padStart(3, '0')}.jpg`;
+    img.onerror = () => console.warn(`Failed to load hero frame ${i}`);
+    images[i - 1] = img;
+    return img;
+  }
+
+  // First frame straight away, the rest once the page has finished loading
+  loadFrame(1).onload = () => drawFrame(1);
+  if (animate) {
+    const loadRest = () => { for (let i = 2; i <= totalFrames; i++) loadFrame(i); };
+    if (document.readyState === 'complete') loadRest();
+    else window.addEventListener('load', loadRest, { once: true });
   }
 
   // Draw image on canvas with cover scaling
   function drawFrame(frameIndex) {
     if (frameIndex === currentFrameIndex) return;
-    
-    const img = images[frameIndex - 1];
+
+    // Fall back to the nearest earlier frame that has finished loading
+    let img = images[frameIndex - 1];
+    while ((!img || !img.complete || img.naturalWidth === 0) && frameIndex > 1) {
+      frameIndex--;
+      img = images[frameIndex - 1];
+    }
     if (!img || !img.complete || img.naturalWidth === 0) return;
     
     currentFrameIndex = frameIndex;
@@ -104,6 +112,7 @@ function initHeroScrollAnimation() {
 
   // Handle window scroll with pinning
   window.addEventListener('scroll', () => {
+    if (!animate) return;
     const scrollPos = window.scrollY;
     const wrapperHeight = wrapper.offsetHeight;
     const windowHeight = window.innerHeight;
@@ -280,8 +289,9 @@ function showToast(message, type = 'info') {
 
   toast.innerHTML = `
     <span class="toast-icon">${icon}</span>
-    <span class="toast-message">${message}</span>
+    <span class="toast-message"></span>
   `;
+  toast.querySelector('.toast-message').textContent = message;
 
   container.appendChild(toast);
 

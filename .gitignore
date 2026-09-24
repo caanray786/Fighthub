@@ -1,0 +1,19 @@
+# Secrets: never commit real keys
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Dependencies & build output (for later phases)
+node_modules/
+dist/
+.supabase/
+
+# Local backups exported from the admin panel
+fighthub-backup-*.json

@@ -89,18 +89,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       tr.innerHTML = `
         <td>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 1.5rem;">${ma.icon || '🥋'}</span>
-            <strong>${ma.name}</strong>
+            <span style="font-size: 1.5rem;">${escapeHtml(ma.icon || '🥋')}</span>
+            <strong>${escapeHtml(ma.name)}</strong>
           </div>
         </td>
-        <td>${ma.fullName}</td>
-        <td>${ma.origin}</td>
-        <td>${ma.founded}</td>
+        <td>${escapeHtml(ma.fullName)}</td>
+        <td>${escapeHtml(ma.origin)}</td>
+        <td>${escapeHtml(ma.founded)}</td>
         <td><strong>${techCount}</strong> techniques</td>
         <td>
           <div class="table-actions">
-            <button class="table-action btn-edit" data-id="${ma.id}" title="Edit Profile">✏️</button>
-            <button class="table-action delete btn-delete" data-id="${ma.id}" title="Delete Profile">🗑️</button>
+            <button class="table-action btn-edit" data-id="${escapeHtml(ma.id)}" title="Edit Profile">✏️ Edit</button>
+            <button class="table-action delete btn-delete" data-id="${escapeHtml(ma.id)}" title="Delete Profile">🗑️</button>
           </div>
         </td>
       `;

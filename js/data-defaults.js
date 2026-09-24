@@ -1,7 +1,7 @@
 /* ============================================
    FightHub — Default Seed Data (Enriched Edition)
    Contains 27 legendary fighters with timeline history,
-   11 detailed martial arts, and 12 gyms.
+   11 detailed martial arts, 8 gyms and the confirmed event schedule.
    ============================================ */
 
 const DEFAULT_DATA = {
@@ -20,12 +20,13 @@ const DEFAULT_DATA = {
       sub: 0,
       dec: 19,
       style: 'Boxing',
+      sport: 'Boxing',
       team: 'Dundee Gym',
       status: 'Retired',
       bio: 'Widely regarded as one of the most significant and celebrated sporting figures of the 20th century, and one of the greatest boxers of all time. Ali was famous for his fast footwork, "float like a butterfly, sting like a bee" style, and his historic battles including the "Fight of the Century" and "Rumble in the Jungle".',
       highlights: ['Three-time Lineal Heavyweight Champion', 'Olympic Gold Medalist (1960)', 'Defeated Sonny Liston, Joe Frazier, George Foreman'],
       championships: ['WBA Heavyweight Championship', 'WBC Heavyweight Championship'],
-      image: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '1975-10-01', opponent: 'Joe Frazier', result: 'Win', finishing: 'TKO (Round 14)', event: 'Thrilla in Manila' },
         { date: '1974-10-30', opponent: 'George Foreman', result: 'Win', finishing: 'KO (Round 8)', event: 'Rumble in the Jungle' },
@@ -46,12 +47,13 @@ const DEFAULT_DATA = {
       sub: 0,
       dec: 6,
       style: 'Boxing (Peek-a-Boo)',
+      sport: 'Boxing',
       team: 'Cus D\'Amato Gym',
       status: 'Retired',
       bio: 'Reigned as the undisputed world heavyweight champion and holds the record as the youngest boxer to win a heavyweight title at 20 years, 4 months, and 22 days old. Famous for his terrifying power, explosive speed, and aggressive peek-a-boo defense.',
       highlights: ['Youngest Heavyweight Champion in History', 'Undisputed Heavyweight Champion (WBA, WBC, IBF)', 'First 19 professional fights won by knockout (12 in the first round)'],
       championships: ['WBA Heavyweight Championship', 'WBC Heavyweight Championship', 'IBF Heavyweight Championship'],
-      image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '1988-06-27', opponent: 'Michael Spinks', result: 'Win', finishing: 'KO (Round 1)', event: 'Undisputed Title Defense' },
         { date: '1986-11-22', opponent: 'Trevor Berbick', result: 'Win', finishing: 'TKO (Round 2)', event: 'WBC Championship' },
@@ -72,12 +74,13 @@ const DEFAULT_DATA = {
       sub: 12,
       dec: 3,
       style: 'Brazilian Jiu-Jitsu',
+      sport: 'MMA',
       team: 'Gracie Jiu-Jitsu',
       status: 'Retired',
       bio: 'A member of the Gracie family, Royce Gracie is widely considered the most influential pioneer of modern mixed martial arts. He revolutionized combat sports by winning UFC 1, UFC 2, and UFC 4, proving that leverage and technique can defeat size and strength.',
       highlights: ['UFC 1 Tournament Champion', 'UFC 2 Tournament Champion', 'UFC 4 Tournament Champion', 'Inaugural UFC Hall of Fame inductee'],
       championships: ['UFC 1, 2, and 4 Tournament Championships'],
-      image: 'https://images.unsplash.com/photo-1615117973715-9980279c947d?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '1994-12-16', opponent: 'Dan Severn', result: 'Win', finishing: 'Submission (Triangle)', event: 'UFC 4 Tournament Final' },
         { date: '1993-11-12', opponent: 'Gerard Gordeau', result: 'Win', finishing: 'Submission (RNC)', event: 'UFC 1 Tournament Final' },
@@ -98,12 +101,13 @@ const DEFAULT_DATA = {
       sub: 15,
       dec: 9,
       style: 'Sambo / MMA',
+      sport: 'MMA',
       team: 'Red Devil Sport Club',
       status: 'Retired',
       bio: 'An absolute legend of Heavyweight MMA. Fedor remained undefeated for a historic decade (2000-2010) in Pride FC and other promotions, defeating numerous UFC champions with his explosive Sambo casting punches and vicious ground-and-pound.',
       highlights: ['Pride Heavyweight Champion (2003-2007)', 'Undefeated for 28 consecutive fights', 'Wammma Heavyweight Champion'],
       championships: ['Pride Heavyweight Championship', 'Sambo World Championship (4x)'],
-      image: 'https://images.unsplash.com/photo-1517438322307-e67111335449?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2005-08-28', opponent: 'Mirko Cro Cop', result: 'Win', finishing: 'UD (Round 3)', event: 'PRIDE Final Conflict' },
         { date: '2004-12-31', opponent: 'Antonio Rodrigo Nogueira', result: 'Win', finishing: 'UD (Round 3)', event: 'PRIDE Shockwave' },
@@ -124,12 +128,13 @@ const DEFAULT_DATA = {
       sub: 6,
       dec: 12,
       style: 'Wrestling / Karate',
+      sport: 'MMA',
       team: 'Tristar Gym',
       status: 'Retired',
       bio: 'Former two-division champion in the UFC (Welterweight and Middleweight). GSP is widely considered one of the greatest athletes in MMA history, known for his elite wrestling transitions, jab, and high athletic IQ.',
       highlights: ['UFC Welterweight Champion (9 consecutive title defenses)', 'UFC Middleweight Champion', 'Avenged both career losses (against Matt Hughes and Matt Serra)'],
       championships: ['UFC Welterweight Championship', 'UFC Middleweight Championship'],
-      image: 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2017-11-04', opponent: 'Michael Bisping', result: 'Win', finishing: 'Submission (RNC)', event: 'UFC 217' },
         { date: '2009-01-31', opponent: 'BJ Penn', result: 'Win', finishing: 'TKO (Corner Stop)', event: 'UFC 94' },
@@ -150,12 +155,13 @@ const DEFAULT_DATA = {
       sub: 3,
       dec: 8,
       style: 'Muay Thai / Boxing',
+      sport: 'MMA',
       team: 'Black House MMA',
       status: 'Retired',
       bio: 'Former UFC Middleweight Champion who held the title for a record 2,457 days. Known for his matrix-like counter-striking, head movement, and highlight-reel finishes, Silva is hailed as one of the most aesthetic strikers ever.',
       highlights: ['Longest title reign in UFC history (2,457 days)', '16-fight win streak in the UFC', 'Defeated Rich Franklin, Dan Henderson, Vitor Belfort'],
       championships: ['UFC Middleweight Championship'],
-      image: 'https://images.unsplash.com/photo-1555597673-b21d5c935865?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2012-07-07', opponent: 'Chael Sonnen II', result: 'Win', finishing: 'TKO (Punches)', event: 'UFC 148' },
         { date: '2011-02-05', opponent: 'Vitor Belfort', result: 'Win', finishing: 'KO (Front Kick)', event: 'UFC 126' },
@@ -176,12 +182,13 @@ const DEFAULT_DATA = {
       sub: 11,
       dec: 10,
       style: 'Combat Sambo / Wrestling',
+      sport: 'MMA',
       team: 'AKA',
       status: 'Retired',
       bio: 'Undefeated UFC Lightweight Champion. Relentless mauling grappling pressure and ground-and-pound made him one of the most dominant fighters to ever step foot in the octagon. Khabib retired with a perfect 29-0 record.',
       highlights: ['UFC Lightweight Champion (3 defenses)', 'Perfect 29-0 MMA Record', 'Most ground control time in lightweight history'],
       championships: ['UFC Lightweight Championship'],
-      image: 'https://images.unsplash.com/photo-1517438322307-e67111335449?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2020-10-24', opponent: 'Justin Gaethje', result: 'Win', finishing: 'Submission (Triangle)', event: 'UFC 254' },
         { date: '2018-10-06', opponent: 'Conor McGregor', result: 'Win', finishing: 'Submission (Neck Crank)', event: 'UFC 229' },
@@ -202,12 +209,13 @@ const DEFAULT_DATA = {
       sub: 7,
       dec: 10,
       style: 'Wrestling / MMA Muay Thai',
+      sport: 'MMA',
       team: 'Jackson-Wink MMA',
       status: 'Active',
       bio: 'Current UFC Heavyweight Champion and former two-time UFC Light Heavyweight Champion. Jones is widely considered the greatest MMA fighter of all time, having dominated the light heavyweight division at a very young age.',
       highlights: ['Youngest champion in UFC history (23 years old)', '15 title fight victories', 'Undefeated in actual competition (only loss is a controversial DQ)'],
       championships: ['UFC Heavyweight Championship', 'UFC Light Heavyweight Championship'],
-      image: 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2023-03-04', opponent: 'Ciryl Gane', result: 'Win', finishing: 'Submission (Guillotine)', event: 'UFC 285' },
         { date: '2015-01-03', opponent: 'Daniel Cormier', result: 'Win', finishing: 'UD (Round 5)', event: 'UFC 182' },
@@ -228,12 +236,13 @@ const DEFAULT_DATA = {
       sub: 4,
       dec: 6,
       style: 'BJJ / Muay Thai',
+      sport: 'MMA',
       team: 'American Top Team',
       status: 'Retired',
       bio: 'Widely recognized as the greatest female mixed martial artist of all time. Nunes became the first woman to hold two UFC championships simultaneously and successfully defend both.',
       highlights: ['Simultaneous UFC Bantamweight & Featherweight Champion', 'Defeated Ronda Rousey, Cris Cyborg, Miesha Tate, Valentina Shevchenko'],
       championships: ['UFC Women\'s Bantamweight Championship', 'UFC Women\'s Featherweight Championship'],
-      image: 'https://images.unsplash.com/photo-1555597673-b21d5c935865?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2019-12-14', opponent: 'Germaine de Randamie', result: 'Win', finishing: 'UD (Round 5)', event: 'UFC 245' },
         { date: '2018-12-29', opponent: 'Cris Cyborg', result: 'Win', finishing: 'KO (Punches)', event: 'UFC 232' },
@@ -254,12 +263,13 @@ const DEFAULT_DATA = {
       sub: 0,
       dec: 65,
       style: 'Boxing',
+      sport: 'Boxing',
       team: 'N/A',
       status: 'Retired',
       bio: 'Frequently cited as the greatest pound-for-pound boxer of all time. Robinson\'s performances at Welterweight and Middleweight prompted sportswriters to create "pound-for-pound" rankings to compare him to other champions.',
       highlights: ['91-fight undefeated streak', 'World Welterweight Champion', 'Five-time World Middleweight Champion'],
       championships: ['World Welterweight Championship', 'World Middleweight Championship'],
-      image: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '1951-02-14', opponent: 'Jake LaMotta', result: 'Win', finishing: 'TKO (Round 13)', event: 'Saint Valentine\'s Day Massacre' },
         { date: '1952-06-25', opponent: 'Joey Maxim', result: 'Loss', finishing: 'TKO (Heat Exhaustion)', event: 'LHW Title Attempt' }
@@ -279,12 +289,13 @@ const DEFAULT_DATA = {
       sub: 0,
       dec: 33,
       style: 'Boxing',
+      sport: 'Boxing',
       team: 'N/A',
       status: 'Retired',
       bio: 'A legendary Panamanian boxer who held world titles in four weight classes: lightweight, welterweight, light middleweight, and middleweight. Known for his inside pressure and brutal punching power.',
       highlights: ['Undisputed Lightweight Champion', 'Reigned as lightweight champion for over 6 years', 'Fought across five decades'],
       championships: ['WBA Lightweight Championship', 'WBC Welterweight Championship', 'WBA Light Middleweight Championship', 'WBC Middleweight Championship'],
-      image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '1980-06-20', opponent: 'Sugar Ray Leonard', result: 'Win', finishing: 'UD (Round 15)', event: 'Brawl in Montreal' },
         { date: '1980-11-25', opponent: 'Sugar Ray Leonard', result: 'Loss', finishing: 'TKO (No Mas)', event: 'Welterweight Rematch' }
@@ -304,12 +315,13 @@ const DEFAULT_DATA = {
       sub: 0,
       dec: 23,
       style: 'Boxing (Philly Shell)',
+      sport: 'Boxing',
       team: 'Mayweather Boxing Club',
       status: 'Retired',
       bio: 'Undefeated professional boxer who won 15 major world titles from super featherweight to light middleweight. Celebrated as one of the best defensive boxers in history, utilizing the shoulder roll defense.',
       highlights: ['Undefeated 50-0 Professional Record', '15 Major World Titles', 'Highest-grossing pay-per-view athlete in history'],
       championships: ['WBC Super Featherweight', 'WBC Lightweight', 'WBC Super Lightweight', 'IBF/WBC Welterweight', 'WBC Super Welterweight'],
-      image: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2017-08-26', opponent: 'Conor McGregor', result: 'Win', finishing: 'TKO (Round 10)', event: 'The Money Fight' },
         { date: '2015-05-02', opponent: 'Manny Pacquiao', result: 'Win', finishing: 'UD (Round 12)', event: 'Fight of the Century' },
@@ -330,12 +342,13 @@ const DEFAULT_DATA = {
       sub: 0,
       dec: 23,
       style: 'Boxing',
+      sport: 'Boxing',
       team: 'Wild Card Boxing Gym',
       status: 'Retired',
       bio: 'The only eight-division world champion in the history of boxing. Pacquiao won twelve major world titles and was the first boxer to win the lineal championship in five different weight classes.',
       highlights: ['Eight-division World Champion', 'First boxer to win lineal championships in 5 weight classes', 'Fighter of the Decade (2000s)'],
       championships: ['WBC Flyweight', 'IBF Super Bantamweight', 'WBC Super Featherweight', 'WBC Lightweight', 'WBO Welterweight', 'WBC Light Middleweight'],
-      image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2019-07-20', opponent: 'Keith Thurman', result: 'Win', finishing: 'SD (Round 12)', event: 'WBA Welterweight Title' },
         { date: '2009-05-02', opponent: 'Ricky Hatton', result: 'Win', finishing: 'KO (Round 2)', event: 'Super Lightweight Title' },
@@ -356,12 +369,13 @@ const DEFAULT_DATA = {
       sub: 0,
       dec: 0,
       style: 'Greco-Roman Wrestling',
+      sport: 'Grappling',
       team: 'Dynamo Novosibirsk',
       status: 'Retired',
       bio: 'Considered the greatest Greco-Roman wrestler of all time. Karelin won three Olympic gold medals and remained undefeated in international competition for 13 years, going six years without giving up a single point.',
       highlights: ['Three-time Olympic Gold Medalist', 'Nine-time World Champion', 'Unbeaten for 13 years internationally'],
       championships: ['Olympic Gold (1988, 1992, 1996)', 'World Championships Gold (9x)'],
-      image: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '1996-07-23', opponent: 'Matt Ghaffari', result: 'Win', finishing: 'Points (3-0)', event: 'Atlanta Olympic Gold Match' },
         { date: '2000-09-27', opponent: 'Rulon Gardner', result: 'Loss', finishing: 'Points (1-0)', event: 'Sydney Olympic Gold Match' }
@@ -381,12 +395,13 @@ const DEFAULT_DATA = {
       sub: 0,
       dec: 167,
       style: 'Muay Thai',
+      sport: 'Muay Thai',
       team: 'Banchamek Gym',
       status: 'Active',
       bio: 'A legendary Thai Muay Thai kickboxer and former two-time K-1 World MAX Champion. Buakaw is globally renowned for bringing Muay Thai to international popularity with his powerful kicks and aggressive forward pressure.',
       highlights: ['K-1 World MAX Champion (2x)', 'Omnoi Stadium Champion (2x)', 'Toyota Cup Tournament Champion'],
       championships: ['K-1 World MAX Championship', 'Omnoi Stadium Lightweight Championship'],
-      image: 'https://images.unsplash.com/photo-1555597673-b21d5c935865?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2006-06-30', opponent: 'Andy Souwer', result: 'Win', finishing: 'KO (Punches)', event: 'K-1 World MAX 2006 Final' },
         { date: '2004-07-07', opponent: 'Masato', result: 'Win', finishing: 'UD (Extra Round)', event: 'K-1 World MAX 2004 Final' }
@@ -406,12 +421,13 @@ const DEFAULT_DATA = {
       sub: 0,
       dec: 286,
       style: 'Muay Thai',
+      sport: 'Muay Thai',
       team: 'PK.Saenchai Muaythaigym',
       status: 'Active',
       bio: 'Widely considered one of the greatest Muay Thai fighters of all time. Saenchai is famous for his incredible ring intelligence, agility, and trademark techniques like the "cartwheel kick" while giving up weight to foreigners.',
       highlights: ['Lumpinee Stadium Champion in 4 weight classes', 'Toyota Cup Tournament Champion', 'WMC World Champion'],
       championships: ['Lumpinee Stadium Championship (4 divisions)', 'WBC Muay Thai World Championship'],
-      image: 'https://images.unsplash.com/photo-1595078475328-1ab05d0a6a0e?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2010-09-07', opponent: 'Nong-O Gaiyanghadaogym', result: 'Win', finishing: 'UD (Round 5)', event: 'Lumpinee Superfight' },
         { date: '2023-11-04', opponent: 'Buakaw Banchamek', result: 'Loss', finishing: 'UD (Round 5)', event: 'BKFC Thailand 5' }
@@ -431,12 +447,13 @@ const DEFAULT_DATA = {
       sub: 122,
       dec: 31,
       style: 'Brazilian Jiu-Jitsu (No-Gi)',
+      sport: 'Grappling',
       team: 'New Wave Jiu-Jitsu',
       status: 'Active',
       bio: 'Widely regarded as the greatest submission grappler of all time. Ryan is a 5-time ADCC World Champion and has been completely dominant in the heavyweight division, boasting an unprecedented submission rate.',
       highlights: ['5-time ADCC World Champion', 'Double gold at ADCC 2019', 'Longest win streak in sub-grappling history (80+ matches)'],
       championships: ['ADCC World Championship Gold (5x)', 'IBJJF No-Gi World Championship Gold'],
-      image: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2022-09-18', opponent: 'Nick Rodriguez', result: 'Win', finishing: 'Submission (Heel Hook)', event: 'ADCC HW Final' },
         { date: '2022-09-17', opponent: 'Andre Galvao', result: 'Win', finishing: 'Submission (RNC)', event: 'ADCC Superfight' }
@@ -456,12 +473,13 @@ const DEFAULT_DATA = {
       sub: 0,
       dec: 0,
       style: 'Jeet Kune Do',
+      sport: 'Martial Arts',
       team: 'Jun Fan Gung Fu Institute',
       status: 'Retired',
       bio: 'An iconic martial artist, actor, and philosopher. Lee founded Jeet Kune Do, a hybrid martial arts philosophy drawing from boxing, fencing, and Wing Chun. He is widely credited with helping pave the way for modern mixed martial arts.',
       highlights: ['Founder of Jeet Kune Do', 'Revolutionized martial arts cinema', 'MMA Pioneer (advocated for formless cross-training)'],
       championships: ['Jeet Kune Do Founder'],
-      image: 'https://images.unsplash.com/photo-1551854838-212c50b4c184?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: []
     },
     {
@@ -478,12 +496,13 @@ const DEFAULT_DATA = {
       sub: 62,
       dec: 13,
       style: 'Judo',
+      sport: 'Grappling',
       team: 'Kodokan',
       status: 'Retired',
       bio: 'One of the greatest Judokas to ever live, famously known for defeating Hélio Gracie in Brazil in 1951 using the reverse ude-garami armlock, which is now named the "Kimura" in his honor.',
       highlights: ['Defeated Hélio Gracie in submission match', 'All-Japan Judo Champion for 13 consecutive years', 'Promoted to 7th dan at age 29'],
       championships: ['All-Japan Judo Championship Gold (13x)'],
-      image: 'https://images.unsplash.com/photo-1544033527-b192daee1f5b?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '1951-10-23', opponent: 'Hélio Gracie', result: 'Win', finishing: 'Submission (Kimura Armlock)', event: 'Grappling Challenge in Rio' }
       ]
@@ -502,12 +521,13 @@ const DEFAULT_DATA = {
       sub: 0,
       dec: 8,
       style: 'Kickboxing / MMA',
+      sport: 'MMA',
       team: 'City Kickboxing',
       status: 'Active',
       bio: 'Former two-time UFC Middleweight Champion. Famous for his flashy kickboxing entries, defense, and striking flow. Adesanya has fought and defeated the very best in the division.',
       highlights: ['Two-time UFC Middleweight Champion', 'Glory Kickboxing title challenger', 'Performance of the Night (6x)'],
       championships: ['UFC Middleweight Championship'],
-      image: 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2023-04-08', opponent: 'Alex Pereira', result: 'Win', finishing: 'KO (Punches)', event: 'UFC 287' },
         { date: '2022-11-12', opponent: 'Alex Pereira', result: 'Loss', finishing: 'TKO (Punches)', event: 'UFC 281' },
@@ -528,12 +548,13 @@ const DEFAULT_DATA = {
       sub: 3,
       dec: 10,
       style: 'Boxing / Wrestling',
+      sport: 'MMA',
       team: 'City Kickboxing',
       status: 'Active',
       bio: 'Former dominant UFC Featherweight Champion. Volkanovski is renowned for his extreme cardiovascular engine, heavy defensive wrestling base, and high-frequency striking output.',
       highlights: ['UFC Featherweight Champion (5 consecutive defenses)', 'Defeated Max Holloway 3x', 'Longest featherweight win streak in modern UFC'],
       championships: ['UFC Featherweight Championship'],
-      image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2023-07-08', opponent: 'Yair Rodriguez', result: 'Win', finishing: 'TKO (Punches)', event: 'UFC 290' },
         { date: '2022-07-02', opponent: 'Max Holloway III', result: 'Win', finishing: 'UD (Round 5)', event: 'UFC 276' },
@@ -554,12 +575,13 @@ const DEFAULT_DATA = {
       sub: 12,
       dec: 9,
       style: 'Sambo / Wrestling',
+      sport: 'MMA',
       team: 'AKA',
       status: 'Active',
       bio: 'Current UFC Lightweight Champion and protégé of Khabib Nurmagomedov. Makhachev combines elite combat Sambo takedowns with technical kickboxing.',
       highlights: ['UFC Lightweight Champion', 'Pound-for-Pound #1 in the UFC', 'Active 14-fight win streak'],
       championships: ['UFC Lightweight Championship'],
-      image: 'https://images.unsplash.com/photo-1517438322307-e67111335449?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2023-10-21', opponent: 'Alexander Volkanovski II', result: 'Win', finishing: 'KO (Head Kick)', event: 'UFC 294' },
         { date: '2022-10-22', opponent: 'Charles Oliveira', result: 'Win', finishing: 'Submission (Arm-Triangle)', event: 'UFC 280' }
@@ -579,12 +601,13 @@ const DEFAULT_DATA = {
       sub: 0,
       dec: 9,
       style: 'Boxing',
+      sport: 'Boxing',
       team: 'BoMac Promotions',
       status: 'Active',
       bio: 'Undefeated multi-weight undisputed world boxing champion. Crawford is widely praised as one of the best switch-hitting boxers in history, possessing pinpoint counter-punching.',
       highlights: ['Undisputed Welterweight Champion', 'Undisputed Light Welterweight Champion', 'First male boxer to become undisputed in two divisions in the four-belt era'],
       championships: ['WBC/WBA/IBF/WBO Welterweight Championships', 'WBO Light Welterweight Championship'],
-      image: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2023-07-29', opponent: 'Errol Spence Jr.', result: 'Win', finishing: 'TKO (Round 9)', event: 'Welterweight Undisputed Showdown' }
       ]
@@ -603,12 +626,13 @@ const DEFAULT_DATA = {
       sub: 0,
       dec: 3,
       style: 'Boxing',
+      sport: 'Boxing',
       team: 'Ohashi Boxing Gym',
       status: 'Active',
       bio: 'Undefeated Japanese boxing champion who has captured world championships in four weight classes. Renowned for his devastating body punches and explosive speed.',
       highlights: ['Undisputed Super Bantamweight Champion', 'Undisputed Bantamweight Champion', '88% Knockout-to-win ratio'],
       championships: ['WBC/WBA/IBF/WBO Super Bantamweight Championships'],
-      image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2023-12-26', opponent: 'Marlon Tapales', result: 'Win', finishing: 'KO (Round 10)', event: 'Super Bantamweight Title' }
       ]
@@ -627,12 +651,13 @@ const DEFAULT_DATA = {
       sub: 0,
       dec: 8,
       style: 'Boxing',
+      sport: 'Boxing',
       team: 'Egis Klimas',
       status: 'Active',
       bio: 'Undefeated Ukrainian heavyweight undisputed champion. Former undisputed cruiserweight king. Usyk made history by defeating Tyson Fury to become the undisputed ruler of the Heavyweight division.',
       highlights: ['Undisputed Heavyweight Champion', 'Undisputed Cruiserweight Champion', 'Olympic Gold Medalist (2012)'],
       championships: ['WBC/WBA/IBF/WBO Heavyweight Championships', 'Undisputed Cruiserweight Championship'],
-      image: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '2024-05-18', opponent: 'Tyson Fury', result: 'Win', finishing: 'SD (Round 12)', event: 'Undisputed HW Title Showdown' },
         { date: '2021-09-25', opponent: 'Anthony Joshua', result: 'Win', finishing: 'UD (Round 12)', event: 'WBA/IBF/WBO Title Bout' }
@@ -652,12 +677,13 @@ const DEFAULT_DATA = {
       sub: 0,
       dec: 8,
       style: 'Boxing',
+      sport: 'Boxing',
       team: 'N/A',
       status: 'Retired',
       bio: 'Two-time world heavyweight champion and Olympic gold medalist. Famously made a historic comeback in the 1990s to become the oldest heavyweight champion in boxing history at age 45.',
       highlights: ['Oldest Heavyweight Champion in history (45 years old)', 'Olympic Gold Medalist (1968)', '68 knockouts in 76 victories'],
       championships: ['WBA Heavyweight Championship', 'WBC Heavyweight Championship', 'IBF Heavyweight Championship'],
-      image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '1994-11-05', opponent: 'Michael Moorer', result: 'Win', finishing: 'KO (Round 10)', event: 'Historic Oldest Champion Win' },
         { date: '1974-10-30', opponent: 'Muhammad Ali', result: 'Loss', finishing: 'KO (Round 8)', event: 'Rumble in the Jungle' }
@@ -677,12 +703,13 @@ const DEFAULT_DATA = {
       sub: 0,
       dec: 11,
       style: 'Boxing',
+      sport: 'Boxing',
       team: 'Janks Morton Gym',
       status: 'Retired',
       bio: 'One of the legendary "Fabulous Four" of the 1980s. Leonard won world titles in five weight divisions, defeated Wilfred Benítez, Roberto Durán, Thomas Hearns, and Marvin Hagler.',
       highlights: ['Five-division World Champion', 'Olympic Gold Medalist (1976)', 'Inducted into the International Boxing Hall of Fame'],
       championships: ['WBC Welterweight Championship', 'WBA Light Middleweight Championship', 'WBC Middleweight Championship', 'WBC Super Middleweight Championship', 'WBC Light Heavyweight Championship'],
-      image: 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=800&q=80',
+      image: '',
       timeline: [
         { date: '1987-04-06', opponent: 'Marvelous Marvin Hagler', result: 'Win', finishing: 'SD (Round 12)', event: 'WBC Middleweight Championship' },
         { date: '1980-06-20', opponent: 'Roberto Durán', result: 'Loss', finishing: 'UD (Round 15)', event: 'Brawl in Montreal' }
@@ -691,28 +718,41 @@ const DEFAULT_DATA = {
   ],
 
   articles: [
-    { id: 'a1', title: 'UFC 310 Main Event Breakdown: Championship Showdown', slug: 'ufc-310-main-event-breakdown', category: 'UFC', content: 'A comprehensive breakdown of the upcoming UFC 310 main event. We analyze both fighters\' strengths, weaknesses, and the key factors that could determine the outcome of this championship bout. The challenger has shown remarkable improvement in recent fights, while the champion remains one of the most dominant forces in the division.', excerpt: 'Breaking down the key matchup dynamics and predictions for the UFC 310 main event championship fight.', author: 'Mike Chen', image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=800&q=80', tags: ['UFC', 'Championship', 'Preview'], likes: 45, comments: 12, status: 'published', date: '2026-07-01' },
-    { id: 'a2', title: 'The Rise of Islam Makhachev: Khabib\'s Legacy Lives On', slug: 'rise-of-islam-makhachev', category: 'UFC', content: 'Islam Makhachev has carried on the legacy of his mentor Khabib Nurmagomedov by becoming one of the most dominant lightweight champions in UFC history. This article traces his journey from the mountains of Dagestan to the pinnacle of mixed martial arts.', excerpt: 'How Islam Makhachev became the most dominant lightweight champion since his mentor Khabib.', author: 'Sarah Williams', image: 'https://images.unsplash.com/photo-1517438322307-e67111335449?auto=format&fit=crop&w=800&q=80', tags: ['UFC', 'Lightweight', 'Profile'], likes: 67, comments: 23, status: 'published', date: '2026-06-28' },
-    { id: 'a3', title: 'Boxing\'s Super Fights: What We Want to See in 2026', slug: 'boxing-super-fights-2026', category: 'Boxing', content: 'With the boxing landscape shifting rapidly, we look at the mega-fights fans are demanding. From Crawford vs. the next challenger to potential undisputed showdowns across multiple weight classes, 2026 promises to deliver some of the biggest fights in recent memory.', excerpt: 'The mega-fights boxing fans are demanding in 2026 and whether they\'ll actually happen.', author: 'James Rodriguez', image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80', tags: ['Boxing', 'Predictions', 'Super Fights'], likes: 34, comments: 8, status: 'published', date: '2026-06-25' },
-    { id: 'a4', title: 'ONE Championship Expands to New Markets', slug: 'one-championship-expansion', category: 'ONE', content: 'ONE Championship continues its global expansion with new events planned across Europe and the Americas. CEO Chatri Sityodtong discusses the promotion\'s growth strategy and plans to rival the UFC on a global scale.', excerpt: 'ONE Championship announces ambitious expansion plans for 2026-2027 with new markets in Europe.', author: 'Lisa Park', image: 'https://images.unsplash.com/photo-1595078475328-1ab05d0a6a0e?auto=format&fit=crop&w=800&q=80', tags: ['ONE Championship', 'Business', 'Expansion'], likes: 22, comments: 5, status: 'published', date: '2026-06-22' },
-    { id: 'a5', title: 'PFL Announces Revolutionary Season Format Changes', slug: 'pfl-season-format-changes', category: 'PFL', content: 'The Professional Fighters League has announced significant changes to its season format, including new weight classes and an expanded playoffs bracket. These changes aim to attract more top talent and increase competition.', excerpt: 'PFL shakes up the MMA landscape with major format changes for the upcoming season.', author: 'David Kim', image: 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=800&q=80', tags: ['PFL', 'Format', 'MMA'], likes: 18, comments: 4, status: 'published', date: '2026-06-20' },
-    { id: 'a6', title: 'The Complete Guide to Starting Muay Thai in 2026', slug: 'guide-starting-muay-thai', category: 'General', content: 'Everything you need to know about starting Muay Thai training, from finding the right gym to essential equipment and your first day of training. This comprehensive guide covers techniques, conditioning, and what to expect as a beginner.', excerpt: 'Your complete roadmap to beginning your Muay Thai journey, from day one to your first sparring session.', author: 'Tom Anderson', image: 'https://images.unsplash.com/photo-1555597673-b21d5c935865?auto=format&fit=crop&w=800&q=80', tags: ['Muay Thai', 'Beginner', 'Training'], likes: 89, comments: 31, status: 'published', date: '2026-06-18' }
+    { id: 'a2', title: 'The Rise of Islam Makhachev: Khabib\'s Legacy Lives On', slug: 'rise-of-islam-makhachev', category: 'UFC', content: 'Islam Makhachev carried on the legacy of his mentor Khabib Nurmagomedov by becoming one of the most dominant lightweight champions in UFC history. This article traces his journey from the mountains of Dagestan to the pinnacle of mixed martial arts.', excerpt: 'How Islam Makhachev followed his mentor Khabib to the top of the UFC.', author: 'FightHub Staff', image: 'https://images.unsplash.com/photo-1517438322307-e67111335449?auto=format&fit=crop&w=800&q=80', tags: ['UFC', 'Lightweight', 'Profile'], likes: 0, comments: 0, status: 'published', date: '2026-06-28' },
+    { id: 'a3', title: 'Boxing\'s Super Fights: The Match-Ups Fans Want', slug: 'boxing-super-fights-2026', category: 'Boxing', content: 'With the boxing landscape shifting rapidly, we look at the mega-fights fans are demanding, from undisputed showdowns across multiple weight classes to cross-generational clashes between rising stars and established champions.', excerpt: 'The mega-fights boxing fans are demanding, and whether they\'ll actually happen.', author: 'FightHub Staff', image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80', tags: ['Boxing', 'Opinion', 'Super Fights'], likes: 0, comments: 0, status: 'published', date: '2026-06-25' },
+    { id: 'a6', title: 'The Complete Guide to Starting Muay Thai', slug: 'guide-starting-muay-thai', category: 'General', content: 'Everything you need to know about starting Muay Thai training, from finding the right gym to essential equipment and your first day of training. This guide covers techniques, conditioning, and what to expect as a beginner.', excerpt: 'Your roadmap to beginning your Muay Thai journey, from day one to your first sparring session.', author: 'FightHub Staff', image: 'https://images.unsplash.com/photo-1555597673-b21d5c935865?auto=format&fit=crop&w=800&q=80', tags: ['Muay Thai', 'Beginner', 'Training'], likes: 0, comments: 0, status: 'published', date: '2026-06-18' }
   ],
 
+  // Confirmed schedule as of 2026-09-24. Times and unannounced bouts are left as TBA
+  // rather than guessed; the event pipeline updates these as cards are confirmed.
   events: [
-    { id: 'e1', name: 'UFC 310: Championship Night', promotion: 'UFC', date: '2026-07-19', time: '10:00 PM ET', venue: 'T-Mobile Arena', city: 'Las Vegas', country: 'USA', description: 'A stacked championship card featuring two title fights.', fights: ['Islam Makhachev vs. Charles Oliveira', 'Sean O\'Malley vs. Challenger', 'Kamaru Usman vs. Contender'], status: 'upcoming', ticketUrl: '#' },
-    { id: 'e2', name: 'Boxing: Crawford vs. Boots Ennis', promotion: 'Boxing', date: '2026-07-26', time: '9:00 PM ET', venue: 'MGM Grand', city: 'Las Vegas', country: 'USA', description: 'Terence Crawford defends his undisputed welterweight titles.', fights: ['Terence Crawford vs. Jaron Ennis', 'Undercard Bantamweight Bout'], status: 'upcoming', ticketUrl: '#' },
-    { id: 'e3', name: 'ONE Championship 170', promotion: 'ONE', date: '2026-08-02', time: '8:00 AM ET', venue: 'Singapore Indoor Stadium', city: 'Singapore', country: 'Singapore', description: 'ONE Championship returns with Muay Thai and MMA action.', fights: ['Rodtang vs. Superlek II', 'Flyweight Grand Prix Semi-Final'], status: 'upcoming', ticketUrl: '#' },
-    { id: 'e4', name: 'UFC 311: Heavyweight Showdown', promotion: 'UFC', date: '2026-08-23', time: '10:00 PM ET', venue: 'T-Mobile Arena', city: 'Las Vegas', country: 'USA', description: 'Heavyweight gold is on the line.', fights: ['Jon Jones vs. Tom Aspinall', 'Featherweight Co-Main'], status: 'upcoming', ticketUrl: '#' }
+    { id: 'ev-ufc-2026-09-26', name: 'UFC Fight Night: Rosas Jr. vs. Barcelos', promotion: 'UFC', date: '2026-09-26', time: 'TBA', venue: 'Meta APEX', city: 'Las Vegas', country: 'USA', description: 'Bantamweight main event at the UFC APEX.', fights: ['Raul Rosas Jr. vs. Raoni Barcelos'], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://en.wikipedia.org/wiki/List_of_UFC_events' },
+    { id: 'ev-one-fn48', name: 'ONE Fight Night 48', promotion: 'ONE', date: '2026-10-03', time: 'TBA', venue: 'Lumpinee Boxing Stadium', city: 'Bangkok', country: 'Thailand', description: 'ONE Championship returns to Lumpinee Stadium.', fights: [], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://en.wikipedia.org/wiki/2026_in_ONE_Championship' },
+    { id: 'ev-ufc-332', name: 'UFC 332: Silva vs. Wang', promotion: 'UFC', date: '2026-10-03', time: 'TBA', venue: 'Delta Center', city: 'Salt Lake City', country: 'USA', description: 'UFC pay-per-view in Salt Lake City headlined by women\'s flyweights.', fights: ['Natália Silva vs. Wang Cong'], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://en.wikipedia.org/wiki/List_of_UFC_events' },
+    { id: 'ev-box-whittaker-wallace', name: 'Whittaker vs. Wallace', promotion: 'Boxing', date: '2026-10-03', time: 'TBA', venue: 'Utilita Arena', city: 'Birmingham', country: 'UK', description: 'Light heavyweight main event, live on DAZN.', fights: ['Ben Whittaker vs. Conor Wallace'], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://sports.yahoo.com/articles/boxing-schedule-2026-dates-division-110001178.html' },
+    { id: 'ev-ufc-2026-10-10', name: 'UFC Fight Night: Allen vs. Duncan', promotion: 'UFC', date: '2026-10-10', time: 'TBA', venue: 'Meta APEX', city: 'Las Vegas', country: 'USA', description: 'Middleweight main event at the UFC APEX.', fights: ['Brendan Allen vs. Christian Leroy Duncan'], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://en.wikipedia.org/wiki/List_of_UFC_events' },
+    { id: 'ev-ufc-2026-10-17', name: 'UFC Fight Night: Buckley vs. Malott', promotion: 'UFC', date: '2026-10-17', time: 'TBA', venue: 'Rogers Place', city: 'Edmonton', country: 'Canada', description: 'Welterweight main event in Edmonton.', fights: ['Joaquin Buckley vs. Mike Malott'], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://en.wikipedia.org/wiki/List_of_UFC_events' },
+    { id: 'ev-one-samurai-4', name: 'ONE Samurai 4', promotion: 'ONE', date: '2026-10-17', time: 'TBA', venue: 'Ariake Arena', city: 'Tokyo', country: 'Japan', description: 'ONE Championship\'s Japanese series continues in Tokyo.', fights: [], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://en.wikipedia.org/wiki/2026_in_ONE_Championship' },
+    { id: 'ev-ufc-333', name: 'UFC 333: Volkanovski vs. Evloev', promotion: 'UFC', date: '2026-10-24', time: 'TBA', venue: 'Etihad Arena', city: 'Abu Dhabi', country: 'UAE', description: 'Two title fights in Abu Dhabi: featherweight and bantamweight gold on the line.', fights: ['Alexander Volkanovski vs. Movsar Evloev (Featherweight title)', 'Petr Yan vs. Merab Dvalishvili (Bantamweight title)'], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://en.wikipedia.org/wiki/List_of_UFC_events' },
+    { id: 'ev-box-smith-puello', name: 'Smith vs. Puello', promotion: 'Boxing', date: '2026-10-24', time: 'TBA', venue: 'Utilita Arena', city: 'Sheffield', country: 'UK', description: 'Dalton Smith defends the WBC super lightweight title at home, live on DAZN.', fights: ['Dalton Smith vs. Alberto Puello (WBC Super Lightweight title)'], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://sports.yahoo.com/articles/boxing-schedule-2026-dates-division-110001178.html' },
+    { id: 'ev-ufc-2026-10-31', name: 'UFC Fight Night (Oct 31)', promotion: 'UFC', date: '2026-10-31', time: 'TBA', venue: 'TBA', city: 'TBA', country: 'TBA', description: 'Main event to be confirmed.', fights: [], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://en.wikipedia.org/wiki/List_of_UFC_events' },
+    { id: 'ev-box-mbilli-canelo', name: 'Mbilli vs. Canelo', promotion: 'Boxing', date: '2026-10-31', time: 'TBA', venue: 'TBA', city: 'Riyadh', country: 'Saudi Arabia', description: 'Canelo Álvarez challenges Christian Mbilli for the WBC super middleweight title, live on DAZN.', fights: ['Christian Mbilli vs. Canelo Álvarez (WBC Super Middleweight title)'], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://sports.yahoo.com/articles/boxing-schedule-2026-dates-division-110001178.html' },
+    { id: 'ev-ufc-2026-11-07', name: 'UFC Fight Night: Bonfim vs. Brady', promotion: 'UFC', date: '2026-11-07', time: 'TBA', venue: 'Meta APEX', city: 'Las Vegas', country: 'USA', description: 'Welterweight main event at the UFC APEX.', fights: ['Gabriel Bonfim vs. Sean Brady'], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://en.wikipedia.org/wiki/List_of_UFC_events' },
+    { id: 'ev-one-fn49', name: 'ONE Fight Night 49', promotion: 'ONE', date: '2026-11-07', time: 'TBA', venue: 'Lumpinee Boxing Stadium', city: 'Bangkok', country: 'Thailand', description: 'ONE Championship at Lumpinee Stadium.', fights: [], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://en.wikipedia.org/wiki/2026_in_ONE_Championship' },
+    { id: 'ev-ufc-334', name: 'UFC 334', promotion: 'UFC', date: '2026-11-14', time: 'TBA', venue: 'Madison Square Garden', city: 'New York', country: 'USA', description: 'The UFC\'s annual Madison Square Garden pay-per-view. Main event to be confirmed.', fights: [], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://en.wikipedia.org/wiki/List_of_UFC_events' },
+    { id: 'ev-ufc-2026-11-21', name: 'UFC Fight Night: Qatar', promotion: 'UFC', date: '2026-11-21', time: 'TBA', venue: 'Ali Bin Hamad al-Attiyah Arena', city: 'Doha', country: 'Qatar', description: 'Main event to be confirmed.', fights: [], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://en.wikipedia.org/wiki/List_of_UFC_events' },
+    { id: 'ev-ufc-335', name: 'UFC 335', promotion: 'UFC', date: '2026-12-12', time: 'TBA', venue: 'T-Mobile Arena', city: 'Las Vegas', country: 'USA', description: 'Year-end pay-per-view in Las Vegas. Main event to be confirmed.', fights: [], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://en.wikipedia.org/wiki/List_of_UFC_events' },
+    { id: 'ev-one-fn50', name: 'ONE Fight Night 50', promotion: 'ONE', date: '2026-12-12', time: 'TBA', venue: 'Lumpinee Boxing Stadium', city: 'Bangkok', country: 'Thailand', description: 'ONE Championship at Lumpinee Stadium.', fights: [], status: 'upcoming', ticketUrl: '', sourceUrl: 'https://en.wikipedia.org/wiki/2026_in_ONE_Championship' }
   ],
 
+  // All-time lists are editorial and grouped by sport, so fighters from different
+  // sports and eras are never ranked against each other within a weight class.
   rankings: [
-    { id: 'r-pfp', weightClass: 'Pound-for-Pound', rankings: ['f22', 'f8', 'f20', 'f21', 'f5', 'f17', 'f16', 'f15', 'f23', 'f24', 'f25', 'f9', 'f7', 'f1', 'f2'], champion: null, lastUpdated: '2026-07-01' },
-    { id: 'r-hw', weightClass: 'Heavyweight', rankings: ['f8', 'f4', 'f14', 'f17', 'f19', 'f25', 'f26'], champion: 'f8', lastUpdated: '2026-07-01' },
-    { id: 'r-mw', weightClass: 'Middleweight', rankings: ['f20', 'f6', 'f10', 'f27'], champion: 'f20', lastUpdated: '2026-07-01' },
-    { id: 'r-lw', weightClass: 'Lightweight', rankings: ['f22', 'f7', 'f11', 'f16', 'f18'], champion: 'f22', lastUpdated: '2026-07-01' },
-    { id: 'r-fw', weightClass: 'Featherweight', rankings: ['f21'], champion: 'f21', lastUpdated: '2026-07-01' },
-    { id: 'r-ww', weightClass: 'Welterweight', rankings: ['f5', 'f3', 'f13', 'f23'], champion: 'f23', lastUpdated: '2026-07-01' }
+    { id: 'r-atg-p4p', weightClass: 'All-Time Pound-for-Pound', sport: 'All', rankings: ['f10', 'f1', 'f8', 'f5', 'f11', 'f27', 'f12', 'f7', 'f13', 'f4', 'f6', 'f16', 'f14', 'f25', 'f24'], champion: null, allowChampion: false, lastUpdated: '2026-09-24' },
+    { id: 'r-atg-boxing', weightClass: 'Boxing: All-Time Greats', sport: 'Boxing', rankings: ['f10', 'f1', 'f11', 'f27', 'f12', 'f13', 'f23', 'f25', 'f24', 'f2', 'f26'], champion: null, allowChampion: false, lastUpdated: '2026-09-24' },
+    { id: 'r-atg-mma', weightClass: 'MMA: All-Time Greats', sport: 'MMA', rankings: ['f8', 'f5', 'f7', 'f6', 'f4', 'f9', 'f22', 'f21', 'f20', 'f3'], champion: null, allowChampion: false, lastUpdated: '2026-09-24' },
+    { id: 'r-atg-muaythai', weightClass: 'Muay Thai & Kickboxing: All-Time Greats', sport: 'Muay Thai', rankings: ['f16', 'f15'], champion: null, allowChampion: false, lastUpdated: '2026-09-24' },
+    { id: 'r-atg-grappling', weightClass: 'Grappling: All-Time Greats', sport: 'Grappling', rankings: ['f14', 'f19', 'f17'], champion: null, allowChampion: false, lastUpdated: '2026-09-24' }
   ],
 
   gyms: [
@@ -757,4 +797,17 @@ const DEFAULT_DATA = {
       { name: 'Shoulder Dislocates', sets: '3x15', description: 'Uses resistance band to lubricate rotator cuffs against arm attacks.', videoUrl: '' }
     ]}
   ]
+};
+
+// Bump when seed content changes so existing browsers pick up the new defaults.
+const DEFAULT_DATA_VERSION = 2;
+
+// Stores whose seed records are replaced wholesale on upgrade; other stores only gain missing fields.
+const SEED_REPLACE_STORES = ['articles', 'events', 'rankings'];
+
+// Seed records removed in later versions (fabricated or out-of-date content).
+const REMOVED_SEED_IDS = {
+  articles: ['a1', 'a4', 'a5'],
+  events: ['e1', 'e2', 'e3', 'e4'],
+  rankings: ['r-pfp', 'r-hw', 'r-mw', 'r-lw', 'r-fw', 'r-ww']
 };

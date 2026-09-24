@@ -1,22 +1,27 @@
 /* ============================================
    FightHub — AI Content Bot Processing Layer
-   Automated node script that ingests RSS feeds and API fight cards,
-   rewrites them into brand-aligned 150-word fight previews,
-   tags fighters & disciplines, and posts to Database/dataStore.
+   Ingests RSS feeds and API fight cards, rewrites news items into
+   short previews via OpenRouter, tags fighters & disciplines, and
+   saves them to the dataStore.
+
+   Every article keeps a link to its original source. Without an API key
+   (or if the AI call fails) the item is stored as a plain news brief using
+   the source's own headline and summary, never generated filler.
    ============================================ */
 
 class ContentBotEngine {
   constructor() {
     this.model = localStorage.getItem('fighthub_model_id') || 'z-ai/glm-5.2';
+    this.maxItemsPerRun = 5;
   }
 
-  // Get active OpenRouter or Gemini API Key securely from cloud/dataStore
+  // Get active OpenRouter API key from cloud/dataStore
   async getApiKey() {
     if (window.dataStore && window.dataStore.getSecureKey) {
       const key = await window.dataStore.getSecureKey('openrouter');
       if (key) return key;
     }
-    return localStorage.getItem('fighthub_openrouter_key') || localStorage.getItem('fighthub_gemini_key') || '';
+    return localStorage.getItem('fighthub_openrouter_key') || '';
   }
 
   async setApiKey(key) {
@@ -29,55 +34,60 @@ class ContentBotEngine {
     }
   }
 
-  // Orchestrate the full automated pipeline execution
   async runFullPipeline(logCallback = () => {}) {
-    logCallback('⚡ Starting FightHub Automated Data Pipeline...');
+    logCallback('⚡ Starting FightHub data pipeline...');
 
-    // Step 1: Fetch Live Fight Schedules & Card Matchups
-    logCallback('📡 [Step 1/4] Querying API-Sports MMA & Boxing schedule feed...');
+    // Step 1: Fight schedules
+    logCallback('📡 [Step 1/4] Querying API-Sports schedule feed...');
     const schedules = await window.fightAPIService.fetchLiveSchedules();
-    logCallback(`✅ Ingested ${schedules.length} fight events & bout matchups.`);
+    logCallback(schedules.length
+      ? `✅ Received ${schedules.length} events.`
+      : 'ℹ️ No schedule data (API-Sports key not set or feed unavailable). Skipping.');
 
-    // Step 2: Fetch Breaking RSS Feeds
-    logCallback('📰 [Step 2/4] Pulling RSS breaking news from MMA Fighting & BoxingScene...');
+    // Step 2: RSS news
+    logCallback('📰 [Step 2/4] Pulling RSS news feeds...');
     const rssArticles = await window.rssParserService.fetchAllBreakingNews();
-    logCallback(`✅ Fetched ${rssArticles.length} breaking combat news items.`);
+    logCallback(`✅ Fetched ${rssArticles.length} news items.`);
 
-    // Step 3: AI LLM Content Bot Processing
-    logCallback('🤖 [Step 3/4] Routing raw feeds through Gemini LLM Node for 150-word Fight Previews & Fighter Tagging...');
-    const processedArticles = [];
+    // Only process stories we haven't stored before
+    const fresh = [];
+    for (const item of rssArticles) {
+      if (fresh.length >= this.maxItemsPerRun) break;
+      if (!(await window.dataStore.getById('articles', item.id))) fresh.push(item);
+    }
+
+    // Step 3: AI processing
     const apiKey = await this.getApiKey();
+    logCallback(apiKey
+      ? `🤖 [Step 3/4] Rewriting ${fresh.length} new stories via OpenRouter (${this.model})...`
+      : `ℹ️ [Step 3/4] No OpenRouter key set, so saving ${fresh.length} new stories as source-linked briefs.`);
 
-    // Process top 3 breaking RSS items through LLM
-    const itemsToProcess = rssArticles.slice(0, 3);
-    for (let i = 0; i < itemsToProcess.length; i++) {
-      const item = itemsToProcess[i];
-      logCallback(`  -> Processing item ${i+1}/${itemsToProcess.length}: "${item.title.substring(0, 45)}..."`);
-      
+    const processedArticles = [];
+    for (let i = 0; i < fresh.length; i++) {
+      const item = fresh[i];
+      logCallback(`  -> ${i + 1}/${fresh.length}: "${item.title.substring(0, 60)}"`);
+      if (!apiKey) {
+        processedArticles.push(this.buildNewsBrief(item));
+        continue;
+      }
       try {
-        const preview = await this.generate150WordFightPreview(item, apiKey);
-        processedArticles.push(preview);
+        processedArticles.push(await this.generateFightPreview(item, apiKey));
       } catch (err) {
-        logCallback(`  ⚠️ LLM Processing fallback applied for item ${i+1}: ${err.message}`);
-        const fallbackPreview = this.generateFallbackPreview(item);
-        processedArticles.push(fallbackPreview);
+        logCallback(`  ⚠️ AI rewrite failed (${err.message}); saving as a news brief instead.`);
+        processedArticles.push(this.buildNewsBrief(item));
       }
     }
 
-    // Step 4: Database & UI Linkage
-    logCallback('💾 [Step 4/4] Writing fight cards and 150-word AI previews into Database & UI...');
-    
-    // Save articles
+    // Step 4: Save (upsert, so re-running never duplicates)
+    logCallback('💾 [Step 4/4] Saving to database...');
     for (const article of processedArticles) {
-      await window.dataStore.add('articles', article);
+      await window.dataStore.upsert('articles', article);
     }
-
-    // Save event fight cards
     for (const event of schedules) {
-      await window.dataStore.add('events', event);
+      await window.dataStore.upsert('events', event);
     }
 
-    logCallback('🎉 Pipeline complete! Database & UI updated successfully.');
+    logCallback('🎉 Pipeline complete.');
 
     return {
       status: 'success',
@@ -87,40 +97,54 @@ class ContentBotEngine {
     };
   }
 
-  // Call LLM Node (Gemini 2.5/3.5/3.8 Flash via OpenRouter) to generate 150-word Fight Preview JSON
-  async generate150WordFightPreview(rssItem, apiKey) {
-    if (!apiKey) {
-      return this.generateFallbackPreview(rssItem);
-    }
+  // Fields shared by AI previews and plain briefs
+  baseArticle(rssItem) {
+    return {
+      id: rssItem.id,
+      slug: rssItem.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+      category: rssItem.category,
+      discipline: rssItem.category,
+      image: rssItem.thumbnail,
+      sourceName: rssItem.source,
+      sourceUrl: rssItem.link,
+      status: 'published',
+      likes: 0,
+      comments: 0,
+      date: (rssItem.pubDate ? new Date(rssItem.pubDate) : new Date()).toISOString().split('T')[0]
+    };
+  }
 
-    const prompt = `You are FightHub's Senior Combat Sports AI Editor. Rewrite the raw news snippet below into a high-octane, brand-aligned 150-WORD FIGHT PREVIEW ARTICLE.
+  buildNewsBrief(rssItem) {
+    const summary = rssItem.description.length > 280
+      ? rssItem.description.substring(0, 277).trimEnd() + '...'
+      : rssItem.description;
+    return {
+      ...this.baseArticle(rssItem),
+      title: rssItem.title,
+      excerpt: summary.substring(0, 140),
+      content: summary,
+      author: rssItem.source,
+      tags: [rssItem.category],
+      isAIPreview: false
+    };
+  }
 
-RAW NEWS ITEM:
+  async generateFightPreview(rssItem, apiKey) {
+    const prompt = `You are FightHub's combat sports editor. Rewrite the news item below as a ~150-word article in FightHub's voice.
+
+NEWS ITEM:
 Title: ${rssItem.title}
 Source: ${rssItem.source}
 Category: ${rssItem.category}
 Details: ${rssItem.description}
 
-STRICT REQUIREMENTS:
-1. Write EXACTLY a ~150-word engaging, technical, and analytical fight preview.
-2. Tag all fighters mentioned and identify the primary discipline (MMA, Boxing, Muay Thai, or BJJ).
-3. Provide a bout prediction summary with estimated odds or winning path.
-4. Output ONLY clean JSON matching this exact structure:
-{
-  "title": "Headline for fight preview",
-  "slug": "url-friendly-slug",
-  "category": "${rssItem.category}",
-  "discipline": "${rssItem.category}",
-  "excerpt": "Short 1-sentence hook",
-  "content": "The full ~150-word detailed fight preview text...",
-  "author": "FightHub AI Bot (${rssItem.source})",
-  "image": "${rssItem.thumbnail}",
-  "taggedFighters": ["Fighter Name 1", "Fighter Name 2"],
-  "prediction": "Winning prediction statement",
-  "isAIPreview": true,
-  "status": "published",
-  "date": "${new Date().toISOString().split('T')[0]}"
-}`;
+RULES:
+1. Use ONLY facts stated in the news item. Do not add records, dates, venues, results, quotes or odds that are not in it.
+2. You may add general, widely known context about the fighters' styles, but nothing that could be a new factual claim.
+3. List every fighter named in the item in "taggedFighters".
+4. "prediction" is optional analysis; leave it as an empty string if the item isn't about an upcoming fight.
+5. Output ONLY a JSON object with exactly these keys:
+{"title": "...", "excerpt": "one-sentence hook", "content": "the ~150-word article", "taggedFighters": ["..."], "prediction": "", "tags": ["..."]}`;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -133,7 +157,8 @@ STRICT REQUIREMENTS:
       body: JSON.stringify({
         model: this.model,
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.6
+        response_format: { type: 'json_object' },
+        temperature: 0.4
       })
     });
 
@@ -142,62 +167,20 @@ STRICT REQUIREMENTS:
     }
 
     const data = await response.json();
-    const contentText = data.choices[0].message.content.trim();
-    
-    // Parse JSON response
-    let cleanJson = contentText;
-    if (contentText.includes('```')) {
-      cleanJson = contentText.replace(/```json/g, '').replace(/```/g, '').trim();
-    }
-
-    const parsed = JSON.parse(cleanJson);
-    parsed.id = 'art-preview-' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
-    return parsed;
-  }
-
-  // Fallback 150-word fight preview generator when key is not provided
-  generateFallbackPreview(rssItem) {
-    const slug = rssItem.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    
-    let previewText = '';
-    let taggedFighters = [];
-    let prediction = '';
-
-    if (rssItem.category === 'Boxing') {
-      taggedFighters = ['Terence Crawford', 'Vergil Ortiz Jr.'];
-      prediction = 'Crawford via 10th Round TKO through surgical counter-striking.';
-      previewText = `The combat world stands still as undefeated pound-for-pound king Terence "Bud" Crawford prepares to collide with knockout artist Vergil Ortiz Jr. in a high-stakes junior middleweight title clash. Crawford brings unmatched switch-hitting versatility, elite footwork, and devastating ring IQ. Meanwhile, Ortiz Jr. possesses relentless forward pressure and round-ending power that has flattened opponents throughout his career. 
-
-Tactically, Crawford will look to pick apart Ortiz's defense from range using his jab to set up sharp counters, while Ortiz must cut off the ring and force a brutal inside brawl. Expect a tense early feel-out period before tactical fireworks ignite in the middle rounds. This 150-word breakdown analyzes every angle of a fight that will define division dominance and pound-for-pound supremacy.`;
-    } else if (rssItem.category === 'Muay Thai') {
-      taggedFighters = ['Rodtang Jitmuangnon', 'Jonathan Haggerty'];
-      prediction = 'Rodtang via Unanimous Decision in 4-ounce glove warfare.';
-      previewText = `ONE Championship lights up Lumpinee Stadium with the trilogy showdown between "The Iron Man" Rodtang Jitmuangnon and Jonathan "The General" Haggerty. Fought under explosive 4-ounce Muay Thai rules, this bout guarantees unrelenting action. Rodtang's iron chin and heavy leg kicks face off against Haggerty's crisp teeps and elbows. 
-
-Haggerty must maintain distance to neutralize Rodtang's ferocious pocket trades. However, Rodtang's ability to walk through punishment makes him a constant danger across five rounds. Fans can expect a masterpiece of Thai martial arts craftsmanship, power kicks, and tactical brilliance in Bangkok.`;
-    } else {
-      taggedFighters = ['Alex Pereira', 'Magomed Ankalaev'];
-      prediction = 'Pereira via Round 2 KO via counter left hook.';
-      previewText = `Light Heavyweight king Alex Pereira returns to defend his crown against Dagestani powerhouse Magomed Ankalaev at UFC 316. Pereira's thunderous calf kicks and deadly left hook have dominated the 205-pound division, but Ankalaev presents the ultimate test with his elite wrestling and methodical pressure. 
-
-Pereira must control distance and utilize calf kicks to hinder Ankalaev's level changes. Conversely, Ankalaev will look to initiate clinches against the cage and take Pereira to the canvas where his ground-and-pound reigns supreme. This classic Striker vs. Grappler battle will dictate the light heavyweight crown in Las Vegas.`;
-    }
+    const text = (data.choices?.[0]?.message?.content || '').replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(text);
+    if (!parsed.title || !parsed.content) throw new Error('AI response missing title/content');
 
     return {
-      id: 'art-preview-' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5),
-      title: `AI Fight Preview: ${rssItem.title}`,
-      slug: slug,
-      category: rssItem.category,
-      discipline: rssItem.category,
-      excerpt: rssItem.description.substring(0, 110) + '...',
-      content: previewText,
-      author: `FightHub Content Bot (${rssItem.source})`,
-      image: rssItem.thumbnail,
-      taggedFighters: taggedFighters,
-      prediction: prediction,
-      isAIPreview: true,
-      status: 'published',
-      date: new Date().toISOString().split('T')[0]
+      ...this.baseArticle(rssItem),
+      title: String(parsed.title),
+      excerpt: String(parsed.excerpt || ''),
+      content: String(parsed.content),
+      taggedFighters: Array.isArray(parsed.taggedFighters) ? parsed.taggedFighters.map(String) : [],
+      prediction: String(parsed.prediction || ''),
+      tags: Array.isArray(parsed.tags) ? parsed.tags.map(String) : [rssItem.category],
+      author: `FightHub AI (source: ${rssItem.source})`,
+      isAIPreview: true
     };
   }
 }

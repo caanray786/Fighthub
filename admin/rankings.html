@@ -75,25 +75,14 @@
         <!-- Drag & Drop ranking panel -->
         <div class="admin-panel">
           <div class="admin-panel-header" style="justify-content: flex-start; gap: var(--space-md); flex-wrap: wrap;">
-            <h3>Select Weight Class:</h3>
-            <select id="select-weight-class" style="background: var(--admin-bg); border: 1px solid var(--admin-border); color: var(--admin-text); padding: var(--space-xs) var(--space-sm); border-radius: var(--radius-sm); font-size: 0.9rem;">
-              <option value="r-pfp">Pound-for-Pound</option>
-              <option value="r-hw">Heavyweight</option>
-              <option value="r-lhw">Light Heavyweight</option>
-              <option value="r-mw">Middleweight</option>
-              <option value="r-ww">Welterweight</option>
-              <option value="r-lw">Lightweight</option>
-              <option value="r-fw">Featherweight</option>
-              <option value="r-bw">Bantamweight</option>
-              <option value="r-flw">Flyweight</option>
-              <option value="r-sw">Strawweight</option>
-            </select>
+            <h3>Select Ranking List:</h3>
+            <select id="select-weight-class" style="background: var(--admin-bg); border: 1px solid var(--admin-border); color: var(--admin-text); padding: var(--space-xs) var(--space-sm); border-radius: var(--radius-sm); font-size: 0.9rem;"></select>
           </div>
           
           <div class="admin-panel-body">
             <!-- Alert Tip -->
             <div style="background: var(--admin-accent-light); color: var(--admin-text); border-left: 4px solid var(--admin-accent); padding: var(--space-md); border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: var(--space-lg);">
-              💡 <strong>How-To:</strong> Drag and drop the cards using the drag handles on the left. Toggle the <strong>👑 Champion</strong> button to assign the belt. To remove a fighter from the rankings, click the red <strong>✖</strong> icon on the right.
+              💡 <strong>How-To:</strong> Drag and drop the cards using the drag handles on the left. To remove a fighter from the rankings, click the red <strong>✖</strong> icon on the right.
             </div>
 
             <!-- Drag container -->
@@ -134,6 +123,7 @@
   </div>
 
   <!-- Scripts -->
+  <script src="../js/config.js"></script>
   <script src="../js/data-defaults.js"></script>
   <script src="../js/datastore.js"></script>
   <script src="../js/admin-app.js"></script>

@@ -21,15 +21,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentPromotion = 'All';
   let selectedDateStr = null; // YYYY-MM-DD format
   
-  // Start calendar view on July 2026 (matching default seed data start)
-  let calendarYear = 2026;
-  let calendarMonth = 6; // July is index 6 (0-indexed: Jan=0, Dec=11)
+  // Calendar opens on the current month
+  const now = new Date();
+  const today = todayStr();
+  let calendarYear = now.getFullYear();
+  let calendarMonth = now.getMonth(); // 0-indexed
 
   // 1. Fetch data
   try {
     allEvents = await dataStore.getAll('events');
     // Sort events by date ascending
-    allEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+    allEvents.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
     
     initEventsPage();
   } catch (err) {
@@ -150,8 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         dayDiv.style.border = '1px solid var(--accent)';
       }
 
-      // Check if date is today (July 3, 2026 is current runtime date)
-      if (calendarYear === 2026 && calendarMonth === 6 && day === 3) {
+      if (dateStr === today) {
         dayDiv.classList.add('today');
       }
 
@@ -205,11 +206,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       filtered = filtered.filter(e => e.promotion === currentPromotion);
     }
     
-    // Apply date filter
+    // Apply date filter; without one, list upcoming events only
     if (selectedDateStr) {
       filtered = filtered.filter(e => e.date === selectedDateStr);
       eventsViewTitle.innerText = `Fights Scheduled on ${formatDateLong(selectedDateStr)}`;
     } else {
+      filtered = filtered.filter(e => e.date >= today);
       eventsViewTitle.innerText = `${currentPromotion === 'All' ? 'All' : currentPromotion} Upcoming Events`;
     }
 
@@ -232,48 +234,56 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Render cards
-    filtered.forEach(evt => {
-      const dateObj = new Date(evt.date);
-      const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-      const monthStr = months[dateObj.getMonth()] || 'JUL';
-      const dayStr = String(dateObj.getDate()).padStart(2, '0') || '01';
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+    eventsListContainer.innerHTML = filtered.map(evt => {
+      const dateObj = parseLocalDate(evt.date);
+      const monthStr = months[dateObj.getMonth()] || '';
+      const dayStr = String(dateObj.getDate()).padStart(2, '0');
+      const isPast = evt.date < today;
 
       let badgeClass = 'badge-accent';
       if (evt.promotion === 'Boxing') badgeClass = 'badge-info';
       if (evt.promotion === 'ONE') badgeClass = 'badge-warning';
       if (evt.promotion === 'PFL') badgeClass = 'badge-success';
 
-      const fightsListHtml = (evt.fights || []).map(f => `<li>🥊 ${f}</li>`).join('');
+      const location = [evt.venue, evt.city, evt.country].filter(v => v && v !== 'TBA').join(', ') || 'Venue TBA';
+      const fightsListHtml = (evt.fights || []).map(f => `<li>🥊 ${escapeHtml(f)}</li>`).join('');
+      const ticketUrl = safeUrl(evt.ticketUrl);
+      const sourceUrl = safeUrl(evt.sourceUrl);
 
-      eventsListContainer.innerHTML += `
-        <div class="event-card animate-on-scroll" style="width: 100%;">
+      return `
+        <div class="event-card animate-on-scroll" style="width: 100%;${isPast ? ' opacity:0.7;' : ''}">
           <div class="event-date-box">
             <div class="event-month">${monthStr}</div>
             <div class="event-day">${dayStr}</div>
           </div>
           <div class="event-info" style="flex-grow:1;">
-            <span class="badge ${badgeClass}" style="margin-bottom: 5px;">${evt.promotion}</span>
-            <h3>${evt.name}</h3>
+            <span class="badge ${badgeClass}" style="margin-bottom: 5px;">${escapeHtml(evt.promotion)}</span>
+            ${isPast ? '<span class="badge" style="margin-bottom: 5px;">Completed</span>' : ''}
+            <h3>${escapeHtml(evt.name)}</h3>
             <div class="event-location" style="margin-bottom: 10px;">
-              📍 ${evt.venue}, ${evt.city}, ${evt.country} &nbsp;|&nbsp; 🕒 ${evt.time}
+              📍 ${escapeHtml(location)} &nbsp;|&nbsp; 🕒 ${escapeHtml(evt.time || 'TBA')}
             </div>
-            
-            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px;">${evt.description}</p>
-            
+
+            ${evt.description ? `<p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px;">${escapeHtml(evt.description)}</p>` : ''}
+
             <div class="event-fights" style="border-top:1px solid var(--border-color); padding-top:10px;">
               <div style="font-size: 0.8rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:5px;">Featured Fights</div>
               <ul style="padding-left:0; list-style:none; display:grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.85rem; color:var(--text-secondary);">
-                ${fightsListHtml || '<li>Card details announced soon</li>'}
+                ${fightsListHtml || '<li>Card to be announced</li>'}
               </ul>
             </div>
+            ${sourceUrl ? `<div style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;"><a href="${sourceUrl}" target="_blank" rel="noopener">Source</a></div>` : ''}
           </div>
-          
+
+          ${ticketUrl && !isPast ? `
           <div style="margin-left:15px; display:flex; flex-direction:column; gap:10px;">
-            <a href="${evt.ticketUrl || '#'}" class="btn btn-primary btn-sm" onclick="showToast('Redirecting to ticket portal...', 'success')">Tickets</a>
-          </div>
+            <a href="${ticketUrl}" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Tickets</a>
+          </div>` : ''}
         </div>
       `;
-    });
+    }).join('');
 
     if (window.initScrollAnimations) {
       window.initScrollAnimations();
@@ -283,6 +293,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Helpers
   function formatDateLong(dateStr) {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateStr).toLocaleDateString(undefined, options);
+    return parseLocalDate(dateStr).toLocaleDateString(undefined, options);
   }
 });

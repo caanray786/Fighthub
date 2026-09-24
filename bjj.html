@@ -169,6 +169,7 @@
   </footer>
 
   <!-- Scripts -->
+  <script src="js/config.js"></script>
   <script src="js/data-defaults.js"></script>
   <script src="js/datastore.js"></script>
   <script src="js/app.js"></script>
@@ -194,8 +195,8 @@
       // Quick facts
       const factsContainer = document.getElementById('ma-facts');
       factsContainer.innerHTML = `
-        <div class="ma-quick-fact"><span class="fact-icon">📍</span> Origin: ${ma.origin}</div>
-        <div class="ma-quick-fact"><span class="fact-icon">📅</span> Founded: ${ma.founded}</div>
+        <div class="ma-quick-fact"><span class="fact-icon">📍</span> Origin: ${escapeHtml(ma.origin)}</div>
+        <div class="ma-quick-fact"><span class="fact-icon">📅</span> Founded: ${escapeHtml(ma.founded)}</div>
         <div class="ma-quick-fact"><span class="fact-icon">🥋</span> Style: Ground Submissions</div>
       `;
 
@@ -204,9 +205,9 @@
       detailHero.style.background = `linear-gradient(135deg, rgba(10,10,10,0.98) 0%, rgba(10,10,10,0.85) 50%, rgba(230,57,70,0.15) 100%)`;
 
       // Populate tab content
-      document.getElementById('content-history').innerHTML = `<p>${ma.history}</p>`;
-      document.getElementById('content-rules').innerHTML = `<p>${ma.rules}</p>`;
-      document.getElementById('content-guide').innerHTML = `<p>${ma.beginnerGuide}</p>`;
+      document.getElementById('content-history').innerHTML = `<p>${escapeHtml(ma.history)}</p>`;
+      document.getElementById('content-rules').innerHTML = `<p>${escapeHtml(ma.rules)}</p>`;
+      document.getElementById('content-guide').innerHTML = `<p>${escapeHtml(ma.beginnerGuide)}</p>`;
       
       // Techniques
       const techGrid = document.getElementById('content-techniques');
@@ -215,7 +216,7 @@
         ma.techniques.forEach(tech => {
           techGrid.innerHTML += `
             <div class="card card-glass" style="padding: 20px;">
-              <h4 class="text-accent" style="font-size: 1.25rem; margin-bottom: 8px;">${tech}</h4>
+              <h4 class="text-accent" style="font-size: 1.25rem; margin-bottom: 8px;">${escapeHtml(tech)}</h4>
               <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--text-secondary);">A core mechanical movement or technique essential to mastering this combat art.</p>
             </div>
           `;
@@ -231,7 +232,7 @@
         ma.equipment.forEach(eq => {
           equipGrid.innerHTML += `
             <div class="card card-glass" style="padding: 20px;">
-              <h4 class="text-accent" style="font-size: 1.25rem; margin-bottom: 8px;">${eq}</h4>
+              <h4 class="text-accent" style="font-size: 1.25rem; margin-bottom: 8px;">${escapeHtml(eq)}</h4>
               <p style="font-size: 0.9rem; margin-bottom: 0; color: var(--text-secondary);">Required gear or protective apparel for safe, effective training sessions.</p>
             </div>
           `;
@@ -249,7 +250,7 @@
             <div class="card card-glass" style="padding: 20px; display: flex; align-items: center; gap: 15px;">
               <div style="font-size: 2.5rem; background: var(--bg-tertiary); padding: 10px; border-radius: var(--radius-sm);">🥋</div>
               <div>
-                <h4 style="margin-bottom: 4px;">${fighter}</h4>
+                <h4 style="margin-bottom: 4px;">${escapeHtml(fighter)}</h4>
                 <p style="font-size: 0.85rem; color: var(--accent); margin-bottom: 0;">Legendary Practitioner</p>
               </div>
             </div>
@@ -267,7 +268,7 @@
           tipsList.innerHTML += `
             <li class="card card-glass animate-on-scroll" style="padding: 15px 20px; margin-bottom: 12px; display: flex; gap: 15px; align-items: center;">
               <div style="font-family: var(--font-heading); font-size: 2rem; color: var(--accent); min-width: 30px;">0${idx + 1}</div>
-              <div style="color: var(--text-secondary); font-size: 0.95rem;">${tip}</div>
+              <div style="color: var(--text-secondary); font-size: 0.95rem;">${escapeHtml(tip)}</div>
             </li>
           `;
         });

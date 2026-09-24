@@ -20,10 +20,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 1. Fetch data
   try {
-    allArticles = await dataStore.getAll('articles');
+    allArticles = (await dataStore.getAll('articles')).filter(a => a.status !== 'draft');
     // Sort articles by date descending
-    allArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
+    allArticles.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
     renderNews();
   } catch (err) {
     console.error('Error loading articles:', err);
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const commentCount = getCommentCount(art.id);
     
     // Increment default likes count if stored liked
-    const likeDisplayCount = art.likes + (isLiked ? 1 : 0);
+    const likeDisplayCount = (art.likes || 0) + (isLiked ? 1 : 0);
 
     featuredContainer.innerHTML = `
       <div class="section-header" style="text-align:left; margin-bottom:var(--space-xl);">
@@ -66,25 +66,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="section-line" style="margin: 10px 0;"></div>
       </div>
       <div class="article-featured animate-on-scroll">
-        <div class="article-image" style="background: linear-gradient(135deg, #1e0205 0%, #0c0001 100%); display:flex; align-items:center; justify-content:center; font-size:6rem; cursor:pointer;" onclick="openArticleModal('${art.id}')">
+        <div class="article-image" style="background: linear-gradient(135deg, #1e0205 0%, #0c0001 100%); display:flex; align-items:center; justify-content:center; font-size:6rem; cursor:pointer;" data-open-article="${escapeHtml(art.id)}">
           📰
         </div>
         <div class="article-body">
           <div class="article-meta">
-            <span class="badge badge-accent">${art.category}</span>
+            <span class="badge badge-accent">${escapeHtml(art.category)}</span>
             <span>${formatDate(art.date)}</span>
-            <span>By ${art.author}</span>
+            <span>By ${escapeHtml(art.author)}</span>
           </div>
-          <h3 class="article-title" style="cursor:pointer;" onclick="openArticleModal('${art.id}')">${art.title}</h3>
-          <p class="article-excerpt">${art.excerpt}</p>
+          <h3 class="article-title" style="cursor:pointer;" data-open-article="${escapeHtml(art.id)}">${escapeHtml(art.title)}</h3>
+          <p class="article-excerpt">${escapeHtml(art.excerpt)}</p>
           <div class="article-actions" style="margin-top:auto;">
-            <button class="article-action-btn like-btn ${isLiked ? 'liked' : ''}" data-id="${art.id}">
+            <button class="article-action-btn like-btn ${isLiked ? 'liked' : ''}" data-id="${escapeHtml(art.id)}">
               <span>${isLiked ? '❤️' : '🤍'}</span> <span class="like-count">${likeDisplayCount}</span> Likes
             </button>
-            <button class="article-action-btn" onclick="openArticleModal('${art.id}')">
+            <button class="article-action-btn" data-open-article="${escapeHtml(art.id)}">
               💬 <span>${commentCount}</span> Comments
             </button>
-            <button class="btn btn-secondary btn-sm" onclick="openArticleModal('${art.id}')" style="margin-left:auto;">Read Full Article</button>
+            <button class="btn btn-secondary btn-sm" data-open-article="${escapeHtml(art.id)}" style="margin-left:auto;">Read Full Article</button>
           </div>
         </div>
       </div>
@@ -105,29 +105,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     articles.forEach(art => {
       const isLiked = dataStore.isLiked(art.id);
       const commentCount = getCommentCount(art.id);
-      const likeDisplayCount = art.likes + (isLiked ? 1 : 0);
+      const likeDisplayCount = (art.likes || 0) + (isLiked ? 1 : 0);
 
       const card = document.createElement('div');
       card.className = 'article-card animate-on-scroll';
       card.innerHTML = `
-        <div class="article-image" style="background: linear-gradient(135deg, #111 0%, #1c1c1c 100%); display:flex; align-items:center; justify-content:center; font-size:3.5rem; height: 180px; cursor:pointer;" onclick="openArticleModal('${art.id}')">
+        <div class="article-image" style="background: linear-gradient(135deg, #111 0%, #1c1c1c 100%); display:flex; align-items:center; justify-content:center; font-size:3.5rem; height: 180px; cursor:pointer;" data-open-article="${escapeHtml(art.id)}">
           📰
         </div>
         <div class="article-body">
           <div class="article-meta">
-            <span class="badge badge-accent">${art.category}</span>
+            <span class="badge badge-accent">${escapeHtml(art.category)}</span>
             <span>${formatDate(art.date)}</span>
           </div>
-          <h3 class="article-title" style="cursor:pointer; font-size: 1.15rem;" onclick="openArticleModal('${art.id}')">${art.title}</h3>
-          <p class="article-excerpt" style="font-size:0.85rem; height: 60px; overflow:hidden;">${art.excerpt}</p>
+          <h3 class="article-title" style="cursor:pointer; font-size: 1.15rem;" data-open-article="${escapeHtml(art.id)}">${escapeHtml(art.title)}</h3>
+          <p class="article-excerpt" style="font-size:0.85rem; height: 60px; overflow:hidden;">${escapeHtml(art.excerpt)}</p>
           <div class="article-actions">
-            <button class="article-action-btn like-btn ${isLiked ? 'liked' : ''}" data-id="${art.id}">
+            <button class="article-action-btn like-btn ${isLiked ? 'liked' : ''}" data-id="${escapeHtml(art.id)}">
               <span>${isLiked ? '❤️' : '🤍'}</span> <span class="like-count">${likeDisplayCount}</span>
             </button>
-            <button class="article-action-btn" onclick="openArticleModal('${art.id}')">
+            <button class="article-action-btn" data-open-article="${escapeHtml(art.id)}">
               💬 <span>${commentCount}</span>
             </button>
-            <button class="btn btn-secondary btn-sm" onclick="openArticleModal('${art.id}')" style="margin-left:auto; padding: 4px 10px; font-size:0.75rem;">Read</button>
+            <button class="btn btn-secondary btn-sm" data-open-article="${escapeHtml(art.id)}" style="margin-left:auto; padding: 4px 10px; font-size:0.75rem;">Read</button>
           </div>
         </div>
       `;
@@ -149,20 +149,26 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       btn.classList.toggle('liked', isLikedNow);
       btn.querySelector('span:first-child').innerText = isLikedNow ? '❤️' : '🤍';
-      btn.querySelector('.like-count').innerText = art.likes + (isLikedNow ? 1 : 0);
+      btn.querySelector('.like-count').innerText = (art.likes || 0) + (isLikedNow ? 1 : 0);
       
       showToast(isLikedNow ? 'Liked article!' : 'Unliked article', 'success');
       
       // Update other occurrences (e.g. sync featured and grid if they share same article)
-      document.querySelectorAll(`.like-btn[data-id="${art.id}"]`).forEach(otherBtn => {
+      document.querySelectorAll(`.like-btn[data-id="${CSS.escape(art.id)}"]`).forEach(otherBtn => {
         if (otherBtn !== btn) {
           otherBtn.classList.toggle('liked', isLikedNow);
           otherBtn.querySelector('span:first-child').innerText = isLikedNow ? '❤️' : '🤍';
-          otherBtn.querySelector('.like-count').innerText = art.likes + (isLikedNow ? 1 : 0);
+          otherBtn.querySelector('.like-count').innerText = (art.likes || 0) + (isLikedNow ? 1 : 0);
         }
       });
     });
   }
+
+  // Open the article modal from any element tagged with data-open-article
+  document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('[data-open-article]');
+    if (trigger) openArticleModal(trigger.getAttribute('data-open-article'));
+  });
 
   // 6. Category Tabs handler
   tabs.forEach(tab => {
@@ -199,36 +205,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!art) return;
 
     const isLiked = dataStore.isLiked(art.id);
-    const likeDisplayCount = art.likes + (isLiked ? 1 : 0);
+    const likeDisplayCount = (art.likes || 0) + (isLiked ? 1 : 0);
     const comments = getComments(art.id);
 
-    document.getElementById('modal-article-title').innerText = art.category + ' News';
+    document.getElementById('modal-article-title').innerText = (art.category || 'Latest') + ' News';
     
     // Render Modal Body Content
     const modalBody = document.getElementById('modal-article-body');
     modalBody.innerHTML = `
       <div style="display:flex; flex-direction:column; gap: var(--space-lg);">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-          <span class="badge badge-accent">${art.category}</span>
+          <span class="badge badge-accent">${escapeHtml(art.category)}</span>
           <div style="color:var(--text-muted); font-size:0.85rem;">
-            Published: <strong>${formatDate(art.date)}</strong> &nbsp;|&nbsp; By <strong>${art.author}</strong>
+            Published: <strong>${formatDate(art.date)}</strong> &nbsp;|&nbsp; By <strong>${escapeHtml(art.author)}</strong>
           </div>
         </div>
 
-        <h1 style="font-size:2rem; line-height:1.2; font-family:var(--font-body); font-weight:800;">${art.title}</h1>
+        <h1 style="font-size:2rem; line-height:1.2; font-family:var(--font-body); font-weight:800;">${escapeHtml(art.title)}</h1>
         
         <!-- Placeholder banner in modal -->
         <div style="width:100%; height:280px; background:linear-gradient(135deg, #161616 0%, #2a2a2a 100%); border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:5rem;">
           📰
         </div>
 
-        <div style="font-size:1.05rem; line-height:1.8; color:var(--text-secondary); white-space:pre-line;">
-          ${art.content}
-        </div>
+        <div style="font-size:1.05rem; line-height:1.8; color:var(--text-secondary); white-space:pre-line;">${escapeHtml(art.content)}</div>
+
+        ${art.sourceUrl ? `
+        <p style="font-size:0.9rem; color:var(--text-muted); margin:0;">
+          ${art.isAIPreview ? 'AI-assisted rewrite. ' : ''}Original story: <a href="${safeUrl(art.sourceUrl, '#')}" target="_blank" rel="noopener">${escapeHtml(art.sourceName || 'source')}</a>
+        </p>` : ''}
 
         <!-- Tags -->
         <div style="display:flex; gap:8px; flex-wrap:wrap; border-top:1px solid var(--border-color); padding-top:15px; margin-top:10px;">
-          ${(art.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
+          ${(art.tags || []).map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
         </div>
 
         <!-- Actions in Modal -->
@@ -270,11 +279,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       modalLikeBtn.classList.toggle('liked', isLikedNow);
       modalLikeBtn.querySelector('span:first-child').innerText = isLikedNow ? '❤️' : '🤍';
       
-      const newCount = art.likes + (isLikedNow ? 1 : 0);
+      const newCount = (art.likes || 0) + (isLikedNow ? 1 : 0);
       modalLikeBtn.querySelector('.modal-like-count').innerText = newCount;
       
       // Sync on main page grid/featured
-      document.querySelectorAll(`.like-btn[data-id="${art.id}"]`).forEach(otherBtn => {
+      document.querySelectorAll(`.like-btn[data-id="${CSS.escape(art.id)}"]`).forEach(otherBtn => {
         otherBtn.classList.toggle('liked', isLikedNow);
         otherBtn.querySelector('span:first-child').innerText = isLikedNow ? '❤️' : '🤍';
         otherBtn.querySelector('.like-count').innerText = newCount;
@@ -325,10 +334,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     return comments.map(c => `
       <div style="background:var(--bg-card); border:1px solid var(--border-color); padding:12px 15px; border-radius:var(--radius-sm);">
         <div style="display:flex; justify-content:between; align-items:center; font-size:0.8rem; margin-bottom:4px;">
-          <strong class="text-accent">${c.author}</strong>
+          <strong class="text-accent">${escapeHtml(c.author)}</strong>
           <span style="color:var(--text-muted); margin-left:auto;">${formatRelativeTime(c.date)}</span>
         </div>
-        <p style="font-size:0.9rem; margin-bottom:0; color:var(--text-secondary); line-height:1.4;">${c.text}</p>
+        <p style="font-size:0.9rem; margin-bottom:0; color:var(--text-secondary); line-height:1.4;">${escapeHtml(c.text)}</p>
       </div>
     `).join('');
   }
@@ -344,7 +353,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Helper date formatter
   function formatDate(dateStr) {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateStr).toLocaleDateString(undefined, options);
+    return parseLocalDate(dateStr).toLocaleDateString(undefined, options);
   }
 
   function formatRelativeTime(dateStr) {

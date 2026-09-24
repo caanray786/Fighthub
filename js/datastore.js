@@ -1,21 +1,46 @@
 /* ============================================
    FightHub — DataStore
-   Central data management with localStorage + IndexedDB
+   Central data layer. Two modes:
+   - Cloud: Supabase (shared by every visitor), enabled when js/config.js
+     has a Supabase URL and anon key.
+   - Local: IndexedDB in this browser only (development / offline demo).
    ============================================ */
+
+// Store name (used throughout the front end) -> Supabase table name
+const CLOUD_TABLES = {
+  fighters: 'fighters',
+  articles: 'articles',
+  events: 'events',
+  rankings: 'rankings',
+  gyms: 'gyms',
+  martialArts: 'martial_arts',
+  training: 'training_plans'
+};
 
 class FightHubDataStore {
   constructor() {
     this.dbName = 'FightHubDB';
     this.dbVersion = 1;
     this.db = null;
+    this.supabaseClient = null;
     this.stores = ['fighters', 'articles', 'events', 'rankings', 'gyms', 'martialArts', 'training'];
     this.listeners = {};
-    this.dbOpen = this._initDB();
-    this.ready = this.dbOpen.then(() => this.seedIfEmpty());
+
+    const config = window.FIGHTHUB_CONFIG || {};
+    this.cloud = !!(config.supabaseUrl && config.supabaseAnonKey);
+    this.config = config;
+
+    this.dbOpen = this.cloud ? this._initCloud() : this._initDB();
+    // Seeding and seed upgrades only apply to the local database; the cloud
+    // database is seeded once from supabase/seed.sql.
+    this.ready = this.cloud ? this.dbOpen : this.dbOpen.then(() => this.seedIfEmpty());
   }
 
+  get mode() {
+    return this.cloud ? 'cloud' : 'local';
+  }
 
-
+  // ---- Initialisation ---- //
   async _loadSupabaseSDK() {
     if (window.supabase) return true;
     return new Promise((resolve) => {
@@ -27,25 +52,18 @@ class FightHubDataStore {
     });
   }
 
-  async _initDB() {
-    // 1. Try to load Supabase if credentials are provided in localStorage
-    const supabaseUrl = localStorage.getItem('fighthub_supabase_url');
-    const supabaseKey = localStorage.getItem('fighthub_supabase_key');
-    if (supabaseUrl && supabaseKey) {
-      try {
-        const loaded = await this._loadSupabaseSDK();
-        if (loaded && window.supabase) {
-          this.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-          console.log("Supabase Cloud Database initialized successfully!");
-        }
-      } catch (err) {
-        console.error("Failed to initialize Supabase:", err);
-      }
+  async _initCloud() {
+    const loaded = await this._loadSupabaseSDK();
+    if (!loaded || !window.supabase) {
+      throw new Error('Could not load the Supabase client library.');
     }
+    this.supabaseClient = window.supabase.createClient(this.config.supabaseUrl, this.config.supabaseAnonKey);
+  }
 
+  _initDB() {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(this.dbName, this.dbVersion);
-      
+
       request.onupgradeneeded = (e) => {
         const db = e.target.result;
         this.stores.forEach(storeName => {
@@ -83,18 +101,56 @@ class FightHubDataStore {
     });
   }
 
+  // ---- Cloud helpers ---- //
+  _table(storeName) {
+    const table = CLOUD_TABLES[storeName];
+    if (!table) throw new Error(`Unknown store: ${storeName}`);
+    return this.supabaseClient.from(table);
+  }
+
+  // Each cloud row is { id, doc } where doc holds the full record as JSON
+  _fromRow(row) {
+    return row ? { ...row.doc, id: row.id } : null;
+  }
+
+  _toRow(item) {
+    return { id: item.id, doc: item };
+  }
+
+  _stamp(item) {
+    const now = new Date().toISOString();
+    if (!item.id) item.id = this._generateId();
+    if (!item.createdAt) item.createdAt = now;
+    item.updatedAt = now;
+    return item;
+  }
+
   // ---- CRUD Operations ---- //
   async getAll(storeName) {
     await this.dbOpen;
-    if (this.supabaseClient) {
-      const { data, error } = await this.supabaseClient.from(storeName).select('*');
-      if (error) throw error;
-      return data || [];
+    if (this.cloud) {
+      try {
+        // PostgREST caps responses at 1000 rows, so page through
+        const pageSize = 1000;
+        const all = [];
+        for (let from = 0; ; from += pageSize) {
+          const { data, error } = await this._table(storeName).select('id, doc').order('id').range(from, from + pageSize - 1);
+          if (error) throw error;
+          all.push(...data.map(row => this._fromRow(row)));
+          if (data.length < pageSize) break;
+        }
+        return all;
+      } catch (err) {
+        // If the database is unreachable (e.g. a paused free-tier project),
+        // fall back to the bundled starter content rather than a blank page.
+        console.error(`Cloud read failed for ${storeName}; showing bundled content.`, err);
+        return typeof DEFAULT_DATA !== 'undefined' && Array.isArray(DEFAULT_DATA[storeName])
+          ? DEFAULT_DATA[storeName].map(item => ({ ...item }))
+          : [];
+      }
     }
     return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(storeName, 'readonly');
-      const store = tx.objectStore(storeName);
-      const request = store.getAll();
+      const request = this.db.transaction(storeName, 'readonly').objectStore(storeName).getAll();
       request.onsuccess = () => resolve(request.result || []);
       request.onerror = () => reject(request.error);
     });
@@ -102,15 +158,13 @@ class FightHubDataStore {
 
   async getById(storeName, id) {
     await this.dbOpen;
-    if (this.supabaseClient) {
-      const { data, error } = await this.supabaseClient.from(storeName).select('*').eq('id', id).maybeSingle();
+    if (this.cloud) {
+      const { data, error } = await this._table(storeName).select('id, doc').eq('id', id).maybeSingle();
       if (error) throw error;
-      return data;
+      return this._fromRow(data);
     }
     return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(storeName, 'readonly');
-      const store = tx.objectStore(storeName);
-      const request = store.get(id);
+      const request = this.db.transaction(storeName, 'readonly').objectStore(storeName).get(id);
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
@@ -118,16 +172,13 @@ class FightHubDataStore {
 
   async getByIndex(storeName, indexName, value) {
     await this.dbOpen;
-    if (this.supabaseClient) {
-      const { data, error } = await this.supabaseClient.from(storeName).select('*').eq(indexName, value);
+    if (this.cloud) {
+      const { data, error } = await this._table(storeName).select('id, doc').eq(`doc->>${indexName}`, value);
       if (error) throw error;
-      return data || [];
+      return data.map(row => this._fromRow(row));
     }
     return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(storeName, 'readonly');
-      const store = tx.objectStore(storeName);
-      const index = store.index(indexName);
-      const request = index.getAll(value);
+      const request = this.db.transaction(storeName, 'readonly').objectStore(storeName).index(indexName).getAll(value);
       request.onsuccess = () => resolve(request.result || []);
       request.onerror = () => reject(request.error);
     });
@@ -135,115 +186,112 @@ class FightHubDataStore {
 
   async add(storeName, item) {
     await this.dbOpen;
-    if (!item.id) item.id = this._generateId();
-    if (!item.createdAt) item.createdAt = new Date().toISOString();
-    item.updatedAt = new Date().toISOString();
-    
-    if (this.supabaseClient) {
-      const { data, error } = await this.supabaseClient.from(storeName).insert([item]).select();
+    this._stamp(item);
+
+    if (this.cloud) {
+      const { error } = await this._table(storeName).insert(this._toRow(item));
       if (error) throw error;
-      this._logActivity('add', storeName, item);
-      this._emit(storeName, 'add', item);
-      return data[0];
+    } else {
+      await new Promise((resolve, reject) => {
+        const request = this.db.transaction(storeName, 'readwrite').objectStore(storeName).add(item);
+        request.onsuccess = resolve;
+        request.onerror = () => reject(request.error);
+      });
     }
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(storeName, 'readwrite');
-      const store = tx.objectStore(storeName);
-      const request = store.add(item);
-      request.onsuccess = () => {
-        this._logActivity('add', storeName, item);
-        this._emit(storeName, 'add', item);
-        resolve(item);
-      };
-      request.onerror = () => reject(request.error);
-    });
+    this._logActivity('add', storeName, item);
+    this._emit(storeName, 'add', item);
+    return item;
   }
 
-  async update(storeName, item) {
+  // Merges into the stored record, so fields an edit form doesn't show
+  // (source links, AI tags, createdAt, ...) are kept rather than wiped.
+  async update(storeName, changes) {
     await this.dbOpen;
-    item.updatedAt = new Date().toISOString();
-    
-    if (this.supabaseClient) {
-      const { data, error } = await this.supabaseClient.from(storeName).update(item).eq('id', item.id).select();
+    const existing = changes.id ? await this.getById(storeName, changes.id) : null;
+    const item = this._stamp({ ...(existing || {}), ...changes });
+
+    if (this.cloud) {
+      const { error } = await this._table(storeName).upsert(this._toRow(item));
       if (error) throw error;
-      this._logActivity('edit', storeName, item);
-      this._emit(storeName, 'update', item);
-      return data[0];
+    } else {
+      await new Promise((resolve, reject) => {
+        const request = this.db.transaction(storeName, 'readwrite').objectStore(storeName).put(item);
+        request.onsuccess = resolve;
+        request.onerror = () => reject(request.error);
+      });
     }
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(storeName, 'readwrite');
-      const store = tx.objectStore(storeName);
-      const request = store.put(item);
-      request.onsuccess = () => {
-        this._logActivity('edit', storeName, item);
-        this._emit(storeName, 'update', item);
-        resolve(item);
-      };
-      request.onerror = () => reject(request.error);
-    });
+    this._logActivity('edit', storeName, item);
+    this._emit(storeName, 'update', item);
+    return item;
+  }
+
+  // Insert or replace by id. Used by the pipelines so re-runs don't duplicate records.
+  async upsert(storeName, item) {
+    await this.dbOpen;
+    this._stamp(item);
+
+    if (this.cloud) {
+      const { error } = await this._table(storeName).upsert(this._toRow(item));
+      if (error) throw error;
+    } else {
+      await new Promise((resolve, reject) => {
+        const request = this.db.transaction(storeName, 'readwrite').objectStore(storeName).put(item);
+        request.onsuccess = resolve;
+        request.onerror = () => reject(request.error);
+      });
+    }
+    this._emit(storeName, 'update', item);
+    return item;
   }
 
   async delete(storeName, id) {
     await this.dbOpen;
     const item = await this.getById(storeName, id);
     if (!item) return;
-    
-    if (this.supabaseClient) {
-      const { error } = await this.supabaseClient.from(storeName).delete().eq('id', id);
+
+    if (this.cloud) {
+      const { error } = await this._table(storeName).delete().eq('id', id);
       if (error) throw error;
-      this._logActivity('delete', storeName, item);
-      this._emit(storeName, 'delete', { id });
-      return id;
+    } else {
+      await new Promise((resolve, reject) => {
+        const request = this.db.transaction(storeName, 'readwrite').objectStore(storeName).delete(id);
+        request.onsuccess = resolve;
+        request.onerror = () => reject(request.error);
+      });
     }
-    return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(storeName, 'readwrite');
-      const store = tx.objectStore(storeName);
-      const request = store.delete(id);
-      request.onsuccess = () => {
-        this._logActivity('delete', storeName, item);
-        this._emit(storeName, 'delete', { id });
-        resolve(id);
-      };
-      request.onerror = () => reject(request.error);
-    });
+    this._logActivity('delete', storeName, item);
+    this._emit(storeName, 'delete', { id });
+    return id;
   }
 
   async deleteMany(storeName, ids) {
     await this.dbOpen;
-    if (this.supabaseClient) {
-      const { error } = await this.supabaseClient.from(storeName).delete().in('id', ids);
+    if (this.cloud) {
+      const { error } = await this._table(storeName).delete().in('id', ids);
       if (error) throw error;
-      this._logActivity('delete', storeName, { count: ids.length });
-      this._emit(storeName, 'deleteMany', { ids });
-      return ids;
-    }
-    const tx = this.db.transaction(storeName, 'readwrite');
-    const store = tx.objectStore(storeName);
-    
-    return Promise.all(ids.map(id => {
-      return new Promise((resolve, reject) => {
-        const request = store.delete(id);
-        request.onsuccess = () => resolve(id);
-        request.onerror = () => reject(request.error);
+    } else {
+      await new Promise((resolve, reject) => {
+        const tx = this.db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
+        ids.forEach(id => store.delete(id));
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
       });
-    })).then(result => {
-      this._logActivity('delete', storeName, { count: ids.length });
-      this._emit(storeName, 'deleteMany', { ids });
-      return result;
-    });
+    }
+    this._logActivity('delete', storeName, { count: ids.length });
+    this._emit(storeName, 'deleteMany', { ids });
+    return ids;
   }
 
   async count(storeName) {
     await this.dbOpen;
-    if (this.supabaseClient) {
-      const { count, error } = await this.supabaseClient.from(storeName).select('*', { count: 'exact', head: true });
+    if (this.cloud) {
+      const { count, error } = await this._table(storeName).select('id', { count: 'exact', head: true });
       if (error) throw error;
       return count || 0;
     }
     return new Promise((resolve, reject) => {
-      const tx = this.db.transaction(storeName, 'readonly');
-      const store = tx.objectStore(storeName);
-      const request = store.count();
+      const request = this.db.transaction(storeName, 'readonly').objectStore(storeName).count();
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
@@ -251,93 +299,57 @@ class FightHubDataStore {
 
   async clear(storeName) {
     await this.dbOpen;
-    if (this.supabaseClient) {
-      const { error } = await this.supabaseClient.from(storeName).delete().neq('id', 'placeholder-value');
+    if (this.cloud) {
+      const { error } = await this._table(storeName).delete().not('id', 'is', null);
       if (error) throw error;
-      this._emit(storeName, 'clear');
-      return;
+    } else {
+      await new Promise((resolve, reject) => {
+        const request = this.db.transaction(storeName, 'readwrite').objectStore(storeName).clear();
+        request.onsuccess = resolve;
+        request.onerror = () => reject(request.error);
+      });
+    }
+    this._emit(storeName, 'clear');
+  }
+
+  // Insert-or-replace many records in a single request/transaction
+  async bulkUpsert(storeName, items) {
+    await this.dbOpen;
+    items.forEach(item => this._stamp(item));
+
+    if (this.cloud) {
+      const { error } = await this._table(storeName).upsert(items.map(item => this._toRow(item)));
+      if (error) throw error;
+      return items;
     }
     return new Promise((resolve, reject) => {
       const tx = this.db.transaction(storeName, 'readwrite');
       const store = tx.objectStore(storeName);
-      const request = store.clear();
-      request.onsuccess = () => {
-        this._emit(storeName, 'clear');
-        resolve();
-      };
-      request.onerror = () => reject(request.error);
+      items.forEach(item => store.put(item));
+      tx.oncomplete = () => resolve(items);
+      tx.onerror = () => reject(tx.error);
     });
   }
 
-  // ---- Bulk Operations ---- //
+  // Kept for callers that used the old name
   async bulkAdd(storeName, items) {
-    await this.dbOpen;
-    if (this.supabaseClient) {
-      items.forEach(item => {
-        if (!item.id) item.id = this._generateId();
-        if (!item.createdAt) item.createdAt = new Date().toISOString();
-        item.updatedAt = new Date().toISOString();
-      });
-      const { data, error } = await this.supabaseClient.from(storeName).insert(items).select();
-      if (error) throw error;
-      return data || items;
-    }
-    const tx = this.db.transaction(storeName, 'readwrite');
-    const store = tx.objectStore(storeName);
-    
-    return Promise.all(items.map(item => {
-      if (!item.id) item.id = this._generateId();
-      if (!item.createdAt) item.createdAt = new Date().toISOString();
-      item.updatedAt = new Date().toISOString();
-      
-      return new Promise((resolve, reject) => {
-        const request = store.put(item);
-        request.onsuccess = () => resolve(item);
-        request.onerror = () => reject(request.error);
-      });
-    }));
+    return this.bulkUpsert(storeName, items);
   }
 
-  // ---- Secure Cloud Credentials & Keys Management ---- //
+  // ---- API keys (local only) ---- //
+  // Secrets are never written to the database: anything the browser can read,
+  // a visitor can read too. From Phase 2 the OpenRouter key lives in Supabase
+  // secrets and is used only by the server-side pipeline.
   async saveSecureKey(keyName, value) {
-    await this.dbOpen;
-    if (this.supabaseClient) {
-      try {
-        const { error } = await this.supabaseClient
-          .from('settings')
-          .upsert({ id: keyName, value: value, updatedAt: new Date().toISOString() });
-        if (error) {
-          console.warn("Supabase settings table upsert error, saving locally:", error);
-        }
-      } catch (err) {
-        console.warn("Supabase key save fallback:", err);
-      }
-    }
     try {
-      const encoded = btoa(encodeURIComponent(value));
-      localStorage.setItem('fh_sec_' + keyName, encoded);
+      localStorage.setItem('fh_sec_' + keyName, btoa(encodeURIComponent(value)));
     } catch (e) {
       localStorage.setItem('fh_sec_' + keyName, value);
     }
   }
 
   async getSecureKey(keyName) {
-    await this.dbOpen;
-    if (this.supabaseClient) {
-      try {
-        const { data, error } = await this.supabaseClient
-          .from('settings')
-          .select('value')
-          .eq('id', keyName)
-          .maybeSingle();
-        if (!error && data && data.value) {
-          return data.value;
-        }
-      } catch (err) {
-        console.warn("Supabase key fetch fallback:", err);
-      }
-    }
-    const raw = localStorage.getItem('fh_sec_' + keyName) || localStorage.getItem('fighthub_' + keyName + '_key') || localStorage.getItem('fighthub_openrouter_key');
+    const raw = localStorage.getItem('fh_sec_' + keyName) || localStorage.getItem('fighthub_' + keyName + '_key');
     if (!raw) return '';
     try {
       return decodeURIComponent(atob(raw));
@@ -351,19 +363,13 @@ class FightHubDataStore {
     const all = await this.getAll(storeName);
     const q = query.toLowerCase().trim();
     if (!q) return all;
-    
-    return all.filter(item => {
-      return fields.some(field => {
-        const value = item[field];
-        if (typeof value === 'string') {
-          return value.toLowerCase().includes(q);
-        }
-        if (Array.isArray(value)) {
-          return value.some(v => String(v).toLowerCase().includes(q));
-        }
-        return false;
-      });
-    });
+
+    return all.filter(item => fields.some(field => {
+      const value = item[field];
+      if (typeof value === 'string') return value.toLowerCase().includes(q);
+      if (Array.isArray(value)) return value.some(v => String(v).toLowerCase().includes(q));
+      return false;
+    }));
   }
 
   // ---- Data Export/Import ---- //
@@ -382,7 +388,7 @@ class FightHubDataStore {
     for (const storeName of this.stores) {
       if (data[storeName] && Array.isArray(data[storeName])) {
         await this.clear(storeName);
-        await this.bulkAdd(storeName, data[storeName]);
+        await this.bulkUpsert(storeName, data[storeName]);
       }
     }
     if (data.settings) {
@@ -481,55 +487,90 @@ class FightHubDataStore {
   }
 
   // ---- Admin Auth ---- //
-  getAdminHash() {
-    return localStorage.getItem('fighthub_admin_hash') || this._hashPassword('fighthub2024');
+  // Cloud: Supabase Auth (email + password) plus membership of public.admins.
+  // Local: legacy browser-only password, for development without Supabase.
+
+  async signInAdmin(email, password) {
+    await this.dbOpen;
+    if (this.cloud) {
+      const { error } = await this.supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) throw new Error('Incorrect email or password.');
+      if (!(await this._checkIsAdmin())) {
+        await this.supabaseClient.auth.signOut();
+        throw new Error('This account does not have admin access.');
+      }
+      return true;
+    }
+    if (!this._verifyLocalPassword(password)) throw new Error('Incorrect password.');
+    localStorage.setItem('fighthub_admin_session', JSON.stringify({
+      loggedIn: true,
+      expiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    }));
+    return true;
   }
 
-  setAdminPassword(password) {
-    localStorage.setItem('fighthub_admin_hash', this._hashPassword(password));
-  }
-
-  verifyAdmin(password) {
-    return this._hashPassword(password) === this.getAdminHash();
-  }
-
-  getAdminSession() {
+  async isAdminSignedIn() {
+    await this.dbOpen;
+    if (this.cloud) {
+      const { data } = await this.supabaseClient.auth.getSession();
+      return !!data.session && this._checkIsAdmin();
+    }
     try {
       const session = JSON.parse(localStorage.getItem('fighthub_admin_session'));
-      if (session && new Date(session.expiry) > new Date()) {
-        return session;
-      }
-      localStorage.removeItem('fighthub_admin_session');
-      return null;
+      return !!session && new Date(session.expiry) > new Date();
     } catch {
-      return null;
+      return false;
     }
   }
 
-  setAdminSession() {
-    const session = {
-      loggedIn: true,
-      loginTime: new Date().toISOString(),
-      expiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-    };
-    localStorage.setItem('fighthub_admin_session', JSON.stringify(session));
+  async getAdminEmail() {
+    if (!this.cloud) return null;
+    const { data } = await this.supabaseClient.auth.getUser();
+    return data.user ? data.user.email : null;
   }
 
-  clearAdminSession() {
+  async signOutAdmin() {
+    await this.dbOpen;
+    if (this.cloud) {
+      await this.supabaseClient.auth.signOut();
+    }
     localStorage.removeItem('fighthub_admin_session');
+  }
+
+  async changeAdminPassword(currentPassword, newPassword) {
+    await this.dbOpen;
+    if (this.cloud) {
+      const email = await this.getAdminEmail();
+      const { error: authError } = await this.supabaseClient.auth.signInWithPassword({ email, password: currentPassword });
+      if (authError) throw new Error('Current password is incorrect.');
+      const { error } = await this.supabaseClient.auth.updateUser({ password: newPassword });
+      if (error) throw new Error(error.message);
+      return;
+    }
+    if (!this._verifyLocalPassword(currentPassword)) throw new Error('Current password is incorrect.');
+    localStorage.setItem('fighthub_admin_hash', this._hashPassword(newPassword));
+  }
+
+  async _checkIsAdmin() {
+    const { data, error } = await this.supabaseClient.rpc('is_admin');
+    return !error && data === true;
+  }
+
+  _verifyLocalPassword(password) {
+    const stored = localStorage.getItem('fighthub_admin_hash') || this._hashPassword('fighthub2024');
+    return this._hashPassword(password) === stored;
   }
 
   _hashPassword(password) {
     let hash = 0;
     for (let i = 0; i < password.length; i++) {
-      const char = password.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = ((hash << 5) - hash) + password.charCodeAt(i);
       hash = hash & hash;
     }
     return 'fh_' + Math.abs(hash).toString(36);
   }
 
-  // ---- Activity Log ---- //
+  // ---- Activity Log (this browser only) ---- //
   _logActivity(action, collection, item) {
     try {
       const log = this.getActivityLog();
@@ -539,7 +580,6 @@ class FightHubDataStore {
         itemName: item?.name || item?.title || item?.id || 'Unknown',
         timestamp: new Date().toISOString()
       });
-      // Keep last 50 entries
       localStorage.setItem('fighthub_activity', JSON.stringify(log.slice(0, 50)));
     } catch (e) {
       console.warn('Activity log error:', e);
@@ -576,13 +616,43 @@ class FightHubDataStore {
     (this.listeners['*'] || []).forEach(cb => cb(collection, action, data));
   }
 
-  // ---- Seed Data ---- //
+  // ---- Seed Data (local mode) ---- //
   async seedIfEmpty() {
     const fighterCount = await this.count('fighters');
     if (fighterCount === 0) {
       console.log('Seeding default data...');
       await this._seedDefaults();
       console.log('Default data seeded successfully!');
+    } else {
+      await this._upgradeSeed();
+    }
+    if (typeof DEFAULT_DATA_VERSION !== 'undefined') {
+      localStorage.setItem('fighthub_seed_version', String(DEFAULT_DATA_VERSION));
+    }
+  }
+
+  // Brings an existing local database up to the current seed version without
+  // touching records the admin created.
+  async _upgradeSeed() {
+    if (typeof DEFAULT_DATA === 'undefined' || typeof DEFAULT_DATA_VERSION === 'undefined') return;
+    const stored = parseInt(localStorage.getItem('fighthub_seed_version') || '1', 10);
+    if (stored >= DEFAULT_DATA_VERSION) return;
+
+    console.log(`Upgrading seed data v${stored} -> v${DEFAULT_DATA_VERSION}...`);
+    for (const storeName of this.stores) {
+      const existing = new Map((await this.getAll(storeName)).map(item => [item.id, item]));
+
+      const removed = (REMOVED_SEED_IDS[storeName] || []).filter(id => existing.has(id));
+      if (removed.length) await this.deleteMany(storeName, removed);
+
+      const defaults = DEFAULT_DATA[storeName];
+      if (!Array.isArray(defaults)) continue;
+      const replace = SEED_REPLACE_STORES.includes(storeName);
+      const merged = defaults.map(item => {
+        const current = existing.get(item.id);
+        return !current || replace ? { ...item } : { ...item, ...current };
+      });
+      await this.bulkUpsert(storeName, merged);
     }
   }
 
@@ -591,10 +661,9 @@ class FightHubDataStore {
       console.warn('Default data not loaded');
       return;
     }
-    
     for (const [storeName, items] of Object.entries(DEFAULT_DATA)) {
       if (this.stores.includes(storeName) && Array.isArray(items)) {
-        await this.bulkAdd(storeName, items);
+        await this.bulkUpsert(storeName, items.map(item => ({ ...item })));
       }
     }
   }
@@ -613,7 +682,48 @@ class FightHubDataStore {
   }
 }
 
+// ---- Shared helpers (datastore.js is loaded on every page) ---- //
+
+// Escape text before interpolating it into an innerHTML template. Content can come
+// from RSS feeds, the AI pipeline or admin input, so it must never be trusted as HTML.
+function escapeHtml(value) {
+  if (value === null || value === undefined) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Only allow http(s) and site-relative URLs in href/src attributes.
+function safeUrl(value, fallback = '') {
+  if (!value) return fallback;
+  const url = String(value).trim();
+  if (/^https?:\/\//i.test(url) || /^[\w./-]+$/.test(url)) {
+    return escapeHtml(url);
+  }
+  return fallback;
+}
+
+// 'YYYY-MM-DD' strings parse as UTC midnight with new Date(), which shows the
+// previous day in the Americas. Parse them as local dates instead.
+function parseLocalDate(dateStr) {
+  if (!dateStr) return new Date(NaN);
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+  return m ? new Date(+m[1], +m[2] - 1, +m[3]) : new Date(dateStr);
+}
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+window.escapeHtml = escapeHtml;
+window.safeUrl = safeUrl;
+window.parseLocalDate = parseLocalDate;
+window.todayStr = todayStr;
+
 // Global instance
 const dataStore = new FightHubDataStore();
 window.dataStore = dataStore;
-

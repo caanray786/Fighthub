@@ -57,7 +57,7 @@
   <section class="section" style="padding-bottom: 0;">
     <div class="container">
       <div class="card card-glass" style="padding: var(--space-xl);">
-        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: var(--space-md); flex-wrap: wrap;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-md); flex-wrap: wrap;">
           
           <!-- Location Input -->
           <div>
@@ -87,17 +87,6 @@
             </select>
           </div>
 
-          <!-- Radius Select -->
-          <div>
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted);">Search Radius</label>
-            <select id="radius-select" style="width: 100%; padding: 12px 15px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: var(--text-primary); cursor: pointer;">
-              <option value="5">Within 5 miles</option>
-              <option value="15">Within 15 miles</option>
-              <option value="50">Within 50 miles</option>
-              <option value="any" selected>Any Distance</option>
-            </select>
-          </div>
-
         </div>
       </div>
     </div>
@@ -123,36 +112,12 @@
       <button class="modal-close" id="map-modal-close">&times;</button>
     </div>
     <div class="modal-body" style="padding: var(--space-xl);">
-      <div style="width: 100%; height: 280px; background: #1a1a1a; border-radius: var(--radius-md); margin-bottom: var(--space-lg); border: 1px solid var(--border-color); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-        
-        <!-- Mock Map Visual Overlay -->
-        <div style="position: absolute; inset: 0; opacity: 0.15; background-image: radial-gradient(circle, var(--text-muted) 1px, transparent 1px); background-size: 20px 20px;"></div>
-        
-        <!-- Grid Streets -->
-        <div style="position: absolute; top: 40%; left: 0; right: 0; height: 20px; background: #2a2a2a;"></div>
-        <div style="position: absolute; top: 0; bottom: 0; left: 50%; width: 20px; background: #2a2a2a;"></div>
-        <div style="position: absolute; top: 70%; left: 0; right: 0; height: 15px; background: #222;"></div>
-        
-        <!-- Markers -->
-        <!-- User Location -->
-        <div style="position: absolute; top: 60%; left: 30%; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%);">
-          <div style="width: 12px; height: 12px; background: #00b4d8; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 10px #00b4d8;"></div>
-          <span style="font-size: 0.7rem; color: #00b4d8; margin-top: 3px; font-weight: bold; background: rgba(0,0,0,0.8); padding: 1px 4px; border-radius: 2px;">Your Location</span>
-        </div>
-
-        <!-- Gym Location -->
-        <div style="position: absolute; top: 38%; left: 52%; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -50%);">
-          <div style="font-size: 1.5rem; line-height: 1; animation: float 3s ease-in-out infinite;">📍</div>
-          <span style="font-size: 0.7rem; color: var(--accent); font-weight: bold; background: rgba(0,0,0,0.8); padding: 1px 4px; border-radius: 2px; margin-top: -2px;">Academy</span>
-        </div>
-
-        <div style="position: absolute; bottom: 10px; right: 10px; font-size: 0.75rem; color: var(--text-muted); background: rgba(0,0,0,0.7); padding: 4px 8px; border-radius: 4px;">Mock Interactive Map</div>
-      </div>
+      <iframe id="modal-gym-map" title="Gym location map" loading="lazy" style="width: 100%; height: 280px; border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: var(--space-lg); background: #1a1a1a;"></iframe>
 
       <div style="display: flex; flex-direction: column; gap: var(--space-xs);">
         <p><strong>Address:</strong> <span id="modal-gym-address">Address here</span></p>
         <p><strong>Contact:</strong> <span id="modal-gym-phone">Phone</span> | <span id="modal-gym-email">Email</span></p>
-        <p><strong>Hours:</strong> Mon - Sat: 6:00 AM - 9:00 PM</p>
+        <p id="modal-gym-directions"></p>
       </div>
     </div>
   </div>
@@ -208,6 +173,7 @@
   </footer>
 
   <!-- Scripts -->
+  <script src="js/config.js"></script>
   <script src="js/data-defaults.js"></script>
   <script src="js/datastore.js"></script>
   <script src="js/app.js"></script>
@@ -218,7 +184,6 @@
       const grid = document.getElementById('gyms-grid');
       const locationInput = document.getElementById('location-input');
       const styleSelect = document.getElementById('style-select');
-      const radiusSelect = document.getElementById('radius-select');
       
       const modal = document.getElementById('map-modal');
       const backdrop = document.getElementById('map-modal-backdrop');
@@ -244,20 +209,16 @@
         
         grid.innerHTML = '';
         filtered.forEach(gym => {
-          // Render styles badges
-          const styleBadges = gym.styles.map(s => `<span class="badge badge-info" style="margin-right:4px; margin-bottom:4px; font-size:0.75rem;">${s}</span>`).join('');
-          
-          // Generate rating stars
-          const ratingStars = '⭐'.repeat(Math.round(gym.rating)) + ` <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">(${gym.rating})</span>`;
-          
-          // Render distance
-          const searchLoc = locationInput.value.trim().toLowerCase();
-          let distanceHtml = `🌍 ${gym.city}, ${gym.country}`;
-          if (searchLoc && gym.city.toLowerCase().includes(searchLoc)) {
-            // Generate stable mock distance based on rating & name length
-            const mockDist = ((gym.name.length % 5) + 1.2).toFixed(1);
-            distanceHtml = `📍 ${mockDist} miles away (${gym.city})`;
-          }
+          const styles = gym.styles || [];
+          const styleBadges = styles.map(s => `<span class="badge badge-info" style="margin-right:4px; margin-bottom:4px; font-size:0.75rem;">${escapeHtml(s)}</span>`).join('');
+
+          const rating = Number(gym.rating) || 0;
+          const ratingStars = rating
+            ? '⭐'.repeat(Math.round(rating)) + ` <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">(${rating})</span>`
+            : '';
+
+          // Real distances arrive with the location-aware gym finder (Phase 4)
+          const distanceHtml = `🌍 ${escapeHtml([gym.city, gym.country].filter(Boolean).join(', '))}`;
           
           const card = document.createElement('div');
           card.className = 'card card-glass animate-on-scroll';
@@ -268,30 +229,31 @@
           
           card.innerHTML = `
             <div style="width:100%; height:160px; overflow:hidden; position:relative;">
-              <img src="${gym.image || 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=800&q=80'}" alt="${gym.name}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;">
-              <span class="badge badge-accent" style="position:absolute; top:12px; left:12px;">${gym.styles[0]}</span>
+              <img src="${safeUrl(gym.image, 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=800&q=80')}" alt="${escapeHtml(gym.name)}" loading="lazy" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;">
+              ${styles[0] ? `<span class="badge badge-accent" style="position:absolute; top:12px; left:12px;">${escapeHtml(styles[0])}</span>` : ''}
             </div>
-            
+
             <div style="padding:var(--space-xl); display:flex; flex-direction:column; flex-grow:1; gap:10px;">
-              <h3 style="font-size:1.4rem; margin:0; font-family:var(--font-heading); color:var(--text-primary); text-transform:uppercase;">${gym.name}</h3>
+              <h3 style="font-size:1.4rem; margin:0; font-family:var(--font-heading); color:var(--text-primary); text-transform:uppercase;">${escapeHtml(gym.name)}</h3>
               <div style="font-size:0.9rem; color:var(--accent); font-weight:600; display:flex; align-items:center; gap:5px;">
                 ${distanceHtml}
               </div>
               <div style="margin-bottom:5px;">
                 ${ratingStars}
               </div>
-              <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.5; margin:0; flex-grow:1;">${gym.description}</p>
+              <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.5; margin:0; flex-grow:1;">${escapeHtml(gym.description)}</p>
               
               <div style="border-top:1px solid var(--border-color); padding-top:10px; margin-top:5px;">
                 <div style="display:flex; flex-wrap:wrap;">${styleBadges}</div>
               </div>
               
               <div style="display:grid; grid-template-columns:1fr 1.2fr; gap:10px; margin-top:10px;">
-                <button class="btn btn-secondary btn-sm" onclick="openMapModal('${gym.id}')">View Map</button>
-                <a href="${gym.website}" target="_blank" class="btn btn-primary btn-sm text-center" style="display:flex; align-items:center; justify-content:center;">Visit Site</a>
+                <button class="btn btn-secondary btn-sm js-gym-details">Details</button>
+                ${gym.website ? `<a href="${safeUrl(gym.website, '#')}" target="_blank" rel="noopener" class="btn btn-primary btn-sm text-center" style="display:flex; align-items:center; justify-content:center;">Visit Site</a>` : ''}
               </div>
             </div>
           `;
+          card.querySelector('.js-gym-details').addEventListener('click', () => openMapModal(gym.id));
           grid.appendChild(card);
         });
         
@@ -302,41 +264,28 @@
       function filterGyms() {
         const searchLoc = locationInput.value.trim().toLowerCase();
         const style = styleSelect.value;
-        const radius = radiusSelect.value;
-        
+
         let filtered = allGyms;
-        
-        // 1. Filter by location or name
+
+        // 1. Filter by city, name, address or country
         if (searchLoc) {
-          filtered = filtered.filter(gym => 
-            gym.city.toLowerCase().includes(searchLoc) || 
-            gym.name.toLowerCase().includes(searchLoc) ||
-            gym.address.toLowerCase().includes(searchLoc)
+          filtered = filtered.filter(gym =>
+            [gym.city, gym.name, gym.address, gym.country, gym.zip]
+              .some(v => (v || '').toLowerCase().includes(searchLoc))
           );
         }
-        
+
         // 2. Filter by style
         if (style !== 'all') {
-          filtered = filtered.filter(gym => gym.styles.includes(style));
+          filtered = filtered.filter(gym => (gym.styles || []).includes(style));
         }
-        
-        // 3. Filter by distance range (mock logic)
-        if (radius !== 'any' && searchLoc) {
-          const maxDistance = parseFloat(radius);
-          filtered = filtered.filter(gym => {
-            // stable mock distance
-            const mockDist = (gym.name.length % 5) + 1.2;
-            return mockDist <= maxDistance;
-          });
-        }
-        
+
         renderGyms(filtered);
       }
       
       // Bind Events
       locationInput.addEventListener('input', filterGyms);
       styleSelect.addEventListener('change', filterGyms);
-      radiusSelect.addEventListener('change', filterGyms);
       
       // Map Modal Trigger
       window.openMapModal = (id) => {
@@ -344,9 +293,24 @@
         if (!gym) return;
         
         document.getElementById('modal-gym-name').innerText = gym.name;
-        document.getElementById('modal-gym-address').innerText = `${gym.address}, ${gym.city}, ${gym.state || ''} ${gym.zip || ''}`;
+        document.getElementById('modal-gym-address').innerText = [gym.address, gym.city, [gym.state, gym.zip].filter(Boolean).join(' '), gym.country].filter(Boolean).join(', ');
         document.getElementById('modal-gym-phone').innerText = gym.phone || 'N/A';
         document.getElementById('modal-gym-email').innerText = gym.email || 'N/A';
+
+        // Real OpenStreetMap embed centred on the gym's coordinates
+        const mapFrame = document.getElementById('modal-gym-map');
+        const directions = document.getElementById('modal-gym-directions');
+        const lat = Number(gym.lat), lng = Number(gym.lng);
+        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          const bbox = [lng - 0.01, lat - 0.006, lng + 0.01, lat + 0.006].join(',');
+          mapFrame.src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`;
+          mapFrame.style.display = 'block';
+          directions.innerHTML = `<a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener">Get directions ↗</a>`;
+        } else {
+          mapFrame.removeAttribute('src');
+          mapFrame.style.display = 'none';
+          directions.innerHTML = '';
+        }
         
         modal.classList.add('active');
         backdrop.classList.add('active');

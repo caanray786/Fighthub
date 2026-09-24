@@ -81,33 +81,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     filteredGyms.forEach(gym => {
       const tr = document.createElement('tr');
       
-      const ratingStars = '⭐'.repeat(Math.round(gym.rating)) + ` (${gym.rating})`;
-      const stylesList = gym.styles.map(s => `<span class="badge badge-info" style="margin-right:2px; font-size:0.75rem;">${s}</span>`).join('');
-      const websiteLink = gym.website ? `<a href="${gym.website}" target="_blank" style="color: var(--admin-accent); text-decoration: underline;">Visit Site</a>` : 'N/A';
+      const ratingStars = '⭐'.repeat(Math.round(gym.rating)) + ` (${escapeHtml(gym.rating)})`;
+      const stylesList = gym.styles.map(s => `<span class="badge badge-info" style="margin-right:2px; font-size:0.75rem;">${escapeHtml(s)}</span>`).join('');
+      const websiteLink = gym.website ? `<a href="${safeUrl(gym.website, '#')}" target="_blank" style="color: var(--admin-accent); text-decoration: underline;">Visit Site</a>` : 'N/A';
 
       tr.innerHTML = `
         <td>
           <div style="display:flex; align-items:center; gap:10px;">
-            <img src="${gym.image || 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=80&q=80'}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+            <img src="${safeUrl(gym.image, 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=80&q=80')}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
             <div>
-              <strong style="color:var(--admin-text-primary); font-size:0.95rem;">${gym.name}</strong>
-              <div style="font-size:0.8rem; color:var(--admin-text-muted);">${gym.phone || 'No Phone'}</div>
+              <strong style="color:var(--admin-text-primary); font-size:0.95rem;">${escapeHtml(gym.name)}</strong>
+              <div style="font-size:0.8rem; color:var(--admin-text-muted);">${escapeHtml(gym.phone || 'No Phone')}</div>
             </div>
           </div>
         </td>
         <td>
-          <div style="font-size:0.9rem;">${gym.address}</div>
-          <div style="font-size:0.8rem; color:var(--admin-text-muted);">${gym.city}, ${gym.country}</div>
+          <div style="font-size:0.9rem;">${escapeHtml(gym.address)}</div>
+          <div style="font-size:0.8rem; color:var(--admin-text-muted);">${escapeHtml(gym.city)}, ${escapeHtml(gym.country)}</div>
         </td>
         <td>
-          <div style="font-size:0.85rem;">${gym.email || 'No Email'}</div>
+          <div style="font-size:0.85rem;">${escapeHtml(gym.email || 'No Email')}</div>
           <div>${websiteLink}</div>
         </td>
         <td style="color:#ffd166; font-size:0.85rem;">${ratingStars}</td>
         <td>${stylesList}</td>
         <td style="text-align: right;">
-          <button class="btn-action btn-edit btn-edit-gym" data-id="${gym.id}" style="background:var(--admin-bg-secondary); border:1px solid var(--admin-border-color); color:var(--admin-text-primary); padding:6px 12px; border-radius:4px; cursor:pointer; margin-right:5px;">Edit</button>
-          <button class="btn-action btn-delete btn-delete-gym" data-id="${gym.id}" style="background:rgba(230,57,70,0.15); border:1px solid var(--accent); color:var(--accent); padding:6px 12px; border-radius:4px; cursor:pointer;">Delete</button>
+          <button class="btn-action btn-edit btn-edit-gym" data-id="${escapeHtml(gym.id)}" style="background:var(--admin-bg-secondary); border:1px solid var(--admin-border-color); color:var(--admin-text-primary); padding:6px 12px; border-radius:4px; cursor:pointer; margin-right:5px;">Edit</button>
+          <button class="btn-action btn-delete btn-delete-gym" data-id="${escapeHtml(gym.id)}" style="background:rgba(230,57,70,0.15); border:1px solid var(--accent); color:var(--accent); padding:6px 12px; border-radius:4px; cursor:pointer;">Delete</button>
         </td>
       `;
 

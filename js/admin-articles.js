@@ -102,23 +102,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       tr.innerHTML = `
         <td>
           <div style="font-weight: 700; white-space: normal; max-width: 320px;">
-            ${art.title}
+            ${escapeHtml(art.title)}
           </div>
           <div style="font-size: 0.75rem; color: var(--admin-text-muted); font-family: monospace;">
-            slug: ${art.slug}
+            slug: ${escapeHtml(art.slug)}
           </div>
         </td>
-        <td>${art.author}</td>
-        <td><span class="badge" style="background: rgba(59,130,246,0.1); color: var(--admin-accent); font-weight:600; font-size:0.75rem; padding: 2px 6px; border-radius: 4px;">${art.category}</span></td>
-        <td>${art.date}</td>
+        <td>${escapeHtml(art.author)}</td>
+        <td><span class="badge" style="background: rgba(59,130,246,0.1); color: var(--admin-accent); font-weight:600; font-size:0.75rem; padding: 2px 6px; border-radius: 4px;">${escapeHtml(art.category)}</span></td>
+        <td>${escapeHtml(art.date)}</td>
         <td style="font-size: 0.8rem; color: var(--admin-text-muted);">
           ❤️ ${art.likes || 0} Likes | 💬 ${art.comments || 0} Comments
         </td>
         <td><span class="status-badge ${badgeClass}">${art.status.toUpperCase()}</span></td>
         <td>
           <div class="table-actions">
-            <button class="table-action btn-edit" data-id="${art.id}" title="Edit Article">✏️</button>
-            <button class="table-action delete btn-delete" data-id="${art.id}" title="Delete Article">🗑️</button>
+            <button class="table-action btn-edit" data-id="${escapeHtml(art.id)}" title="Edit Article">✏️ Edit</button>
+            <button class="table-action delete btn-delete" data-id="${escapeHtml(art.id)}" title="Delete Article">🗑️</button>
           </div>
         </td>
       `;

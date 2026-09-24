@@ -20,6 +20,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let allFighters = [];
 
+  // Generic stock photos were used as fighter images in early seed data. They show
+  // the wrong person, so treat them as "no photo" until a real one is attached.
+  function fighterPhoto(f) {
+    return f.image && !/images\.unsplash\.com/.test(f.image) ? safeUrl(f.image) : '';
+  }
+
+  function initials(name) {
+    return escapeHtml((name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase());
+  }
+
+  function photoOrInitials(f, fontSize) {
+    const photo = fighterPhoto(f);
+    return photo
+      ? `<img src="${photo}" alt="${escapeHtml(f.name)}" loading="lazy" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;">`
+      : `<span style="font-family:var(--font-heading); font-size:${fontSize}; color:rgba(255,255,255,0.85); letter-spacing:0.05em;">${initials(f.name)}</span>`;
+  }
+
   // 1. Fetch data
   try {
     allFighters = await dataStore.getAll('fighters');
@@ -92,37 +109,38 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       card.innerHTML = `
         <div class="fighter-card-image" style="display:flex; align-items:center; justify-content:center; font-size:4rem; ${placeholderBg} overflow:hidden; position:relative;">
-          ${f.image ? `<img src="${f.image}" alt="${f.name}" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;">` : '🥋'}
-          <span class="fighter-flag">${f.nationality || '🌍'}</span>
-          <button class="favorite-btn ${isFav ? 'active' : ''}" data-id="${f.id}" aria-label="Add to favorites" style="position: absolute; top: 15px; left: 15px; font-size: 1.5rem; color: ${isFav ? 'var(--accent)' : 'rgba(255,255,255,0.4)'}; background: rgba(0,0,0,0.4); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; z-index: 10;">
+          ${photoOrInitials(f, '3.5rem')}
+          <span class="fighter-flag">${escapeHtml(f.nationality || '🌍')}</span>
+          <button class="favorite-btn ${isFav ? 'active' : ''}" data-id="${escapeHtml(f.id)}" aria-label="Add to favorites" style="position: absolute; top: 15px; left: 15px; font-size: 1.5rem; color: ${isFav ? 'var(--accent)' : 'rgba(255,255,255,0.4)'}; background: rgba(0,0,0,0.4); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; z-index: 10;">
             ${isFav ? '❤️' : '🤍'}
           </button>
         </div>
-        <div class="fighter-card-body" onclick="openFighterModal('${f.id}')">
-          <div class="fighter-weight-class">${f.weightClass}</div>
-          <h3>${f.name}</h3>
-          <div class="fighter-nickname">${f.nickname ? `"${f.nickname}"` : '&nbsp;'}</div>
-          
+        <div class="fighter-card-body">
+          <div class="fighter-weight-class">${escapeHtml([f.sport, f.weightClass].filter(Boolean).join(' · '))}</div>
+          <h3>${escapeHtml(f.name)}</h3>
+          <div class="fighter-nickname">${f.nickname ? `"${escapeHtml(f.nickname)}"` : '&nbsp;'}</div>
+
           <div class="fighter-record">
             <div class="record-item record-wins">
-              <div class="record-number">${f.wins}</div>
+              <div class="record-number">${escapeHtml(f.wins)}</div>
               <div class="record-label">W</div>
             </div>
             <div class="record-item record-losses">
-              <div class="record-number">${f.losses}</div>
+              <div class="record-number">${escapeHtml(f.losses)}</div>
               <div class="record-label">L</div>
             </div>
             <div class="record-item record-draws">
-              <div class="record-number">${f.draws}</div>
+              <div class="record-number">${escapeHtml(f.draws)}</div>
               <div class="record-label">D</div>
             </div>
           </div>
-          
+
           <div style="margin-top: 15px; font-size: 0.8rem; color: var(--text-muted);">
-            Style: <span class="text-accent">${f.style}</span>
+            Style: <span class="text-accent">${escapeHtml(f.style)}</span>
           </div>
         </div>
       `;
+      card.querySelector('.fighter-card-body').addEventListener('click', () => openFighterModal(f.id));
       fightersGrid.appendChild(card);
     });
 
@@ -155,10 +173,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const country = countrySelect.value;
 
     const filtered = allFighters.filter(f => {
-      const matchQuery = !query || 
-                         f.name.toLowerCase().includes(query) || 
-                         (f.nickname && f.nickname.toLowerCase().includes(query)) || 
-                         f.style.toLowerCase().includes(query);
+      const matchQuery = !query ||
+                         f.name.toLowerCase().includes(query) ||
+                         (f.nickname && f.nickname.toLowerCase().includes(query)) ||
+                         (f.style || '').toLowerCase().includes(query) ||
+                         (f.sport || '').toLowerCase().includes(query);
       const matchWeight = !weight || f.weightClass === weight;
       const matchStyle = !style || f.style === style;
       const matchCountry = !country || f.country === country;
@@ -201,12 +220,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let championshipsHtml = '';
     if (f.championships && f.championships.length > 0) {
-      championshipsHtml = f.championships.map(c => `<span class="badge badge-success" style="margin-right: 5px; margin-bottom: 5px;">🏆 ${c}</span>`).join('');
+      championshipsHtml = f.championships.map(c => `<span class="badge badge-success" style="margin-right: 5px; margin-bottom: 5px;">🏆 ${escapeHtml(c)}</span>`).join('');
     }
 
     let highlightsHtml = '';
     if (f.highlights && f.highlights.length > 0) {
-      highlightsHtml = f.highlights.map(h => `<li>⚡ ${h}</li>`).join('');
+      highlightsHtml = f.highlights.map(h => `<li>⚡ ${escapeHtml(h)}</li>`).join('');
     }
 
     // Build timeline HTML
@@ -219,13 +238,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div style="position:absolute; left:-6px; top:4px; width:10px; height:10px; border-radius:50%; background:${resultColor};"></div>
             <div style="flex-grow:1;">
               <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h5 style="font-family:var(--font-heading); font-size:1.1rem; color:var(--text-primary); margin:0;">${t.event}</h5>
-                <span class="badge" style="background:${resultColor}1a; color:${resultColor}; border:1px solid ${resultColor}; font-size:0.75rem;">${t.result}</span>
+                <h5 style="font-family:var(--font-heading); font-size:1.1rem; color:var(--text-primary); margin:0;">${escapeHtml(t.event)}</h5>
+                <span class="badge" style="background:${resultColor}1a; color:${resultColor}; border:1px solid ${resultColor}; font-size:0.75rem;">${escapeHtml(t.result)}</span>
               </div>
               <div style="font-size:0.9rem; color:var(--text-secondary); margin-top:3px;">
-                vs. <strong>${t.opponent}</strong> &bull; ${t.finishing}
+                vs. <strong>${escapeHtml(t.opponent)}</strong> &bull; ${escapeHtml(t.finishing)}
               </div>
-              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${t.date}</div>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${escapeHtml(t.date)}</div>
             </div>
           </div>
         `;
@@ -241,8 +260,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         <!-- Column 1: Picture, Quick stats, Favorite -->
         <div style="display: flex; flex-direction: column; gap: var(--space-md);">
           <div style="width: 100%; aspect-ratio: 1; background: linear-gradient(135deg, #111 0%, #3a0007 100%); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 5rem; position: relative; overflow: hidden;">
-            <img src="${f.image || 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=800&q=80'}" alt="${f.name}" style="width:100%; height:100%; object-fit:cover;">
-            <span style="position: absolute; top: 10px; right: 10px; font-size: 2rem; background:rgba(0,0,0,0.6); padding: 2px 6px; border-radius:4px;">${f.nationality || '🌍'}</span>
+            ${photoOrInitials(f, '5rem')}
+            <span style="position: absolute; top: 10px; right: 10px; font-size: 2rem; background:rgba(0,0,0,0.6); padding: 2px 6px; border-radius:4px;">${escapeHtml(f.nationality || '🌍')}</span>
           </div>
           
           <button id="modal-fav-btn" class="btn btn-secondary w-full ${isFav ? 'active' : ''}">
@@ -252,14 +271,14 @@ document.addEventListener('DOMContentLoaded', async () => {
           <!-- Record box -->
           <div class="card card-glass" style="padding: 15px; text-align: center;">
             <div style="font-family: var(--font-heading); font-size: 1.8rem; color: var(--text-primary); margin-bottom: 8px;">
-              ${f.wins} - ${f.losses} - ${f.draws}
+              ${escapeHtml(f.wins)} - ${escapeHtml(f.losses)} - ${escapeHtml(f.draws)}
             </div>
             <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Wins - Losses - Draws</div>
-            
+
             <div style="margin-top: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; font-size: 0.8rem; border-top: 1px solid var(--border-color); padding-top: 10px;">
-              <div>KO: <strong class="text-accent">${f.ko}</strong></div>
-              <div>SUB: <strong class="text-accent">${f.sub}</strong></div>
-              <div>DEC: <strong class="text-accent">${f.dec}</strong></div>
+              <div>KO: <strong class="text-accent">${escapeHtml(f.ko)}</strong></div>
+              <div>SUB: <strong class="text-accent">${escapeHtml(f.sub)}</strong></div>
+              <div>DEC: <strong class="text-accent">${escapeHtml(f.dec)}</strong></div>
             </div>
           </div>
         </div>
@@ -276,20 +295,21 @@ document.addEventListener('DOMContentLoaded', async () => {
           <!-- Tab Contents -->
           <!-- Tab 1: Bio-Data -->
           <div id="tab-bio" class="fighter-tab-content" style="display: block;">
-            <h4 style="font-size: 1.1rem; color: var(--text-muted); font-style: italic; margin-bottom: 15px;">${f.nickname ? `"${f.nickname}"` : ''}</h4>
+            <h4 style="font-size: 1.1rem; color: var(--text-muted); font-style: italic; margin-bottom: 15px;">${f.nickname ? `"${escapeHtml(f.nickname)}"` : ''}</h4>
             <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
-              <span class="badge badge-accent">${f.weightClass}</span>
-              <span class="badge badge-info">${f.style}</span>
-              <span class="badge badge-secondary">Status: ${f.status}</span>
+              ${f.sport ? `<span class="badge badge-accent">${escapeHtml(f.sport)}</span>` : ''}
+              <span class="badge badge-accent">${escapeHtml(f.weightClass)}</span>
+              <span class="badge badge-info">${escapeHtml(f.style)}</span>
+              <span class="badge badge-secondary">Status: ${escapeHtml(f.status)}</span>
             </div>
-            
+
             <div style="margin-bottom: 15px;">
-              <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary); margin: 0;">${f.bio || 'Biography not available.'}</p>
+              <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary); margin: 0;">${escapeHtml(f.bio || 'Biography not available.')}</p>
             </div>
-            
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color); font-size: 0.9rem; color: var(--text-secondary);">
-              <div>Team: <strong>${f.team || 'N/A'}</strong></div>
-              <div>Country: <strong>${f.country || 'N/A'}</strong></div>
+              <div>Team: <strong>${escapeHtml(f.team || 'N/A')}</strong></div>
+              <div>Country: <strong>${escapeHtml(f.country || 'N/A')}</strong></div>
             </div>
           </div>
 
@@ -330,7 +350,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       modalFavBtn.innerHTML = isNowFav ? '❤️ Favorite' : '🤍 Add Favorite';
       
       // Sync card favorite button state
-      const cardBtn = document.querySelector(`.favorite-btn[data-id="${f.id}"]`);
+      const cardBtn = document.querySelector(`.favorite-btn[data-id="${CSS.escape(f.id)}"]`);
       if (cardBtn) {
         cardBtn.classList.toggle('active', isNowFav);
         cardBtn.innerHTML = isNowFav ? '❤️' : '🤍';

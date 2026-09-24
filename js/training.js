@@ -39,10 +39,10 @@ async function initConditioningPlans() {
       card.className = 'training-card animate-on-scroll';
       card.innerHTML = `
         <div class="training-card-image" style="width: 100%; height: 160px; overflow: hidden; border-radius: var(--radius-sm); margin-bottom: 15px; background: linear-gradient(135deg, #161616 0%, #2a2a2a 100%);">
-          ${plan.image ? `<img src="${plan.image}" alt="${plan.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;">` : `<div style="font-size: 3rem; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">🏋️</div>`}
+          ${plan.image ? `<img src="${safeUrl(plan.image)}" alt="${escapeHtml(plan.title)}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;">` : `<div style="font-size: 3rem; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">🏋️</div>`}
         </div>
-        <h3>${plan.title}</h3>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">${plan.description || ''}</p>
+        <h3>${escapeHtml(plan.title)}</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">${escapeHtml(plan.description || '')}</p>
       `;
       card.addEventListener('click', () => openPlanModal(plan));
       plansGrid.appendChild(card);
@@ -71,13 +71,13 @@ function openPlanModal(plan) {
         ${plan.exercises.map((ex, index) => `
           <div style="background: var(--bg-card); border: 1px solid var(--border-color); padding: var(--space-md); border-radius: var(--radius-md);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xs); flex-wrap: wrap; gap: 5px;">
-              <h4 style="font-family: var(--font-body); font-weight: 700; font-size: 1.1rem; color: var(--text-primary); margin:0;">${index + 1}. ${ex.name}</h4>
-              <span class="badge badge-accent">${ex.sets || '3 sets'}</span>
+              <h4 style="font-family: var(--font-body); font-weight: 700; font-size: 1.1rem; color: var(--text-primary); margin:0;">${index + 1}. ${escapeHtml(ex.name)}</h4>
+              <span class="badge badge-accent">${escapeHtml(ex.sets || '3 sets')}</span>
             </div>
-            <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0;">${ex.description || 'No description provided.'}</p>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0;">${escapeHtml(ex.description || 'No description provided.')}</p>
             ${ex.videoUrl ? `
               <div style="margin-top: var(--space-sm);">
-                <a href="${ex.videoUrl}" target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.75rem; padding: 4px 8px;">🎬 Watch Demonstration</a>
+                <a href="${safeUrl(ex.videoUrl, '#')}" target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.75rem; padding: 4px 8px;">🎬 Watch Demonstration</a>
               </div>
             ` : ''}
           </div>
@@ -89,7 +89,7 @@ function openPlanModal(plan) {
   }
 
   body.innerHTML = `
-    <p style="margin-bottom: var(--space-lg); color: var(--text-muted);">${plan.description || ''}</p>
+    <p style="margin-bottom: var(--space-lg); color: var(--text-muted);">${escapeHtml(plan.description || '')}</p>
     <h3 style="font-size: 1.25rem; margin-bottom: var(--space-md);">Exercise Routine</h3>
     ${exercisesHtml}
   `;

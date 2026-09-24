@@ -11,26 +11,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   const btnAdd = document.getElementById('btn-add-to-rankings');
   const btnSave = document.getElementById('btn-save-rankings');
 
-  // Map ranking ID to weight class name
-  const rankingsMap = {
-    'r-pfp': 'Pound-for-Pound',
-    'r-hw': 'Heavyweight',
-    'r-lhw': 'Light Heavyweight',
-    'r-mw': 'Middleweight',
-    'r-ww': 'Welterweight',
-    'r-lw': 'Lightweight',
-    'r-fw': 'Featherweight',
-    'r-bw': 'Bantamweight',
-    'r-flw': 'Flyweight',
-    'r-sw': 'Strawweight'
+  // Ranking lists are grouped by sport; only fighters of that sport can be added.
+  const RANKING_LISTS = {
+    'r-atg-p4p': { label: 'All-Time Pound-for-Pound', sport: 'All' },
+    'r-atg-boxing': { label: 'Boxing: All-Time Greats', sport: 'Boxing' },
+    'r-atg-mma': { label: 'MMA: All-Time Greats', sport: 'MMA' },
+    'r-atg-muaythai': { label: 'Muay Thai & Kickboxing: All-Time Greats', sport: 'Muay Thai' },
+    'r-atg-grappling': { label: 'Grappling: All-Time Greats', sport: 'Grappling' }
   };
+  const rankingsMap = Object.fromEntries(Object.entries(RANKING_LISTS).map(([id, list]) => [id, list.label]));
+
+  selectWeightClass.innerHTML = Object.entries(RANKING_LISTS)
+    .map(([id, list]) => `<option value="${id}">${escapeHtml(list.label)}</option>`)
+    .join('');
 
   let allFighters = [];
   let currentRanking = null;
 
   async function init() {
     allFighters = await dataStore.getAll('fighters');
-    
+
     // Load division
     await loadDivision(selectWeightClass.value);
 
@@ -59,8 +59,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       currentRanking = {
         id: rankingId,
         weightClass: rankingsMap[rankingId],
+        sport: RANKING_LISTS[rankingId].sport,
         rankings: [],
         champion: null,
+        allowChampion: false,
         lastUpdated: new Date().toISOString().substring(0, 10)
       };
     }
@@ -97,24 +99,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     card.setAttribute('data-fighter-id', fighter.id);
 
     const flag = fighter.nationality || '🏳️';
-    const isPfp = selectWeightClass.value === 'r-pfp';
+    const allowChampion = !!(currentRanking && currentRanking.allowChampion);
 
     card.innerHTML = `
       <span class="drag-handle" style="font-size: 1.2rem; user-select: none;">☰</span>
       <span class="rank-num" style="font-weight: 800; font-family: monospace;">#${rank}</span>
       <div class="fighter-info">
-        <span style="font-size: 1.4rem;">${flag}</span>
+        <span style="font-size: 1.4rem;">${escapeHtml(flag)}</span>
         <div>
-          <strong>${fighter.name}</strong>
-          ${fighter.nickname ? `<span style="font-size: 0.75rem; color: var(--admin-text-muted); margin-left: 5px;">"${fighter.nickname}"</span>` : ''}
+          <strong>${escapeHtml(fighter.name)}</strong>
+          ${fighter.nickname ? `<span style="font-size: 0.75rem; color: var(--admin-text-muted); margin-left: 5px;">"${escapeHtml(fighter.nickname)}"</span>` : ''}
           <div style="font-size: 0.75rem; color: var(--admin-text-muted); margin-top: 2px;">
-            ${fighter.weightClass} &bull; ${fighter.wins}-${fighter.losses}-${fighter.draws}
+            ${escapeHtml(fighter.sport || fighter.style)} &bull; ${escapeHtml(fighter.weightClass)} &bull; ${fighter.wins}-${fighter.losses}-${fighter.draws}
           </div>
         </div>
       </div>
-      
-      <!-- Disable champion badge for PFP -->
-      ${isPfp ? '' : `<button type="button" class="champion-toggle ${isChamp ? 'active' : ''}">👑 Champion</button>`}
+
+      <!-- All-time lists have no champion; the toggle only appears for lists that allow one -->
+      ${allowChampion ? `<button type="button" class="champion-toggle ${isChamp ? 'active' : ''}">👑 Champion</button>` : ''}
       
       <button type="button" class="remove-ranking-btn" style="background: transparent; border: none; color: var(--admin-error); cursor: pointer; font-size: 1.1rem; margin-left: 10px;" title="Remove from Rankings">✖</button>
     `;
@@ -216,17 +218,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const cards = dragContainer.querySelectorAll('.ranking-drag-item');
     const rankedIds = Array.from(cards).map(c => c.getAttribute('data-fighter-id'));
 
-    const activeRankingId = selectWeightClass.value;
-    const divisionName = rankingsMap[activeRankingId];
-
-    let available = [];
-    if (activeRankingId === 'r-pfp') {
-      // PFP can contain any fighter
-      available = allFighters.filter(f => !rankedIds.includes(f.id));
-    } else {
-      // Must match weight class
-      available = allFighters.filter(f => f.weightClass === divisionName && !rankedIds.includes(f.id));
-    }
+    const sport = RANKING_LISTS[selectWeightClass.value].sport;
+    const available = allFighters.filter(f =>
+      !rankedIds.includes(f.id) && (sport === 'All' || f.sport === sport)
+    );
 
     if (available.length === 0) {
       selectUnranked.innerHTML = `<option value="">No other unranked fighters</option>`;
@@ -236,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Sort alphabetically by name
       available.sort((a, b) => a.name.localeCompare(b.name));
       available.forEach(f => {
-        selectUnranked.innerHTML += `<option value="${f.id}">${f.name} (${f.weightClass})</option>`;
+        selectUnranked.innerHTML += `<option value="${escapeHtml(f.id)}">${escapeHtml(f.name)} (${escapeHtml(f.weightClass)})</option>`;
       });
     }
   }
@@ -271,8 +266,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const rankingData = {
       id: rankingId,
       weightClass: rankingsMap[rankingId],
+      sport: RANKING_LISTS[rankingId].sport,
       rankings: rankingsArray,
       champion: championId,
+      allowChampion: !!currentRanking.allowChampion,
       lastUpdated: new Date().toISOString().substring(0, 10)
     };
 

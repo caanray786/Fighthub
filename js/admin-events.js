@@ -107,19 +107,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       const fightsCount = evt.fights ? evt.fights.length : 0;
 
       tr.innerHTML = `
-        <td><strong>${evt.name}</strong></td>
-        <td><span class="badge ${promoBadge}" style="font-weight:600; padding:2px 6px; border-radius:4px;">${evt.promotion}</span></td>
+        <td><strong>${escapeHtml(evt.name)}</strong></td>
+        <td><span class="badge ${promoBadge}" style="font-weight:600; padding:2px 6px; border-radius:4px;">${escapeHtml(evt.promotion)}</span></td>
         <td>
-          <div>${evt.date}</div>
-          <div style="font-size: 0.75rem; color: var(--admin-text-muted);">${evt.time}</div>
+          <div>${escapeHtml(evt.date)}</div>
+          <div style="font-size: 0.75rem; color: var(--admin-text-muted);">${escapeHtml(evt.time)}</div>
         </td>
-        <td>${evt.venue}, ${evt.city}</td>
+        <td>${escapeHtml(evt.venue)}, ${escapeHtml(evt.city)}</td>
         <td><strong>${fightsCount}</strong> bouts</td>
-        <td><span class="status-badge ${badgeClass}">${evt.status.toUpperCase()}</span></td>
+        <td><span class="status-badge ${badgeClass}">${escapeHtml((evt.status || 'upcoming').toUpperCase())}</span></td>
         <td>
           <div class="table-actions">
-            <button class="table-action btn-edit" data-id="${evt.id}" title="Edit Event">✏️</button>
-            <button class="table-action delete btn-delete" data-id="${evt.id}" title="Delete Event">🗑️</button>
+            <button class="table-action btn-edit" data-id="${escapeHtml(evt.id)}" title="Edit Event">✏️ Edit</button>
+            <button class="table-action delete btn-delete" data-id="${escapeHtml(evt.id)}" title="Delete Event">🗑️</button>
           </div>
         </td>
       `;
