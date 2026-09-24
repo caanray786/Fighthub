@@ -114,15 +114,16 @@ function initHeroScrollAnimation() {
   window.addEventListener('scroll', () => {
     if (!animate) return;
     const scrollPos = window.scrollY;
-    const wrapperHeight = wrapper.offsetHeight;
-    const windowHeight = window.innerHeight;
-    
-    // The scrollable range of the wrapper
-    const animScrollRange = wrapperHeight - windowHeight;
 
-    if (scrollPos <= animScrollRange) {
+    // The hero is pinned just below the navbar (its CSS "top"); it plays while
+    // the wrapper scrolls past, i.e. over (wrapper height - hero height) pixels
+    const pinTop = parseFloat(getComputedStyle(hero).top) || 0;
+    const animScrollRange = wrapper.offsetHeight - hero.offsetHeight;
+    const scrolledIntoWrapper = pinTop - wrapper.getBoundingClientRect().top;
+
+    if (animScrollRange > 0 && scrolledIntoWrapper <= animScrollRange) {
       // Calculate progress from 0 to 1 while pinned
-      const progress = scrollPos / animScrollRange;
+      const progress = Math.min(1, Math.max(0, scrolledIntoWrapper / animScrollRange));
 
       // Scrub through frames: map progress [0, 1] to frame [1, 151]
       const targetFrame = Math.min(

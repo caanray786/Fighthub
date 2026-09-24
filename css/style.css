@@ -89,7 +89,8 @@
   /* Container */
   --container-max: 1280px;
   --container-narrow: 960px;
-  --navbar-height: 72px;
+  --navbar-height: 124px;      /* at the top of the page (large logo) */
+  --navbar-compact: 76px;      /* after scrolling */
 }
 
 /* ---- Light Mode ---- */
@@ -982,7 +983,8 @@ p {
 
 @media (max-width: 768px) {
   :root {
-    --navbar-height: 64px;
+    --navbar-height: 88px;
+    --navbar-compact: 64px;
   }
   
   .container {
@@ -1068,11 +1070,25 @@ p {
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
   flex-shrink: 0;
 }
+/* Large logo at the top of the page, compact once the page is scrolled */
 .navbar-brand .brand-logo {
-  width: 48px;
-  height: 48px;
+  width: 110px;
+  height: 110px;
+  transition: width var(--transition-base), height var(--transition-base);
+}
+.navbar.scrolled {
+  height: var(--navbar-compact);
+}
+.navbar.scrolled .brand-logo {
+  width: 62px;
+  height: 62px;
 }
 .footer-brand .brand-logo {
-  width: 56px;
-  height: 56px;
+  width: 96px;
+  height: 96px;
+}
+
+@media (max-width: 768px) {
+  .navbar-brand .brand-logo { width: 72px; height: 72px; }
+  .navbar.scrolled .brand-logo { width: 50px; height: 50px; }
 }

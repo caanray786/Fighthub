@@ -44,8 +44,8 @@
   </nav>
 
   <!-- Hero Scroll Wrapper for Sticky Pinning -->
-  <div id="hero-scroll-wrapper" style="height: 220vh; position: relative;">
-    <header class="hero" style="position: sticky; top: 0; height: 100vh; overflow: hidden; z-index: 10;">
+  <div id="hero-scroll-wrapper" style="height: 220vh; position: relative; margin-top: var(--navbar-height);">
+    <header class="hero" style="position: sticky; top: var(--navbar-compact); height: calc(100vh - var(--navbar-compact)); min-height: 0; overflow: hidden; z-index: 10;">
       <div class="hero-bg">
         <canvas id="hero-scrub-canvas"></canvas>
       </div>
