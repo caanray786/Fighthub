@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 1. Fetch data
   try {
     allRankings = await dataStore.getAll('rankings');
-    allFighters = await dataStore.getAll('fighters');
+    allFighters = await dataStore.getSummaries('fighters', ['name', 'nickname', 'nationality', 'country', 'style', 'wins', 'losses', 'draws', 'ko', 'sub', 'status']);
 
     // Build the list picker from whatever lists exist in the database
     // Cross-sport pound-for-pound list first, then per-sport lists alphabetically

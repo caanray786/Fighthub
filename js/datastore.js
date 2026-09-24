@@ -156,6 +156,42 @@ class FightHubDataStore {
     });
   }
 
+  // Only the named fields of every record (plus id): keeps list pages light
+  // once there are thousands of records. Full records come from getById.
+  async getSummaries(storeName, fields) {
+    await this.dbOpen;
+    if (!this.cloud) {
+      const all = await this.getAll(storeName);
+      return all.map(item => Object.fromEntries([['id', item.id], ...fields.map(f => [f, item[f]])]));
+    }
+    try {
+      const select = ['id', ...fields.map(f => `${f}:doc->${f}`)].join(',');
+      const all = [];
+      for (let from = 0; ; from += 1000) {
+        const { data, error } = await this._table(storeName).select(select).order('id').range(from, from + 999);
+        if (error) throw error;
+        all.push(...data);
+        if (data.length < 1000) break;
+      }
+      return all;
+    } catch (err) {
+      console.error(`Cloud read failed for ${storeName}; showing bundled content.`, err);
+      return (typeof DEFAULT_DATA !== 'undefined' && DEFAULT_DATA[storeName] || [])
+        .map(item => Object.fromEntries([['id', item.id], ...fields.map(f => [f, item[f]])]));
+    }
+  }
+
+  // Records whose field equals a value, e.g. query('fighters', 'draft', true)
+  async query(storeName, field, value) {
+    await this.dbOpen;
+    if (!this.cloud) {
+      return (await this.getAll(storeName)).filter(item => item[field] === value);
+    }
+    const { data, error } = await this._table(storeName).select('id, doc').eq(`doc->>${field}`, String(value));
+    if (error) throw error;
+    return data.map(row => this._fromRow(row));
+  }
+
   async getById(storeName, id) {
     await this.dbOpen;
     if (this.cloud) {

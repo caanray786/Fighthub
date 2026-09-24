@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Load fighters and render
   async function fetchAndRender() {
-    allFighters = await dataStore.getAll('fighters');
+    allFighters = await dataStore.getSummaries('fighters', ['name', 'nickname', 'nationality', 'weightClass', 'sport', 'wins', 'losses', 'draws', 'ko', 'sub', 'dec', 'style', 'team', 'status', 'draft']);
     applyFilters();
   }
 

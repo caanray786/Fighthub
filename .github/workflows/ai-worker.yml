@@ -2,8 +2,8 @@ name: AI content worker
 
 on:
   schedule:
-    # Every 4 hours (UTC). GitHub may start scheduled runs a few minutes late.
-    - cron: '17 */4 * * *'
+    # Every 2 hours (UTC). GitHub may start scheduled runs a few minutes late.
+    - cron: '17 */2 * * *'
   # "Run workflow" button on the Actions tab
   workflow_dispatch:
     inputs:
@@ -23,7 +23,7 @@ permissions:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: worker
@@ -48,3 +48,5 @@ jobs:
           OPENROUTER_MODELS: ${{ vars.OPENROUTER_MODELS }}
           MAX_ARTICLES_PER_RUN: ${{ vars.MAX_ARTICLES_PER_RUN }}
           MAX_NEW_FIGHTERS_PER_RUN: ${{ vars.MAX_NEW_FIGHTERS_PER_RUN }}
+          MAX_BACKFILL_PER_RUN: ${{ vars.MAX_BACKFILL_PER_RUN }}
+          BACKFILL_AS_DRAFTS: ${{ vars.BACKFILL_AS_DRAFTS }}

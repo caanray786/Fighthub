@@ -22,7 +22,7 @@ function isCombatPage(summary) {
   return COMBAT.test(text);
 }
 
-async function summary(title) {
+export async function summary(title) {
   return getJson(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title.replace(/ /g, '_'))}?redirect=true`);
 }
 
@@ -48,6 +48,79 @@ export async function pageText(title, maxChars = 9000) {
   const data = await getJson(`https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&redirects=1&format=json&titles=${encodeURIComponent(title)}`);
   const page = Object.values(data?.query?.pages || {})[0];
   return (page?.extract || '').slice(0, maxChars);
+}
+
+// Infobox fields from the article's lead section, e.g. { wins: '56', KO: '37', ... }.
+// Values are lightly cleaned (comments, refs and markup removed).
+export async function infoboxFields(title) {
+  const data = await getJson(`https://en.wikipedia.org/w/api.php?action=parse&format=json&prop=wikitext&section=0&redirects=1&page=${encodeURIComponent(title)}`);
+  const wikitext = data?.parse?.wikitext?.['*'] || '';
+  const fields = {};
+  for (const line of wikitext.split('\n')) {
+    const m = /^\s*\|\s*([A-Za-z_ ]+?)\s*=\s*(.*)$/.exec(line);
+    if (!m || fields[m[1]] !== undefined) continue;
+    fields[m[1]] = m[2]
+      .replace(/<!--.*?-->/g, '')
+      .replace(/<ref[^>]*\/>|<ref[^>]*>.*?<\/ref>/g, '')
+      .replace(/\[\[(?:[^|\]]*\|)?([^\]]*)\]\]/g, '$1')
+      .replace(/\{\{[^{}]*\}\}/g, '')
+      .replace(/'''?|<[^>]+>/g, '')
+      .trim();
+  }
+  return fields;
+}
+
+// Fight record from infobox fields, for the fighter's main sport only (a boxer's
+// one-off MMA bouts shouldn't replace their boxing record). Boxer infoboxes use
+// wins/KO/losses/draws; martial artist infoboxes use mma_*, box_* or kickbox_*.
+export function recordFromInfobox(fields, sport) {
+  const num = key => {
+    const m = /^\s*(\d{1,4})\b/.exec(fields[key] || '');
+    return m ? parseInt(m[1], 10) : null;
+  };
+  const sum = (...keys) => keys.reduce((total, key) => total + (num(key) || 0), 0);
+  const any = (...keys) => keys.some(key => num(key) !== null);
+
+  const readers = {
+    MMA: () => {
+      if (!any('mma_win', 'mma_kowin', 'mma_subwin', 'mma_decwin')) return null;
+      const wins = num('mma_win') ?? sum('mma_kowin', 'mma_subwin', 'mma_decwin', 'mma_dqwin', 'mma_otherwin');
+      const losses = num('mma_loss') ?? sum('mma_koloss', 'mma_subloss', 'mma_decloss', 'mma_dqloss', 'mma_otherloss');
+      return { recordSport: 'MMA', wins, losses, draws: num('mma_draw') || 0, noContests: num('mma_nc') || 0,
+        ko: num('mma_kowin'), sub: num('mma_subwin'), dec: num('mma_decwin') };
+    },
+    Boxing: () => {
+      const p = any('wins') ? { w: 'wins', ko: 'KO', l: 'losses', d: 'draws' }
+        : any('box_win', 'box_kowin') ? { w: 'box_win', ko: 'box_kowin', l: 'box_loss', d: 'box_draw' } : null;
+      if (!p) return null;
+      const ko = num(p.ko) ?? num('ko');
+      const wins = num(p.w) ?? ko;
+      return { recordSport: 'Boxing', wins, losses: num(p.l) || 0, draws: num(p.d) || 0,
+        ko, sub: null, dec: ko !== null && wins !== null ? Math.max(0, wins - ko) : null };
+    },
+    Kickboxing: () => {
+      const pre = any('kickbox_win', 'kickbox_kowin') ? 'kickbox' : any('kick_win', 'kick_kowin') ? 'kick' : null;
+      if (!pre) return null;
+      const ko = num(`${pre}_kowin`);
+      const wins = num(`${pre}_win`) ?? ko;
+      return { recordSport: 'Muay Thai / Kickboxing', wins, losses: num(`${pre}_loss`) || 0, draws: num(`${pre}_draw`) || 0,
+        ko, sub: null, dec: ko !== null && wins !== null ? Math.max(0, wins - ko) : null };
+    }
+  };
+
+  const order = {
+    MMA: ['MMA'],
+    Boxing: ['Boxing'],
+    'Muay Thai': ['Kickboxing'],
+    Grappling: ['MMA'],
+    'Martial Arts': ['MMA', 'Kickboxing', 'Boxing']
+  }[sport] || ['MMA', 'Boxing', 'Kickboxing'];
+
+  for (const key of order) {
+    const record = readers[key]();
+    if (record && record.wins !== null) return record;
+  }
+  return null;
 }
 
 // The page's lead image, only if it is hosted on Commons (i.e. freely licensed).

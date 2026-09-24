@@ -238,7 +238,7 @@ async function renderReviewQueue() {
   ];
   const drafts = [];
   for (const src of sources) {
-    (await dataStore.getAll(src.store)).filter(item => item.draft && !item.duplicate).forEach(item => drafts.push({ src, item }));
+    (await dataStore.query(src.store, 'draft', true)).filter(item => !item.duplicate).forEach(item => drafts.push({ src, item }));
   }
 
   if (!drafts.length) {

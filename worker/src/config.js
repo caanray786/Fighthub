@@ -23,6 +23,13 @@ export const config = {
   maxArticlesPerRun: parseInt(env.MAX_ARTICLES_PER_RUN || '4', 10),
   maxNewFightersPerRun: parseInt(env.MAX_NEW_FIGHTERS_PER_RUN || '2', 10),
   maxPhotosPerRun: parseInt(env.MAX_PHOTOS_PER_RUN || '10', 10),
+  // Fighter import from Wikipedia champion / Hall of Fame lists (~1 AI call each)
+  maxBackfillPerRun: parseInt(env.MAX_BACKFILL_PER_RUN || '20', 10),
+  // Imported profiles have records read straight from Wikipedia, so they publish
+  // directly; set BACKFILL_AS_DRAFTS=true to review each one first
+  backfillAsDrafts: env.BACKFILL_AS_DRAFTS === 'true',
+  // Stop starting new work after this long (GitHub job timeout is 30 min)
+  maxRunMinutes: parseInt(env.MAX_RUN_MINUTES || '22', 10),
 
   // New fighter profiles wait in the admin review queue; news publishes directly.
   publishArticlesDirectly: env.PUBLISH_ARTICLES_DIRECTLY !== 'false',

@@ -9,6 +9,7 @@ import { getAll, startRun, finishRun } from './supabase.js';
 import { runNews } from './jobs/news.js';
 import { runNewFighters } from './jobs/fighters.js';
 import { runPhotos } from './jobs/photos.js';
+import { runBackfill } from './jobs/backfill.js';
 import { runEventHousekeeping } from './jobs/events.js';
 
 async function main() {
@@ -22,6 +23,7 @@ async function main() {
 
   const runId = await startRun();
   const state = {
+    startedAt: Date.now(),
     fighters: await getAll('fighters'),
     articles: await getAll('articles'),
     events: await getAll('events'),
@@ -34,6 +36,7 @@ async function main() {
   const jobs = [
     ['news', runNews],
     ['newFighters', runNewFighters],
+    ['backfill', runBackfill],
     ['photos', runPhotos],
     ['events', runEventHousekeeping]
   ];

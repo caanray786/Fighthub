@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentRanking = null;
 
   async function init() {
-    allFighters = await dataStore.getAll('fighters');
+    allFighters = (await dataStore.getSummaries('fighters', ['name', 'nickname', 'nationality', 'weightClass', 'sport', 'wins', 'losses', 'draws', 'draft'])).filter(f => !f.draft);
 
     // Load division
     await loadDivision(selectWeightClass.value);

@@ -37,9 +37,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       : `<span style="font-family:var(--font-heading); font-size:${fontSize}; color:rgba(255,255,255,0.85); letter-spacing:0.05em;">${initials(f.name)}</span>`;
   }
 
-  // 1. Fetch data
+  // 1. Fetch data: only the fields cards and filters need; the full profile
+  //    is loaded when a fighter is opened
+  const LIST_FIELDS = ['name', 'nickname', 'nationality', 'country', 'sport', 'weightClass', 'wins', 'losses', 'draws', 'ko', 'style', 'image', 'status', 'draft'];
+  const PAGE_SIZE = 60;
+  let filteredFighters = [];
+  let shown = 0;
+
+  const showMoreWrap = document.createElement('div');
+  showMoreWrap.className = 'text-center';
+  showMoreWrap.style.cssText = 'margin-top: var(--space-xl); display: none;';
+  showMoreWrap.innerHTML = '<button type="button" class="btn btn-secondary" id="fighters-show-more">Show more fighters</button><p id="fighters-count" style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px;"></p>';
+  fightersGrid.after(showMoreWrap);
+  showMoreWrap.querySelector('button').addEventListener('click', () => renderNextPage());
+
   try {
-    allFighters = (await dataStore.getAll('fighters')).filter(f => !f.draft);
+    allFighters = (await dataStore.getSummaries('fighters', LIST_FIELDS)).filter(f => !f.draft && f.name);
+    // Best-known first: fighters with a photo, then by number of wins
+    allFighters.sort((a, b) => (!!b.image - !!a.image) || ((b.wins || 0) - (a.wins || 0)) || a.name.localeCompare(b.name));
     populateFilterDropdowns(allFighters);
     renderFighters(allFighters);
   } catch (err) {
@@ -47,65 +62,49 @@ document.addEventListener('DOMContentLoaded', async () => {
     fightersGrid.innerHTML = `<div class="text-center" style="grid-column:1/-1;"><p class="text-accent">Error loading fighters database.</p></div>`;
   }
 
-  // 2. Populate Dropdowns dynamically based on unique database entries
+  // 2. Populate dropdowns from the data
   function populateFilterDropdowns(fighters) {
-    const weightClasses = new Set();
-    const styles = new Set();
-    const countries = new Set();
-
-    fighters.forEach(f => {
-      if (f.weightClass) weightClasses.add(f.weightClass);
-      if (f.style) {
-        // Styles could be composite, we can list them as they are or split them. 
-        // Listing them as-is is cleaner for direct matching, but splitting makes it modular.
-        // Let's add them as-is.
-        styles.add(f.style);
-      }
-      if (f.country) countries.add(f.country);
-    });
-
-    // Populate weight class dropdown
-    Array.from(weightClasses).sort().forEach(wc => {
-      const opt = document.createElement('option');
-      opt.value = wc;
-      opt.textContent = wc;
-      weightSelect.appendChild(opt);
-    });
-
-    // Populate style dropdown
-    Array.from(styles).sort().forEach(style => {
-      const opt = document.createElement('option');
-      opt.value = style;
-      opt.textContent = style;
-      styleSelect.appendChild(opt);
-    });
-
-    // Populate country dropdown
-    Array.from(countries).sort().forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c;
-      opt.textContent = c;
-      countrySelect.appendChild(opt);
-    });
+    const count = key => fighters.reduce((m, f) => (f[key] ? m.set(f[key], (m.get(f[key]) || 0) + 1) : m), new Map());
+    const fill = (select, counts, minCount = 1) => {
+      [...counts.entries()].filter(([, n]) => n >= minCount).map(([v]) => v).sort().forEach(value => {
+        const opt = document.createElement('option');
+        opt.value = value;
+        opt.textContent = value;
+        select.appendChild(opt);
+      });
+    };
+    fill(styleSelect, count('sport'));
+    // Weight classes are free text in older sources; only list ones used more than once
+    fill(weightSelect, count('weightClass'), 2);
+    fill(countrySelect, count('country'));
   }
 
-  // 3. Render Fighter Cards
+  // 3. Render Fighter Cards (one page at a time)
   function renderFighters(fighters) {
+    filteredFighters = fighters;
+    shown = 0;
     fightersGrid.innerHTML = '';
-    
+
     if (fighters.length === 0) {
       fightersGrid.innerHTML = `<div class="text-center" style="grid-column:1/-1; padding: 40px 0;"><p>No fighters match your search criteria.</p></div>`;
+      showMoreWrap.style.display = 'none';
       return;
     }
+    renderNextPage();
+  }
 
-    fighters.forEach(f => {
+  function renderNextPage() {
+    const page = filteredFighters.slice(shown, shown + PAGE_SIZE);
+    shown += page.length;
+
+    page.forEach(f => {
       const isFav = dataStore.isFavorite(f.id);
       const card = document.createElement('div');
       card.className = 'fighter-card animate-on-scroll';
       card.setAttribute('data-id', f.id);
-      
-      // Default dummy background image style matching our premium look if f.image is empty
+
       const placeholderBg = `background: linear-gradient(135deg, #161616 0%, #2a2a2a 100%);`;
+      const hasRecord = f.wins !== null && f.wins !== undefined;
 
       card.innerHTML = `
         <div class="fighter-card-image" style="display:flex; align-items:center; justify-content:center; font-size:4rem; ${placeholderBg} overflow:hidden; position:relative;">
@@ -121,44 +120,42 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div class="fighter-nickname">${f.nickname ? `"${escapeHtml(f.nickname)}"` : '&nbsp;'}</div>
 
           <div class="fighter-record">
+            ${hasRecord ? `
             <div class="record-item record-wins">
               <div class="record-number">${escapeHtml(f.wins)}</div>
               <div class="record-label">W</div>
             </div>
             <div class="record-item record-losses">
-              <div class="record-number">${escapeHtml(f.losses)}</div>
+              <div class="record-number">${escapeHtml(f.losses ?? 0)}</div>
               <div class="record-label">L</div>
             </div>
             <div class="record-item record-draws">
-              <div class="record-number">${escapeHtml(f.draws)}</div>
+              <div class="record-number">${escapeHtml(f.draws ?? 0)}</div>
               <div class="record-label">D</div>
-            </div>
+            </div>` : `<div style="color: var(--text-muted); font-size: 0.85rem;">Record not listed</div>`}
           </div>
 
           <div style="margin-top: 15px; font-size: 0.8rem; color: var(--text-muted);">
-            Style: <span class="text-accent">${escapeHtml(f.style)}</span>
+            Style: <span class="text-accent">${escapeHtml(f.style || f.sport)}</span>
           </div>
         </div>
       `;
       card.querySelector('.fighter-card-body').addEventListener('click', () => openFighterModal(f.id));
-      fightersGrid.appendChild(card);
-    });
-
-    // Add event listeners to the favorite button specifically
-    document.querySelectorAll('.favorite-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      card.querySelector('.favorite-btn').addEventListener('click', (e) => {
         e.stopPropagation(); // Prevent opening modal
-        const fighterId = btn.getAttribute('data-id');
-        const isNowFav = dataStore.toggleFavorite(fighterId);
-        
+        const btn = e.currentTarget;
+        const isNowFav = dataStore.toggleFavorite(f.id);
         btn.classList.toggle('active', isNowFav);
         btn.innerHTML = isNowFav ? '❤️' : '🤍';
         btn.style.color = isNowFav ? 'var(--accent)' : 'rgba(255,255,255,0.4)';
-        
       });
+      fightersGrid.appendChild(card);
     });
 
-    // Trigger animations
+    const remaining = filteredFighters.length - shown;
+    showMoreWrap.style.display = remaining > 0 ? '' : 'none';
+    showMoreWrap.querySelector('#fighters-count').textContent = `Showing ${shown} of ${filteredFighters.length} fighters`;
+
     if (window.initScrollAnimations) {
       window.initScrollAnimations();
     }
@@ -168,7 +165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function filterFighters() {
     const query = searchInput.value.toLowerCase().trim();
     const weight = weightSelect.value;
-    const style = styleSelect.value;
+    const sport = styleSelect.value;
     const country = countrySelect.value;
 
     const filtered = allFighters.filter(f => {
@@ -176,18 +173,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                          f.name.toLowerCase().includes(query) ||
                          (f.nickname && f.nickname.toLowerCase().includes(query)) ||
                          (f.style || '').toLowerCase().includes(query) ||
-                         (f.sport || '').toLowerCase().includes(query);
+                         (f.country || '').toLowerCase().includes(query);
       const matchWeight = !weight || f.weightClass === weight;
-      const matchStyle = !style || f.style === style;
+      const matchSport = !sport || f.sport === sport;
       const matchCountry = !country || f.country === country;
 
-      return matchQuery && matchWeight && matchStyle && matchCountry;
+      return matchQuery && matchWeight && matchSport && matchCountry;
     });
 
     renderFighters(filtered);
   }
 
-  searchInput.addEventListener('input', filterFighters);
+  let searchTimer;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(filterFighters, 150);
+  });
   weightSelect.addEventListener('change', filterFighters);
   styleSelect.addEventListener('change', filterFighters);
   countrySelect.addEventListener('change', filterFighters);
@@ -211,7 +212,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 5. Fighter Modal Logic
   window.openFighterModal = async (id) => {
-    const f = allFighters.find(fighter => fighter.id === id);
+    // The list only holds summary fields; load the full profile
+    const f = await dataStore.getById('fighters', id);
     if (!f) return;
 
     const isFav = dataStore.isFavorite(f.id);
@@ -274,14 +276,14 @@ document.addEventListener('DOMContentLoaded', async () => {
           <!-- Record box -->
           <div class="card card-glass" style="padding: 15px; text-align: center;">
             <div style="font-family: var(--font-heading); font-size: 1.8rem; color: var(--text-primary); margin-bottom: 8px;">
-              ${escapeHtml(f.wins)} - ${escapeHtml(f.losses)} - ${escapeHtml(f.draws)}
+              ${escapeHtml(f.wins ?? '–')} - ${escapeHtml(f.losses ?? '–')} - ${escapeHtml(f.draws ?? '–')}
             </div>
-            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Wins - Losses - Draws</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">${escapeHtml(f.recordSport ? `${f.recordSport} record (W-L-D)` : 'Wins - Losses - Draws')}</div>
 
             <div style="margin-top: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; font-size: 0.8rem; border-top: 1px solid var(--border-color); padding-top: 10px;">
-              <div>KO: <strong class="text-accent">${escapeHtml(f.ko)}</strong></div>
-              <div>SUB: <strong class="text-accent">${escapeHtml(f.sub)}</strong></div>
-              <div>DEC: <strong class="text-accent">${escapeHtml(f.dec)}</strong></div>
+              <div>KO: <strong class="text-accent">${escapeHtml(f.ko ?? '–')}</strong></div>
+              <div>SUB: <strong class="text-accent">${escapeHtml(f.sub ?? '–')}</strong></div>
+              <div>DEC: <strong class="text-accent">${escapeHtml(f.dec ?? '–')}</strong></div>
             </div>
           </div>
         </div>

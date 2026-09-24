@@ -54,6 +54,21 @@ export async function upsert(table, items) {
   });
 }
 
+// Small JSON documents that let long jobs resume where they left off
+export async function getState(key) {
+  const rows = await request(`worker_state?select=value&key=eq.${encodeURIComponent(key)}`);
+  return rows?.[0]?.value || null;
+}
+
+export async function setState(key, value) {
+  if (config.dryRun) return;
+  await request('worker_state', {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({ key, value, updated_at: new Date().toISOString() })
+  });
+}
+
 export async function startRun() {
   if (config.dryRun) return null;
   const [row] = await request('ai_runs?select=id', {
