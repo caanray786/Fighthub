@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (isDashboard) {
     await renderDashboardStats();
     await renderRecentActivity();
+    await renderReviewQueue();
   }
 });
 
@@ -223,6 +224,68 @@ async function renderRecentActivity() {
     `;
     activityList.appendChild(li);
   });
+}
+
+// ---- AI Review Queue ---- //
+// Records the AI worker saved as drafts (new fighter profiles) wait here until approved.
+async function renderReviewQueue() {
+  const container = document.getElementById('review-queue');
+  if (!container) return;
+
+  const sources = [
+    { store: 'fighters', label: 'Fighter', page: 'fighters.html', name: f => f.name },
+    { store: 'articles', label: 'Article', page: 'articles.html', name: a => a.title }
+  ];
+  const drafts = [];
+  for (const src of sources) {
+    (await dataStore.getAll(src.store)).filter(item => item.draft).forEach(item => drafts.push({ src, item }));
+  }
+
+  if (!drafts.length) {
+    container.innerHTML = '<p style="color: var(--admin-text-muted); margin: 0;">Nothing to review. New AI-drafted fighter profiles will appear here.</p>';
+    return;
+  }
+
+  container.innerHTML = `
+    <p style="color: var(--admin-text-muted); font-size: 0.85rem; margin-top: 0;">
+      These were drafted by the AI from Wikipedia and are hidden from visitors. Check the details (open the source), then approve.
+    </p>
+    <div class="admin-table-wrapper"><table class="admin-table">
+      <thead><tr><th>Type</th><th>Name</th><th>Details</th><th>Source</th><th>Actions</th></tr></thead>
+      <tbody>${drafts.map(({ src, item }, i) => `
+        <tr>
+          <td>${src.label}</td>
+          <td><strong>${escapeHtml(src.name(item))}</strong></td>
+          <td style="white-space: normal; max-width: 360px; font-size: 0.8rem; color: var(--admin-text-muted);">
+            ${src.store === 'fighters'
+              ? `${escapeHtml([item.sport, item.weightClass, item.country].filter(Boolean).join(' · '))}<br>Record: ${escapeHtml(item.wins ?? '?')}-${escapeHtml(item.losses ?? '?')}-${escapeHtml(item.draws ?? '?')}${item.image ? ' · 📷 photo' : ''}`
+              : escapeHtml(item.excerpt || '')}
+          </td>
+          <td>${item.sourceUrl ? `<a href="${safeUrl(item.sourceUrl, '#')}" target="_blank" rel="noopener">Open ↗</a>` : '-'}</td>
+          <td>
+            <div class="table-actions">
+              <button class="table-action js-approve" data-i="${i}">✅ Approve</button>
+              <a class="table-action" href="${src.page}?edit=${encodeURIComponent(item.id)}">✏️ Edit</a>
+              <button class="table-action delete js-reject" data-i="${i}">🗑️</button>
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+
+  container.querySelectorAll('.js-approve').forEach(btn => btn.addEventListener('click', async () => {
+    const { src, item } = drafts[btn.dataset.i];
+    await dataStore.update(src.store, { id: item.id, draft: false });
+    showToast(`${src.name(item)} is now live`, 'success');
+    renderReviewQueue();
+  }));
+  container.querySelectorAll('.js-reject').forEach(btn => btn.addEventListener('click', async () => {
+    const { src, item } = drafts[btn.dataset.i];
+    if (!confirm(`Delete the draft "${src.name(item)}"?`)) return;
+    await dataStore.delete(src.store, item.id);
+    showToast('Draft deleted', 'info');
+    renderReviewQueue();
+  }));
 }
 
 // ---- Helper formatters ---- //

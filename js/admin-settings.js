@@ -5,33 +5,40 @@
 document.addEventListener('DOMContentLoaded', async () => {
   await dataStore.ready;
 
-  // ---- 0. Automated Data Pipeline Control Center ---- //
-  const btnRunPipeline = document.getElementById('btn-run-pipeline');
-  const btnSetKeys = document.getElementById('btn-set-keys');
-  const pipelineTerminal = document.getElementById('pipeline-terminal');
-
-  function appendTerminalLog(msg) {
-    if (pipelineTerminal) {
-      const time = new Date().toLocaleTimeString();
-      pipelineTerminal.innerHTML += `<br>[${time}] ${escapeHtml(msg)}`;
-      pipelineTerminal.scrollTop = pipelineTerminal.scrollHeight;
+  // ---- 0. AI worker runs ---- //
+  (async () => {
+    const panel = document.getElementById('ai-runs');
+    if (!panel) return;
+    if (!dataStore.cloud) {
+      panel.textContent = 'The AI worker writes to the cloud database; connect Supabase to see its runs.';
+      return;
     }
-  }
-
-  // Show what is actually configured instead of a fixed "connected" label
-  async function refreshPipelineStatus() {
-    const set = (id, ok, text) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.textContent = `${ok ? '🟢' : '⚪'} ${text}`;
-      el.style.color = ok ? '#22c55e' : 'var(--admin-text-muted)';
-    };
-    set('status-api-sports', !!fightAPIService.apiKey, fightAPIService.apiKey ? 'Key set' : 'No key (optional)');
-    set('status-rss', true, `${rssParserService.feeds.length} feeds configured`);
-    const orKey = await contentBotEngine.getApiKey();
-    set('status-openrouter', !!orKey, orKey ? `Key set · ${contentBotEngine.model}` : 'No key: briefs only');
-  }
-  refreshPipelineStatus();
+    try {
+      const runs = await dataStore.getAiRuns(10);
+      if (!runs.length) {
+        panel.innerHTML = 'No runs yet. The first scheduled run will appear here, or start one with <strong>Run now</strong>.';
+        return;
+      }
+      panel.innerHTML = `
+        <table class="admin-table">
+          <thead><tr><th>Started</th><th>Result</th><th>Articles</th><th>New fighters</th><th>Photos</th><th>Details</th></tr></thead>
+          <tbody>${runs.map(run => {
+            const s = run.summary || {};
+            const state = run.finished_at ? (run.ok ? '🟢 OK' : '🟠 Partial') : '⏳ Running / stopped';
+            return `<tr>
+              <td>${escapeHtml(new Date(run.started_at).toLocaleString())}</td>
+              <td>${state}</td>
+              <td>${escapeHtml(s.articles ?? 0)}</td>
+              <td>${escapeHtml(s.newFighters ?? 0)}</td>
+              <td>${escapeHtml(s.photosAdded ?? 0)}</td>
+              <td><details><summary style="cursor:pointer;">Log</summary><pre style="white-space:pre-wrap; max-height:300px; overflow:auto; font-size:0.75rem;">${escapeHtml(run.log || '')}</pre></details></td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>`;
+    } catch (err) {
+      panel.textContent = `Could not load AI runs: ${err.message}. Has supabase/migrations/003_ai_worker.sql been run?`;
+    }
+  })();
 
   // Database connection panel
   (async () => {
@@ -49,49 +56,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       panel.innerHTML = `🔴 <strong>Cannot reach Supabase</strong>: ${escapeHtml(err.message)}`;
     }
   })();
-
-  if (btnSetKeys) {
-    btnSetKeys.addEventListener('click', async () => {
-      const currentKey = await contentBotEngine.getApiKey();
-      const apiKey = prompt("Enter your OpenRouter API key. Note: until the server back end is set up (Phase 1), this is stored only in this browser. Use a key with a spending limit.", currentKey);
-      if (apiKey !== null) {
-        await contentBotEngine.setApiKey(apiKey.trim());
-        const apiSportsKey = prompt("Enter your API-Sports Key (optional, press OK to use dynamic live feed):", fightAPIService.apiKey);
-        if (apiSportsKey !== null) {
-          fightAPIService.setApiKey(apiSportsKey.trim());
-        }
-        showToast("API keys saved in this browser.", "success");
-        appendTerminalLog("🔑 API keys updated.");
-        refreshPipelineStatus();
-      }
-    });
-  }
-
-  if (btnRunPipeline) {
-    btnRunPipeline.addEventListener('click', async () => {
-      btnRunPipeline.disabled = true;
-      btnRunPipeline.innerHTML = '⏳ Executing Pipeline...';
-
-      try {
-        appendTerminalLog("=============================================");
-        appendTerminalLog("🚀 Launching Automated Combat Sports Pipeline...");
-        
-        const result = await contentBotEngine.runFullPipeline((logMsg) => {
-          appendTerminalLog(logMsg);
-        });
-
-        appendTerminalLog(`🎉 Done: ${result.previewsCount} new articles, ${result.schedulesCount} fight cards.`);
-        showToast("Pipeline finished.", "success");
-      } catch (err) {
-        console.error("Pipeline error:", err);
-        appendTerminalLog(`❌ Pipeline Error: ${err.message}`);
-        showToast("Pipeline error: " + err.message, "error");
-      } finally {
-        btnRunPipeline.disabled = false;
-        btnRunPipeline.innerHTML = '⚡ Run Automated Data Pipeline Now';
-      }
-    });
-  }
 
   // DOM elements
   const cardBackup = document.getElementById('card-backup');

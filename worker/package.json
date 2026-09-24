@@ -1,0 +1,16 @@
+{
+  "name": "fighthub-worker",
+  "private": true,
+  "description": "Scheduled AI content worker for FightHub (runs on GitHub Actions)",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dry-run": "node src/index.js --dry-run"
+  },
+  "dependencies": {
+    "rss-parser": "^3.13.0"
+  }
+}

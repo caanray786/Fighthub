@@ -336,6 +336,19 @@ class FightHubDataStore {
     return this.bulkUpsert(storeName, items);
   }
 
+  // ---- AI worker (cloud only) ---- //
+  async getAiRuns(limit = 10) {
+    await this.dbOpen;
+    if (!this.cloud) return [];
+    const { data, error } = await this.supabaseClient
+      .from('ai_runs')
+      .select('id, started_at, finished_at, ok, summary, log')
+      .order('started_at', { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return data;
+  }
+
   // ---- API keys (local only) ---- //
   // Secrets are never written to the database: anything the browser can read,
   // a visitor can read too. From Phase 2 the OpenRouter key lives in Supabase

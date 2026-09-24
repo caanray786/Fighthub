@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 1. Fetch data
   try {
-    allArticles = (await dataStore.getAll('articles')).filter(a => a.status !== 'draft');
+    allArticles = (await dataStore.getAll('articles')).filter(a => a.status !== 'draft' && !a.draft);
     // Sort articles by date descending
     allArticles.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 

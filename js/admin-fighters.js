@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div style="display: flex; align-items: center; gap: 10px;">
             <div style="font-size: 1.5rem;">${escapeHtml(flag)}</div>
             <div>
-              <strong>${escapeHtml(f.name)}</strong>
+              <strong>${escapeHtml(f.name)}</strong>${f.draft ? ' <span class="status-badge status-retired" title="Created by the AI worker; approve it on the dashboard">DRAFT</span>' : ''}
               ${f.nickname ? `<div style="font-size: 0.75rem; color: var(--admin-text-muted);">${escapeHtml(f.nickname)}</div>` : ''}
             </div>
           </div>
@@ -325,6 +325,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('new') === 'true') {
     showForm(null);
+  }
+  // Direct edit link, e.g. from the dashboard review queue
+  if (urlParams.get('edit')) {
+    dataStore.getById('fighters', urlParams.get('edit')).then(item => { if (item) showForm(item); });
   }
 
   // Initial load

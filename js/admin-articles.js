@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <td style="font-size: 0.8rem; color: var(--admin-text-muted);">
           ❤️ ${art.likes || 0} Likes | 💬 ${art.comments || 0} Comments
         </td>
-        <td><span class="status-badge ${badgeClass}">${art.status.toUpperCase()}</span></td>
+        <td><span class="status-badge ${art.draft ? 'status-draft' : badgeClass}">${escapeHtml(art.draft ? 'AI DRAFT' : (art.status || 'published').toUpperCase())}</span></td>
         <td>
           <div class="table-actions">
             <button class="table-action btn-edit" data-id="${escapeHtml(art.id)}" title="Edit Article">✏️ Edit</button>
@@ -274,6 +274,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('new') === 'true') {
     showForm(null);
+  }
+  // Direct edit link, e.g. from the dashboard review queue
+  if (urlParams.get('edit')) {
+    dataStore.getById('articles', urlParams.get('edit')).then(item => { if (item) showForm(item); });
   }
 
   fetchAndRender();

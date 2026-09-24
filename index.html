@@ -277,7 +277,7 @@
         .filter(e => e.date >= today && e.status !== 'completed')
         .sort((a, b) => a.date.localeCompare(b.date));
       const articles = allArticles
-        .filter(a => a.status !== 'draft')
+        .filter(a => a.status !== 'draft' && !a.draft)
         .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
       function locationText(evt) {

@@ -84,7 +84,18 @@ A static HTML/CSS/vanilla-JS site (11 public pages + 10 admin pages), served loc
 - [x] Git installed; local folder linked to the GitHub repo; Phase 0 + 1 pushed to `main` (commit 48fb080).
 - [x] Vercel connected to the repo: every push to `main` deploys to https://fighthub-swart.vercel.app. `.vercelignore` keeps SQL, notes and scripts private (verified 404). Custom domain: later.
 
-### Phase 2 — AI engine with OpenRouter (≈1–2 weeks)
+### Phase 2 — AI engine (in progress, started 2026-09-24)
+Built: `worker/` (Node) + `.github/workflows/ai-worker.yml`, running every 4 h on GitHub Actions (free for public repos). Models: `z-ai/glm-5.2:free` → fallbacks `google/gemma-4-31b-it:free`, `qwen/qwen3.8-27b:free` (repo variable `OPENROUTER_MODELS` overrides).
+- [x] News from 10 working feeds (MMA Fighting, Sherdog, BBC MMA/Boxing, ESPN MMA/Boxing, Bad Left Hook, Boxing News, ONE Championship, BJJEE); round-robin across feeds, same-story detection, AI rewrite from source facts only, auto-published with source link. Max 4/run.
+- [x] New fighters mentioned in the news → profile from Wikipedia → **draft** in the dashboard review queue. Max 2/run.
+- [x] Real photos from Wikimedia Commons with photographer/licence credit (dry run: 25 of 27 seed fighters found).
+- [x] Past events auto-marked completed; `ai_runs` log shown in admin Settings.
+- [x] Browser-side pipeline removed (API keys no longer in the browser).
+- [ ] Owner: run `003_ai_worker.sql`, add GitHub secrets `SUPABASE_SERVICE_ROLE_KEY` + `OPENROUTER_API_KEY`, first run.
+- [ ] Next: event discovery (confirmed cards from Wikipedia) and results; weekly evergreen blog post; rankings suggestions.
+- Free-tier limit: ~50 OpenRouter requests/day without purchased credits (1,000/day after a one-off $10 top-up). Current caps use ≤36/day.
+
+#### Original Phase 2 outline
 - [ ] Edge Function `ai-worker` with the `OPENROUTER_API_KEY` secret (set via `supabase secrets set`, **never committed**). Model is configurable in the admin panel.
 - [ ] Job types, each writing **drafts with sources**:
   - `news` — ingest RSS (MMA Fighting, MMA Junkie, BoxingScene, Bad Left Hook, ONE, Muay Thai news), summarise/rewrite in house style, tag fighters and discipline, link to the original.
@@ -115,7 +126,10 @@ A static HTML/CSS/vanilla-JS site (11 public pages + 10 admin pages), served loc
 - [ ] Reviews/ratings (logged-in users) — optional.
 
 ### Phase 5 — Design & quality (≈1 week, overlaps)
-- [ ] Consistent design system (type scale, colours, cards), a proper logo instead of the 🥋 emoji.
+- [ ] Consistent design system (type scale, colours, cards), a proper logo instead of the 🥋 emoji (owner is providing the logo).
+- [ ] New hero video without UFC branding or watermark (owner is providing it).
+- [ ] Country flags: Windows shows flag emoji as letters (e.g. "PH"). Use small flag images instead.
+- [x] Toast pop-ups: one at a time, no toasts for likes/favourites/filters/theme (done 2026-09-24).
 - [ ] Mobile-first pass on every page; Lighthouse ≥ 90 (performance, accessibility, SEO).
 - [ ] SEO: meta/OG tags, sitemap, `schema.org/Person` & `SportsEvent` JSON-LD.
 - [ ] Real newsletter (Buttondown/Mailchimp/Resend), social links, cookie/privacy pages.

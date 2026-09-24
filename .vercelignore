@@ -4,3 +4,5 @@ supabase/
 *.ps1
 .env*
 images/README.txt
+worker/
+.github/

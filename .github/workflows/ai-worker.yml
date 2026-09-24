@@ -1,0 +1,50 @@
+name: AI content worker
+
+on:
+  schedule:
+    # Every 4 hours (UTC). GitHub may start scheduled runs a few minutes late.
+    - cron: '17 */4 * * *'
+  # "Run workflow" button on the Actions tab
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (fetch and generate, save nothing)'
+        type: boolean
+        default: false
+
+# Never run two at once (avoids duplicate articles)
+concurrency:
+  group: ai-worker
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Run worker
+        run: node src/index.js ${{ inputs.dry_run && '--dry-run' || '' }}
+        env:
+          SUPABASE_URL: https://ewfuhrlgdivwtdremkdv.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          # Optional overrides (Settings -> Secrets and variables -> Actions -> Variables)
+          OPENROUTER_MODELS: ${{ vars.OPENROUTER_MODELS }}
+          MAX_ARTICLES_PER_RUN: ${{ vars.MAX_ARTICLES_PER_RUN }}
+          MAX_NEW_FIGHTERS_PER_RUN: ${{ vars.MAX_NEW_FIGHTERS_PER_RUN }}

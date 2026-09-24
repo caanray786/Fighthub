@@ -52,7 +52,8 @@ When you change seed content, bump `DEFAULT_DATA_VERSION` in `js/data-defaults.j
 | `admin/` | Admin CRM pages |
 | `js/datastore.js` | Data layer + shared helpers |
 | `js/data-defaults.js` | Seed data |
-| `js/content-bot.js`, `js/rss-parser.js`, `js/api-sports.js` | News/fight-card pipeline |
+| `worker/` | AI content worker (Node), run every 4 h by `.github/workflows/ai-worker.yml` |
+| `supabase/` | Database schema, seed data and admin setup SQL |
 | `images/hero/` | Home page scroll animation frames |
 
 See `IMPLEMENTATION_PLAN.md` for the roadmap.

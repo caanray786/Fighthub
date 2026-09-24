@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 1. Fetch data
   try {
-    allFighters = await dataStore.getAll('fighters');
+    allFighters = (await dataStore.getAll('fighters')).filter(f => !f.draft);
     populateFilterDropdowns(allFighters);
     renderFighters(allFighters);
   } catch (err) {
@@ -262,6 +262,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             ${photoOrInitials(f, '5rem')}
             <span style="position: absolute; top: 10px; right: 10px; font-size: 2rem; background:rgba(0,0,0,0.6); padding: 2px 6px; border-radius:4px;">${escapeHtml(f.nationality || '🌍')}</span>
           </div>
+          ${fighterPhoto(f) && f.imageCredit ? `
+          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: -8px; line-height: 1.4;">
+            Photo: ${f.imageSourceUrl ? `<a href="${safeUrl(f.imageSourceUrl, '#')}" target="_blank" rel="noopener">${escapeHtml(f.imageCredit)}</a>` : escapeHtml(f.imageCredit)}
+          </div>` : ''}
           
           <button id="modal-fav-btn" class="btn btn-secondary w-full ${isFav ? 'active' : ''}">
             ${isFav ? '❤️ Favorite' : '🤍 Add Favorite'}
@@ -309,6 +313,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color); font-size: 0.9rem; color: var(--text-secondary);">
               <div>Team: <strong>${escapeHtml(f.team || 'N/A')}</strong></div>
               <div>Country: <strong>${escapeHtml(f.country || 'N/A')}</strong></div>
+              ${f.sourceUrl ? `<div style="grid-column: 1 / -1; font-size: 0.8rem;">Source: <a href="${safeUrl(f.sourceUrl, '#')}" target="_blank" rel="noopener">Wikipedia ↗</a></div>` : ''}
             </div>
           </div>
 
