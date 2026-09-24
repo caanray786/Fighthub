@@ -5,7 +5,7 @@
 
 import { config } from '../config.js';
 import { log } from '../log.js';
-import { upsert, getState, setState, getWhere } from '../supabase.js';
+import { upsert, remove, getState, setState, getWhere, searchByName } from '../supabase.js';
 
 const US_STATES = 'AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY DC'.split(' ');
 
@@ -83,11 +83,20 @@ function stylesOf(tags) {
   return styles.length ? styles : ['Martial Arts'];
 }
 
+// Stadiums and arenas list the sports held there (e.g. Principality Stadium:
+// boxing) but are venues, not clubs you can train at
+const CLUB_WORDS = /box|gym|club|dojo|academy|fight|mma|jiu|jitsu|muay|karate|judo|taekwondo|kickbox|martial|wrestl|krav|sambo|kung/i;
+export function isVenueNotClub(tags) {
+  const venue = tags.leisure === 'stadium' || tags.building === 'stadium' || /\b(stadium|arena|stadion|colosseum)\b/i.test(tags.name || '');
+  return venue && !(tags.club || CLUB_WORDS.test((tags.name || '').replace(/\b(stadium|arena)\b/ig, '')));
+}
+
 function toGym(el, region) {
   const t = el.tags || {};
   const lat = el.lat ?? el.center?.lat;
   const lng = el.lon ?? el.center?.lon;
   if (!t.name || lat === undefined || lng === undefined) return null;
+  if (isVenueNotClub(t)) return null;
   const street = [t['addr:housenumber'], t['addr:street']].filter(Boolean).join(' ');
   return {
     id: `osm-${el.type[0]}${el.id}`,
@@ -152,6 +161,14 @@ out center tags;`;
 export async function runClubs(state) {
   if (config.maxClubRegionsPerRun <= 0) return;
   const progress = (await getState('club-import').catch(() => null)) || { done: {}, failed: {} };
+
+  // Remove venues imported before the stadium/arena filter existed
+  const venues = (await searchByName('gyms', ['stadium', 'arena', 'stadion']))
+    .filter(g => g.source === 'OpenStreetMap' && !g.editedOnFightHub && isVenueNotClub({ name: g.name }));
+  if (venues.length) {
+    await remove('gyms', venues.map(g => g.id));
+    log(`CLUBS: removed ${venues.length} stadiums/arenas: ${venues.slice(0, 5).map(g => g.name).join(', ')}`);
+  }
   const age = region => progress.done[region] ? (Date.now() - new Date(progress.done[region]).getTime()) / 86400000 : Infinity;
 
   // A region that failed 3 times in a row waits a week before trying again

@@ -48,6 +48,13 @@ export async function getWhere(table, field, value) {
   return rows;
 }
 
+// Records whose name contains any of the words (case-insensitive)
+export async function searchByName(table, words) {
+  const filter = words.map(w => `doc->>name.ilike.*${encodeURIComponent(w)}*`).join(',');
+  const rows = await request(`${table}?select=id,doc&or=(${filter})&limit=1000`);
+  return rows.map(r => ({ ...r.doc, id: r.id }));
+}
+
 // Insert or replace records. Skipped (logged only) in dry-run mode.
 export async function upsert(table, items) {
   if (!items.length) return;
