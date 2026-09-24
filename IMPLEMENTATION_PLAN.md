@@ -97,6 +97,17 @@ Built: `worker/` (Node) + `.github/workflows/ai-worker.yml`, running every 4 h o
 - [ ] Next: event discovery (confirmed cards from Wikipedia) and results; weekly evergreen blog post; rankings suggestions.
 - Free-tier limit: ~50 OpenRouter requests/day without purchased credits (1,000/day after a one-off $10 top-up). Current caps use ≤36/day.
 
+- [x] **Fighter import** (2026-09-24): 4,905 candidates from 22 Wikipedia Hall of Fame / champion lists across boxing, MMA, Muay Thai, kickboxing, BJJ and judo. Records come from the Wikipedia infobox (main sport only); the AI writes the bio. 20 per run, every 2 hours. Needs `004_worker_state.sql`. Fighters page paginates and loads summaries only.
+
+### Growth priorities agreed 2026-09-24 (owner: users → SEO → sponsors → app)
+1. [~] **More fighters**: import above (running).
+2. [ ] **Martial arts**: 20+ disciplines, each with full sections (history, rules and scoring, techniques, ranks/belts, famous fighters linked to profiles, how to start, gear). Grounded in Wikipedia, with a relevant Commons photo per style. One generic detail page for every style.
+3. [ ] **Training**: programmes per discipline and level, beginner guides, conditioning; expand the timer/calculator tools.
+4. [ ] **Equipment**: buyer's guides per discipline (gloves, shin guards, gi, mouthguard…), what to look for, and sizing. Product slots ready for affiliate links and sponsors. No invented star ratings; ratings come only from real testing or verified user reviews (UK ASA / US FTC rules).
+5. [ ] **SEO**: a real URL and pre-rendered HTML per fighter/article/style/guide (built on Vercel after each worker run), titles and meta descriptions, Open Graph, JSON-LD (Person, NewsArticle, SportsEvent), sitemap.xml and robots.txt, internal links, Google Search Console.
+6. [ ] **Monetisation**: sponsor/ad slots, affiliate disclosure page, privacy/cookie consent (required for ads).
+7. [ ] **App** (Phase 6), after the website is complete.
+
 #### Original Phase 2 outline
 - [ ] Edge Function `ai-worker` with the `OPENROUTER_API_KEY` secret (set via `supabase secrets set`, **never committed**). Model is configurable in the admin panel.
 - [ ] Job types, each writing **drafts with sources**:
