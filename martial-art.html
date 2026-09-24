@@ -198,13 +198,14 @@
       document.getElementById('ma-facts').innerHTML = facts
         .map(([icon, text]) => `<div class="ma-quick-fact"><span class="fact-icon">${icon}</span> ${escapeHtml(text)}</div>`).join('');
 
-      if (ma.image) {
+      const photo = martialArtImage(ma);
+      if (photo) {
         document.getElementById('ma-photo').hidden = false;
         const img = document.getElementById('ma-photo-img');
-        img.src = ma.image;
+        img.src = photo.src;
         img.alt = ma.fullName || ma.name;
-        document.getElementById('ma-photo-credit').innerHTML = ma.imageCredit
-          ? `Photo: ${ma.imageSourceUrl ? `<a href="${safeUrl(ma.imageSourceUrl, '#')}" target="_blank" rel="noopener">${escapeHtml(ma.imageCredit)}</a>` : escapeHtml(ma.imageCredit)}`
+        document.getElementById('ma-photo-credit').innerHTML = photo.credit
+          ? `Photo: ${photo.sourceUrl ? `<a href="${safeUrl(photo.sourceUrl, '#')}" target="_blank" rel="noopener">${escapeHtml(photo.credit)}</a>` : escapeHtml(photo.credit)}`
           : '';
       }
 

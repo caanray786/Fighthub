@@ -182,7 +182,7 @@
         });
 
         // Only real photos of the discipline (early stock photos didn't match); otherwise an icon tile
-        const photo = ma.image && !/images\.unsplash\.com/.test(ma.image) ? safeUrl(ma.image) : '';
+        const photo = martialArtImage(ma) ? safeUrl(martialArtImage(ma).src) : '';
         card.innerHTML = `
           ${photo
             ? `<img src="${photo}" alt="${escapeHtml(ma.name)}" loading="lazy">`

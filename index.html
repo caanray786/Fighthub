@@ -387,8 +387,8 @@
 
       // Featured martial arts cards use each discipline's real photo
       document.querySelectorAll('[data-ma-photo]').forEach(async img => {
-        const ma = await dataStore.getById('martialArts', img.dataset.maPhoto);
-        if (ma && ma.image && !/images\.unsplash\.com/.test(ma.image)) img.src = ma.image;
+        const photo = martialArtImage({ id: img.dataset.maPhoto, ...(await dataStore.getById('martialArts', img.dataset.maPhoto)) });
+        if (photo) img.src = photo.src;
       });
 
       renderFeatured();

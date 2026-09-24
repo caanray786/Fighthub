@@ -801,6 +801,22 @@ function todayStr() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+// FightHub's own martial arts images (images/martial-arts/) take priority over
+// Wikimedia photos. Returns { src, credit, sourceUrl } or null.
+const OWN_MARTIAL_ART_IMAGES = {
+  ma1: 'mma', ma4: 'boxing', ma2: 'muay-thai', ma3: 'bjj', ma7: 'karate', ma9: 'kickboxing', ma11: 'krav-maga'
+};
+
+function martialArtImage(ma, pathPrefix = '') {
+  const own = OWN_MARTIAL_ART_IMAGES[ma.id];
+  if (own) return { src: `${pathPrefix}images/martial-arts/${own}.jpg`, credit: '', sourceUrl: '' };
+  if (ma.image && !/images\.unsplash\.com/.test(ma.image)) {
+    return { src: ma.image, credit: ma.imageCredit || '', sourceUrl: ma.imageSourceUrl || '' };
+  }
+  return null;
+}
+
+window.martialArtImage = martialArtImage;
 window.escapeHtml = escapeHtml;
 window.safeUrl = safeUrl;
 window.parseLocalDate = parseLocalDate;
