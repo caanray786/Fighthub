@@ -11,11 +11,18 @@ import { shortHash, slugify, stripHtml } from '../util.js';
 const CATEGORIES = ['UFC', 'MMA', 'Boxing', 'ONE', 'PFL', 'Muay Thai', 'Kickboxing', 'BJJ', 'General'];
 
 async function fetchFeedItems() {
-  const parser = new Parser({ timeout: 20000, headers: { 'User-Agent': config.userAgent } });
+  const parser = new Parser();
   const items = [];
   for (const feed of config.feeds) {
     try {
-      const parsed = await parser.parseURL(feed.url);
+      // Fetch ourselves and strip characters that are illegal in XML: some feeds
+      // (ESPN) include them, which makes the parser reject the whole feed
+      const res = await fetch(feed.url, { headers: { 'User-Agent': config.userAgent }, signal: AbortSignal.timeout(20000) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const xml = (await res.text())
+        .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')
+        .replace(/&(?!#?\w+;)/g, '&amp;');
+      const parsed = await parser.parseString(xml);
       for (const entry of parsed.items || []) {
         if (!entry.link || !entry.title) continue;
         items.push({
@@ -127,6 +134,8 @@ export async function runNews(state) {
     .filter(item => !known.has(item.id) && !knownTitles.has(item.title.toLowerCase()))
     // Very short titles ("Boxing schedule") are standing pages, not news stories
     .filter(item => item.title.split(/\s+/).length >= 4)
+    // Live shows, podcasts and videos aren't articles
+    .filter(item => !/\b(live now|livestream|live stream|live blog|podcast|watch live|video)\b|^btl\b/i.test(item.title))
     .sort((a, b) => b.pubDate.localeCompare(a.pubDate));
 
   // Deduplicate the same story carried by two feeds

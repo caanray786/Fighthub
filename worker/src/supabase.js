@@ -18,7 +18,9 @@ async function request(path, options = {}) {
   if (!res.ok) {
     throw new Error(`Supabase ${options.method || 'GET'} ${path.split('?')[0]} failed: ${res.status} ${await res.text()}`);
   }
-  return res.status === 204 ? null : res.json();
+  // Writes with "return=minimal" reply 201/204 with an empty body
+  const body = await res.text();
+  return body ? JSON.parse(body) : null;
 }
 
 export async function getAll(table) {
