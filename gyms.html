@@ -310,8 +310,7 @@
         form.requestSubmit();
       } else {
         // Before a search: show FightHub's own / featured clubs
-        const own = (await dataStore.getSummaries('gyms', ['name', 'address', 'city', 'zip', 'country', 'phone', 'website', 'styles', 'featured', 'source', 'openingHours', 'description', 'lat', 'lng']))
-          .filter(g => g.source !== 'OpenStreetMap' || g.featured)
+        const own = (await dataStore.ownAndFeaturedGyms())
           .sort((a, b) => !!b.featured - !!a.featured);
         list.innerHTML = own.length
           ? own.map(clubCard).join('')

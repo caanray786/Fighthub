@@ -181,6 +181,19 @@ class FightHubDataStore {
     }
   }
 
+  // Clubs added on FightHub (not imported) plus featured ones: small list for the clubs page
+  async ownAndFeaturedGyms() {
+    await this.dbOpen;
+    if (!this.cloud) {
+      return (await this.getAll('gyms')).filter(g => g.source !== 'OpenStreetMap' || g.featured);
+    }
+    const { data, error } = await this._table('gyms').select('id, doc')
+      .or('doc->>source.is.null,doc->>featured.eq.true')
+      .limit(200);
+    if (error) throw error;
+    return data.map(row => this._fromRow(row));
+  }
+
   // Nearest clubs to a point (distance in km), featured clubs first
   async gymsNear(lat, lng, radiusKm = 25, style = null) {
     await this.dbOpen;
