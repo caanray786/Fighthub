@@ -109,8 +109,8 @@
 
       <div class="grid grid-3 animate-on-scroll animate-delay-1">
         <!-- MMA -->
-        <div class="ma-card" onclick="window.location.href='mma.html'">
-          <img src="https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=800&q=80" alt="Mixed Martial Arts">
+        <div class="ma-card" onclick="window.location.href='martial-art.html?id=ma1'">
+          <img data-ma-photo="ma1" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Mixed Martial Arts" loading="lazy">
           <div class="ma-card-content">
             <h3>MMA</h3>
             <p>Mixed Martial Arts. The ultimate evolution of combat sports, uniting striking and grappling.</p>
@@ -118,8 +118,8 @@
         </div>
 
         <!-- Muay Thai -->
-        <div class="ma-card" onclick="window.location.href='muay-thai.html'">
-          <img src="https://images.unsplash.com/photo-1555597673-b21d5c935865?auto=format&fit=crop&w=800&q=80" alt="Muay Thai">
+        <div class="ma-card" onclick="window.location.href='martial-art.html?id=ma2'">
+          <img data-ma-photo="ma2" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Muay Thai" loading="lazy">
           <div class="ma-card-content">
             <h3>Muay Thai</h3>
             <p>The Art of Eight Limbs. Devastating kicks, knees, elbows, and clinch sweeps.</p>
@@ -127,8 +127,8 @@
         </div>
 
         <!-- BJJ -->
-        <div class="ma-card" onclick="window.location.href='bjj.html'">
-          <img src="https://images.unsplash.com/photo-1615117973715-9980279c947d?auto=format&fit=crop&w=800&q=80" alt="Brazilian Jiu-Jitsu">
+        <div class="ma-card" onclick="window.location.href='martial-art.html?id=ma3'">
+          <img data-ma-photo="ma3" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Brazilian Jiu-Jitsu" loading="lazy">
           <div class="ma-card-content">
             <h3>Brazilian Jiu-Jitsu</h3>
             <p>Ground fighting, submissions, and leverage. The gentle art that changed combat forever.</p>
@@ -138,7 +138,7 @@
 
 
       <div class="text-center mt-xl">
-        <a href="martial-arts.html" class="btn btn-secondary">View All 11 Martial Arts</a>
+        <a href="martial-arts.html" class="btn btn-secondary">View All Martial Arts</a>
       </div>
     </div>
   </section>
@@ -382,6 +382,12 @@
           `;
         }).join('');
       }
+
+      // Featured martial arts cards use each discipline's real photo
+      document.querySelectorAll('[data-ma-photo]').forEach(async img => {
+        const ma = await dataStore.getById('martialArts', img.dataset.maPhoto);
+        if (ma && ma.image && !/images\.unsplash\.com/.test(ma.image)) img.src = ma.image;
+      });
 
       renderFeatured();
       renderLatestArticles();

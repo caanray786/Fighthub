@@ -165,23 +165,26 @@
       };
 
       grid.innerHTML = '';
-      
+
+      // Most popular disciplines first, then alphabetical
+      const featured = ['ma1', 'ma4', 'ma2', 'ma3', 'ma9', 'ma5', 'ma6'];
+      const rank = m => (featured.indexOf(m.id) + 1) || 99;
+      mArts.sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+
       mArts.forEach(ma => {
         const card = document.createElement('div');
         card.className = 'ma-card animate-on-scroll';
-        
-        const detailPages = { ma1: 'mma.html', ma2: 'muay-thai.html', ma3: 'bjj.html' };
+
         card.addEventListener('click', () => {
-          if (detailPages[ma.id]) {
-            window.location.href = detailPages[ma.id];
-          } else {
-            openMaModal(ma.id);
-          }
+          window.location.href = `martial-art.html?id=${encodeURIComponent(ma.id)}`;
         });
-        
-        const imgUrl = ma.image || 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=800&q=80';
+
+        // Only real photos of the discipline (early stock photos didn't match); otherwise an icon tile
+        const photo = ma.image && !/images\.unsplash\.com/.test(ma.image) ? safeUrl(ma.image) : '';
         card.innerHTML = `
-          <img src="${safeUrl(imgUrl)}" alt="${escapeHtml(ma.name)}">
+          ${photo
+            ? `<img src="${photo}" alt="${escapeHtml(ma.name)}" loading="lazy">`
+            : `<div style="width:100%; height:100%; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:5rem; background:${gradients[ma.id] || 'linear-gradient(135deg, #111 0%, #2a0a0e 100%)'};">${escapeHtml(ma.icon || '🥋')}</div>`}
           <div class="ma-card-content">
             <h3>${escapeHtml(ma.name)}</h3>
             <p>${escapeHtml(ma.description)}</p>

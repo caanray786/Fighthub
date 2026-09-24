@@ -39,10 +39,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 1. Fetch data: only the fields cards and filters need; the full profile
   //    is loaded when a fighter is opened
-  const LIST_FIELDS = ['name', 'nickname', 'nationality', 'country', 'sport', 'weightClass', 'wins', 'losses', 'draws', 'ko', 'style', 'image', 'status', 'draft'];
+  const LIST_FIELDS = ['name', 'nickname', 'nationality', 'country', 'sport', 'weightClass', 'wins', 'losses', 'draws', 'ko', 'style', 'image', 'status', 'draft', 'addedFrom'];
   const PAGE_SIZE = 60;
+  const TOP_COUNT = 30;
+
+  // Sport "folders"
+  const SPORTS = [
+    { key: 'Boxing', label: 'Boxing', icon: '🥊' },
+    { key: 'MMA', label: 'MMA', icon: '🏆' },
+    { key: 'Muay Thai', label: 'Muay Thai & Kickboxing', icon: '🦵' },
+    { key: 'Grappling', label: 'Grappling: BJJ, Wrestling & Judo', icon: '🤼' },
+    { key: 'Martial Arts', label: 'Other Martial Arts', icon: '🥋' }
+  ];
+
   let filteredFighters = [];
   let shown = 0;
+  let topFighters = [];
+
+  // Page structure: [home: top 30 + sport folders] or [list: heading + paged grid]
+  const homeView = document.createElement('div');
+  homeView.id = 'fighters-home';
+  const listHead = document.createElement('div');
+  listHead.id = 'fighters-list-head';
+  listHead.style.cssText = 'display: none; margin-bottom: var(--space-lg);';
+  fightersGrid.before(homeView, listHead);
 
   const showMoreWrap = document.createElement('div');
   showMoreWrap.className = 'text-center';
@@ -52,41 +72,140 @@ document.addEventListener('DOMContentLoaded', async () => {
   showMoreWrap.querySelector('button').addEventListener('click', () => renderNextPage());
 
   try {
-    allFighters = (await dataStore.getSummaries('fighters', LIST_FIELDS)).filter(f => !f.draft && f.name);
-    // Best-known first: fighters with a photo, then by number of wins
+    const [summaries, rankings] = await Promise.all([
+      dataStore.getSummaries('fighters', LIST_FIELDS),
+      dataStore.getAll('rankings')
+    ]);
+    allFighters = summaries.filter(f => !f.draft && f.name);
+    // Within a folder: fighters with a photo first, then by number of wins
     allFighters.sort((a, b) => (!!b.image - !!a.image) || ((b.wins || 0) - (a.wins || 0)) || a.name.localeCompare(b.name));
+    topFighters = pickTopFighters(rankings);
     populateFilterDropdowns(allFighters);
-    renderFighters(allFighters);
+
+    // Links like fighters.html?q=Name (from martial arts pages) or ?sport=Boxing
+    const params = new URLSearchParams(location.search);
+    if (params.get('q')) searchInput.value = params.get('q');
+    if (params.get('sport')) styleSelect.value = params.get('sport');
+    applyView();
   } catch (err) {
     console.error('Error fetching fighters:', err);
     fightersGrid.innerHTML = `<div class="text-center" style="grid-column:1/-1;"><p class="text-accent">Error loading fighters database.</p></div>`;
   }
 
+  // Top fighters: the editorial all-time rankings first (pound-for-pound, then
+  // each sport), topped up with Hall of Famers, then the best-known with photos
+  function pickTopFighters(rankings) {
+    const byId = new Map(allFighters.map(f => [f.id, f]));
+    const ordered = [...rankings].sort((a, b) => (a.sport === 'All' ? -1 : b.sport === 'All' ? 1 : 0));
+    const ids = [];
+    ordered.forEach(r => (r.rankings || []).forEach(id => { if (byId.has(id) && !ids.includes(id)) ids.push(id); }));
+    const top = ids.map(id => byId.get(id));
+    const rest = allFighters.filter(f => !ids.includes(f.id) && f.image);
+    const hallOfFame = rest.filter(f => /hall of fame/i.test(f.addedFrom || ''));
+    const others = rest.filter(f => !/hall of fame/i.test(f.addedFrom || ''));
+    return [...top, ...hallOfFame, ...others].slice(0, TOP_COUNT);
+  }
+
   // 2. Populate dropdowns from the data
   function populateFilterDropdowns(fighters) {
     const count = key => fighters.reduce((m, f) => (f[key] ? m.set(f[key], (m.get(f[key]) || 0) + 1) : m), new Map());
-    const fill = (select, counts, minCount = 1) => {
-      [...counts.entries()].filter(([, n]) => n >= minCount).map(([v]) => v).sort().forEach(value => {
-        const opt = document.createElement('option');
-        opt.value = value;
-        opt.textContent = value;
-        select.appendChild(opt);
-      });
-    };
-    fill(styleSelect, count('sport'));
+    const fill = (select, entries) => entries.forEach(([value, label]) => {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = label;
+      select.appendChild(opt);
+    });
+    const sports = count('sport');
+    fill(styleSelect, SPORTS.filter(s => sports.has(s.key)).map(s => [s.key, `${s.label} (${sports.get(s.key)})`]));
     // Weight classes are free text in older sources; only list ones used more than once
-    fill(weightSelect, count('weightClass'), 2);
-    fill(countrySelect, count('country'));
+    fill(weightSelect, [...count('weightClass')].filter(([, n]) => n >= 2).map(([v]) => [v, v]).sort());
+    fill(countrySelect, [...count('country')].map(([v]) => [v, v]).sort());
   }
 
-  // 3. Render Fighter Cards (one page at a time)
-  function renderFighters(fighters) {
-    filteredFighters = fighters;
+  // 3. Views
+  function isFiltering() {
+    return searchInput.value.trim() || weightSelect.value || styleSelect.value || countrySelect.value;
+  }
+
+  function applyView() {
+    if (isFiltering()) {
+      renderListView();
+    } else {
+      renderHomeView();
+    }
+  }
+
+  function renderHomeView() {
+    homeView.style.display = '';
+    listHead.style.display = 'none';
+    fightersGrid.innerHTML = '';
+    showMoreWrap.style.display = 'none';
+
+    const counts = allFighters.reduce((m, f) => m.set(f.sport, (m.get(f.sport) || 0) + 1), new Map());
+    homeView.innerHTML = `
+      <h2 style="margin-bottom: var(--space-md);">Top <span class="text-accent">${topFighters.length}</span> Fighters</h2>
+      <p style="color: var(--text-muted); margin-bottom: var(--space-lg);">The all-time greats from our rankings and the Halls of Fame.</p>
+      <div class="grid grid-4" id="top-fighters-grid"></div>
+
+      <h2 style="margin: var(--space-3xl) 0 var(--space-md);">Browse by <span class="text-accent">Sport</span></h2>
+      <p style="color: var(--text-muted); margin-bottom: var(--space-lg);">${allFighters.length.toLocaleString()} fighters, from boxing history to today's champions.</p>
+      <div class="grid grid-3" id="sport-folders">
+        ${SPORTS.filter(s => counts.get(s.key)).map(s => {
+          const faces = allFighters.filter(f => f.sport === s.key && fighterPhoto(f)).slice(0, 4);
+          return `
+          <button type="button" class="card card-glass sport-folder" data-sport="${escapeHtml(s.key)}">
+            <div class="sport-folder-icon">${s.icon}</div>
+            <div class="sport-folder-text">
+              <h3>${escapeHtml(s.label)}</h3>
+              <span>${counts.get(s.key).toLocaleString()} fighters →</span>
+            </div>
+            <div class="sport-folder-faces">${faces.map(f => `<img src="${fighterPhoto(f)}" alt="" loading="lazy">`).join('')}</div>
+          </button>`;
+        }).join('')}
+      </div>`;
+
+    const topGrid = homeView.querySelector('#top-fighters-grid');
+    topFighters.forEach(f => topGrid.appendChild(buildCard(f)));
+    homeView.querySelectorAll('.sport-folder').forEach(btn => btn.addEventListener('click', () => {
+      styleSelect.value = btn.dataset.sport;
+      onFiltersChanged();
+      window.scrollTo({ top: homeView.getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth' });
+    }));
+    if (window.initScrollAnimations) window.initScrollAnimations();
+  }
+
+  function renderListView() {
+    homeView.style.display = 'none';
+    listHead.style.display = '';
+
+    const query = searchInput.value.toLowerCase().trim();
+    const filtered = allFighters.filter(f =>
+      (!query || f.name.toLowerCase().includes(query) ||
+        (f.nickname && f.nickname.toLowerCase().includes(query)) ||
+        (f.style || '').toLowerCase().includes(query) ||
+        (f.country || '').toLowerCase().includes(query)) &&
+      (!weightSelect.value || f.weightClass === weightSelect.value) &&
+      (!styleSelect.value || f.sport === styleSelect.value) &&
+      (!countrySelect.value || f.country === countrySelect.value));
+
+    const sport = SPORTS.find(s => s.key === styleSelect.value);
+    const title = sport ? `${sport.icon} ${sport.label}` : query ? `Results for “${searchInput.value.trim()}”` : 'Filtered fighters';
+    listHead.innerHTML = `
+      <button type="button" class="btn btn-secondary btn-sm" id="fighters-back">← All fighters</button>
+      <h2 style="margin: var(--space-md) 0 0;">${escapeHtml(title)} <span style="color: var(--text-muted); font-size: 1rem; font-weight: 400;">· ${filtered.length.toLocaleString()} fighters</span></h2>`;
+    listHead.querySelector('#fighters-back').addEventListener('click', () => {
+      searchInput.value = '';
+      weightSelect.value = '';
+      styleSelect.value = '';
+      countrySelect.value = '';
+      onFiltersChanged();
+    });
+
+    filteredFighters = filtered;
     shown = 0;
     fightersGrid.innerHTML = '';
-
-    if (fighters.length === 0) {
-      fightersGrid.innerHTML = `<div class="text-center" style="grid-column:1/-1; padding: 40px 0;"><p>No fighters match your search criteria.</p></div>`;
+    if (!filtered.length) {
+      fightersGrid.innerHTML = `<div class="text-center" style="grid-column:1/-1; padding: 40px 0;"><p>No fighters match your search.</p></div>`;
       showMoreWrap.style.display = 'none';
       return;
     }
@@ -96,102 +215,83 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderNextPage() {
     const page = filteredFighters.slice(shown, shown + PAGE_SIZE);
     shown += page.length;
+    page.forEach(f => fightersGrid.appendChild(buildCard(f)));
 
-    page.forEach(f => {
-      const isFav = dataStore.isFavorite(f.id);
-      const card = document.createElement('div');
-      card.className = 'fighter-card animate-on-scroll';
-      card.setAttribute('data-id', f.id);
-
-      const placeholderBg = `background: linear-gradient(135deg, #161616 0%, #2a2a2a 100%);`;
-      const hasRecord = f.wins !== null && f.wins !== undefined;
-
-      card.innerHTML = `
-        <div class="fighter-card-image" style="display:flex; align-items:center; justify-content:center; font-size:4rem; ${placeholderBg} overflow:hidden; position:relative;">
-          ${photoOrInitials(f, '3.5rem')}
-          <span class="fighter-flag">${escapeHtml(f.nationality || '🌍')}</span>
-          <button class="favorite-btn ${isFav ? 'active' : ''}" data-id="${escapeHtml(f.id)}" aria-label="Add to favorites" style="position: absolute; top: 15px; left: 15px; font-size: 1.5rem; color: ${isFav ? 'var(--accent)' : 'rgba(255,255,255,0.4)'}; background: rgba(0,0,0,0.4); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; z-index: 10;">
-            ${isFav ? '❤️' : '🤍'}
-          </button>
-        </div>
-        <div class="fighter-card-body">
-          <div class="fighter-weight-class">${escapeHtml([f.sport, f.weightClass].filter(Boolean).join(' · '))}</div>
-          <h3>${escapeHtml(f.name)}</h3>
-          <div class="fighter-nickname">${f.nickname ? `"${escapeHtml(f.nickname)}"` : '&nbsp;'}</div>
-
-          <div class="fighter-record">
-            ${hasRecord ? `
-            <div class="record-item record-wins">
-              <div class="record-number">${escapeHtml(f.wins)}</div>
-              <div class="record-label">W</div>
-            </div>
-            <div class="record-item record-losses">
-              <div class="record-number">${escapeHtml(f.losses ?? 0)}</div>
-              <div class="record-label">L</div>
-            </div>
-            <div class="record-item record-draws">
-              <div class="record-number">${escapeHtml(f.draws ?? 0)}</div>
-              <div class="record-label">D</div>
-            </div>` : `<div style="color: var(--text-muted); font-size: 0.85rem;">Record not listed</div>`}
-          </div>
-
-          <div style="margin-top: 15px; font-size: 0.8rem; color: var(--text-muted);">
-            Style: <span class="text-accent">${escapeHtml(f.style || f.sport)}</span>
-          </div>
-        </div>
-      `;
-      card.querySelector('.fighter-card-body').addEventListener('click', () => openFighterModal(f.id));
-      card.querySelector('.favorite-btn').addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent opening modal
-        const btn = e.currentTarget;
-        const isNowFav = dataStore.toggleFavorite(f.id);
-        btn.classList.toggle('active', isNowFav);
-        btn.innerHTML = isNowFav ? '❤️' : '🤍';
-        btn.style.color = isNowFav ? 'var(--accent)' : 'rgba(255,255,255,0.4)';
-      });
-      fightersGrid.appendChild(card);
-    });
-
-    const remaining = filteredFighters.length - shown;
-    showMoreWrap.style.display = remaining > 0 ? '' : 'none';
-    showMoreWrap.querySelector('#fighters-count').textContent = `Showing ${shown} of ${filteredFighters.length} fighters`;
-
-    if (window.initScrollAnimations) {
-      window.initScrollAnimations();
-    }
+    showMoreWrap.style.display = filteredFighters.length > shown ? '' : 'none';
+    showMoreWrap.querySelector('#fighters-count').textContent = `Showing ${shown} of ${filteredFighters.length.toLocaleString()} fighters`;
+    if (window.initScrollAnimations) window.initScrollAnimations();
   }
 
-  // 4. Live Search & Filters handler
-  function filterFighters() {
-    const query = searchInput.value.toLowerCase().trim();
-    const weight = weightSelect.value;
-    const sport = styleSelect.value;
-    const country = countrySelect.value;
+  function buildCard(f) {
+    const isFav = dataStore.isFavorite(f.id);
+    const card = document.createElement('div');
+    card.className = 'fighter-card animate-on-scroll';
+    card.setAttribute('data-id', f.id);
+    const hasRecord = f.wins !== null && f.wins !== undefined;
 
-    const filtered = allFighters.filter(f => {
-      const matchQuery = !query ||
-                         f.name.toLowerCase().includes(query) ||
-                         (f.nickname && f.nickname.toLowerCase().includes(query)) ||
-                         (f.style || '').toLowerCase().includes(query) ||
-                         (f.country || '').toLowerCase().includes(query);
-      const matchWeight = !weight || f.weightClass === weight;
-      const matchSport = !sport || f.sport === sport;
-      const matchCountry = !country || f.country === country;
+    card.innerHTML = `
+      <div class="fighter-card-image" style="display:flex; align-items:center; justify-content:center; font-size:4rem; background: linear-gradient(135deg, #161616 0%, #2a2a2a 100%); overflow:hidden; position:relative;">
+        ${photoOrInitials(f, '3.5rem')}
+        <span class="fighter-flag">${escapeHtml(f.nationality || '🌍')}</span>
+        <button class="favorite-btn ${isFav ? 'active' : ''}" data-id="${escapeHtml(f.id)}" aria-label="Add to favorites" style="position: absolute; top: 15px; left: 15px; font-size: 1.5rem; color: ${isFav ? 'var(--accent)' : 'rgba(255,255,255,0.4)'}; background: rgba(0,0,0,0.4); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; z-index: 10;">
+          ${isFav ? '❤️' : '🤍'}
+        </button>
+      </div>
+      <div class="fighter-card-body">
+        <div class="fighter-weight-class">${escapeHtml([f.sport, f.weightClass].filter(Boolean).join(' · '))}</div>
+        <h3>${escapeHtml(f.name)}</h3>
+        <div class="fighter-nickname">${f.nickname ? `"${escapeHtml(f.nickname)}"` : '&nbsp;'}</div>
 
-      return matchQuery && matchWeight && matchSport && matchCountry;
+        <div class="fighter-record">
+          ${hasRecord ? `
+          <div class="record-item record-wins">
+            <div class="record-number">${escapeHtml(f.wins)}</div>
+            <div class="record-label">W</div>
+          </div>
+          <div class="record-item record-losses">
+            <div class="record-number">${escapeHtml(f.losses ?? 0)}</div>
+            <div class="record-label">L</div>
+          </div>
+          <div class="record-item record-draws">
+            <div class="record-number">${escapeHtml(f.draws ?? 0)}</div>
+            <div class="record-label">D</div>
+          </div>` : `<div style="color: var(--text-muted); font-size: 0.85rem;">Record not listed</div>`}
+        </div>
+
+        <div style="margin-top: 15px; font-size: 0.8rem; color: var(--text-muted);">
+          Style: <span class="text-accent">${escapeHtml(f.style || f.sport)}</span>
+        </div>
+      </div>
+    `;
+    card.querySelector('.fighter-card-body').addEventListener('click', () => openFighterModal(f.id));
+    card.querySelector('.favorite-btn').addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent opening modal
+      const btn = e.currentTarget;
+      const isNowFav = dataStore.toggleFavorite(f.id);
+      btn.classList.toggle('active', isNowFav);
+      btn.innerHTML = isNowFav ? '❤️' : '🤍';
+      btn.style.color = isNowFav ? 'var(--accent)' : 'rgba(255,255,255,0.4)';
     });
+    return card;
+  }
 
-    renderFighters(filtered);
+  // 4. Filters: keep the URL in sync so the back button and shared links work
+  function onFiltersChanged() {
+    const params = new URLSearchParams();
+    if (searchInput.value.trim()) params.set('q', searchInput.value.trim());
+    if (styleSelect.value) params.set('sport', styleSelect.value);
+    history.replaceState(null, '', params.toString() ? `?${params}` : location.pathname);
+    applyView();
   }
 
   let searchTimer;
   searchInput.addEventListener('input', () => {
     clearTimeout(searchTimer);
-    searchTimer = setTimeout(filterFighters, 150);
+    searchTimer = setTimeout(onFiltersChanged, 200);
   });
-  weightSelect.addEventListener('change', filterFighters);
-  styleSelect.addEventListener('change', filterFighters);
-  countrySelect.addEventListener('change', filterFighters);
+  weightSelect.addEventListener('change', onFiltersChanged);
+  styleSelect.addEventListener('change', onFiltersChanged);
+  countrySelect.addEventListener('change', onFiltersChanged);
 
   // 5. Fighter Modal Logic
   // Tab switching helper for fighter modal

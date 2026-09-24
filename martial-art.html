@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Martial Arts Guide | FightHub</title>
+  <meta name="description" content="History, rules, techniques, ranks, equipment and famous fighters, with a beginner's guide.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+  <!-- Sticky Glass Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <div class="brand-icon">🥋</div>
+        <div class="brand-text">Fight<span class="text-accent">Hub</span></div>
+      </a>
+      <div class="navbar-links">
+        <a href="index.html">Home</a>
+        <a href="martial-arts.html">Martial Arts</a>
+        <a href="fighters.html">Fighters</a>
+        <a href="news.html">News</a>
+        <a href="events.html">Events</a>
+        <a href="rankings.html">Rankings</a>
+        <a href="training.html">Training</a>
+        <a href="gyms.html">Clubs</a>
+        <a href="admin/login.html" class="btn btn-secondary btn-sm" style="margin-left: 10px;">Admin Portal</a>
+      </div>
+      <div style="display: flex; align-items: center;">
+        <button class="theme-toggle" aria-label="Toggle Dark/Light Mode">☀️</button>
+        <div class="mobile-toggle" aria-label="Toggle Mobile Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Detail Hero Section -->
+  <header class="ma-detail-hero" id="detail-hero">
+    <div class="container ma-hero-grid">
+      <div>
+        <div class="breadcrumb">
+          <a href="index.html">Home</a>
+          <span class="separator">/</span>
+          <a href="martial-arts.html">Martial Arts</a>
+          <span class="separator">/</span>
+          <span id="breadcrumb-current">Loading…</span>
+        </div>
+        <h1 id="ma-title">Martial Art</h1>
+        <p id="ma-desc"></p>
+        <div class="ma-quick-facts" id="ma-facts"></div>
+      </div>
+      <figure class="ma-hero-photo" id="ma-photo" hidden>
+        <img id="ma-photo-img" alt="">
+        <figcaption id="ma-photo-credit"></figcaption>
+      </figure>
+    </div>
+  </header>
+
+  <!-- Tabs Navigation & Content Section -->
+  <section class="section">
+    <div class="container">
+      <div class="tabs" id="ma-tabs" style="flex-wrap: wrap;">
+        <button class="tab active" data-tab="overview">Overview</button>
+        <button class="tab" data-tab="history">History</button>
+        <button class="tab" data-tab="rules">Rules &amp; Scoring</button>
+        <button class="tab" data-tab="ranks">Ranks</button>
+        <button class="tab" data-tab="techniques">Techniques</button>
+        <button class="tab" data-tab="equipment">Equipment</button>
+        <button class="tab" data-tab="guide">How to Start</button>
+        <button class="tab" data-tab="fighters">Famous Fighters</button>
+      </div>
+
+      <div class="tab-content active" id="tab-overview">
+        <div class="tab-text" id="content-overview">Loading…</div>
+        <h3 class="text-accent" style="margin-top: var(--space-xl);">Benefits</h3>
+        <ul class="ma-benefits" id="content-benefits"></ul>
+      </div>
+      <div class="tab-content" id="tab-history"><div class="tab-text" id="content-history"></div></div>
+      <div class="tab-content" id="tab-rules"><div class="tab-text" id="content-rules"></div></div>
+      <div class="tab-content" id="tab-ranks"><div class="tab-text" id="content-ranks"></div></div>
+      <div class="tab-content" id="tab-techniques"><div class="grid grid-3" id="content-techniques" style="margin-top: 20px;"></div></div>
+      <div class="tab-content" id="tab-equipment">
+        <div class="grid grid-3" id="content-equipment" style="margin-top: 20px;"></div>
+      </div>
+      <div class="tab-content" id="tab-guide">
+        <div class="tab-text" id="content-guide"></div>
+        <h3 class="text-accent" style="margin-top: var(--space-xl);">Training Tips</h3>
+        <ol class="ma-tips" id="content-tips"></ol>
+        <p style="margin-top: var(--space-lg);"><a href="gyms.html" class="btn btn-primary">Find a club near you</a></p>
+      </div>
+      <div class="tab-content" id="tab-fighters"><div class="grid grid-2" id="content-fighters" style="margin-top: 20px;"></div></div>
+
+      <p id="ma-source" style="margin-top: var(--space-2xl); font-size: 0.8rem; color: var(--text-muted);"></p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="index.html" class="footer-brand">
+            <span class="brand-icon">🥋</span> FightHub
+          </a>
+          <p class="footer-desc">A premium portal for combat sports news, rankings, event trackers, fighter profile database, and interactive training tools.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Facebook">FB</a>
+            <a href="#" aria-label="Twitter">TW</a>
+            <a href="#" aria-label="Instagram">IG</a>
+            <a href="#" aria-label="YouTube">YT</a>
+          </div>
+        </div>
+        <div>
+          <h4>Pages</h4>
+          <div class="footer-links">
+            <a href="martial-arts.html">Martial Arts</a>
+            <a href="fighters.html">Fighter Database</a>
+            <a href="news.html">News & Articles</a>
+            <a href="events.html">Upcoming Events</a>
+          </div>
+        </div>
+        <div>
+          <h4>Tools</h4>
+          <div class="footer-links">
+            <a href="training.html">Round Timer</a>
+            <a href="training.html">BMI Calculator</a>
+            <a href="training.html">Calorie Calculator</a>
+            <a href="gyms.html">Find Clubs</a>
+          </div>
+        </div>
+        <div>
+          <h4>Newsletter</h4>
+          <p class="footer-desc" style="margin-bottom: 10px;">Get weekly fight predictions and training breakdowns in your inbox.</p>
+          <div class="footer-newsletter">
+            <input type="email" placeholder="Enter your email" aria-label="Email for Newsletter">
+            <button type="button" onclick="showToast('Newsletter sign-up is coming soon.', 'info')">Subscribe</button>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>&copy; 2026 FightHub. All rights reserved. Built for combat sports practitioners.</div>
+        <div><a href="admin/login.html">Admin CRM Panel</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/data-defaults.js"></script>
+  <script src="js/datastore.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // One page for every discipline: martial-art.html?id=ma1
+    document.addEventListener('DOMContentLoaded', async () => {
+      await dataStore.ready;
+
+      const id = new URLSearchParams(location.search).get('id') || 'ma1';
+      const ma = await dataStore.getById('martialArts', id);
+      if (!ma) {
+        document.getElementById('ma-title').textContent = 'Martial art not found';
+        document.getElementById('ma-desc').innerHTML = '<a href="martial-arts.html">Back to all martial arts</a>';
+        return;
+      }
+
+      // Paragraph text: blank lines separate paragraphs
+      const paragraphs = text => (text || '').split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
+        .map(p => `<p>${escapeHtml(p)}</p>`).join('') || '<p style="color: var(--text-muted);">Coming soon.</p>';
+
+      // Page meta (helps search engines and link previews)
+      document.title = `${ma.name}: History, Rules, Techniques & How to Start | FightHub`;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) metaDesc.setAttribute('content', ma.description || `Everything about ${ma.name} on FightHub.`);
+
+      document.getElementById('breadcrumb-current').textContent = ma.name;
+      document.getElementById('ma-title').textContent = ma.fullName || ma.name;
+      document.getElementById('ma-desc').textContent = ma.description || '';
+
+      const facts = [
+        ma.origin && ['📍', `Origin: ${ma.origin}`],
+        ma.founded && ['📅', `Founded: ${ma.founded}`],
+        ma.category && ['🥋', `Type: ${ma.category}`]
+      ].filter(Boolean);
+      document.getElementById('ma-facts').innerHTML = facts
+        .map(([icon, text]) => `<div class="ma-quick-fact"><span class="fact-icon">${icon}</span> ${escapeHtml(text)}</div>`).join('');
+
+      if (ma.image) {
+        document.getElementById('ma-photo').hidden = false;
+        const img = document.getElementById('ma-photo-img');
+        img.src = ma.image;
+        img.alt = ma.fullName || ma.name;
+        document.getElementById('ma-photo-credit').innerHTML = ma.imageCredit
+          ? `Photo: ${ma.imageSourceUrl ? `<a href="${safeUrl(ma.imageSourceUrl, '#')}" target="_blank" rel="noopener">${escapeHtml(ma.imageCredit)}</a>` : escapeHtml(ma.imageCredit)}`
+          : '';
+      }
+
+      // Older short entries only have history/rules; fall back gracefully
+      document.getElementById('content-overview').innerHTML = paragraphs(ma.overview || ma.description);
+      document.getElementById('content-history').innerHTML = paragraphs(ma.history);
+      document.getElementById('content-rules').innerHTML = paragraphs(ma.rules);
+      document.getElementById('content-ranks').innerHTML = paragraphs(ma.ranks);
+      document.getElementById('content-guide').innerHTML = paragraphs(ma.beginnerGuide);
+
+      document.getElementById('content-benefits').innerHTML = (ma.benefits || [])
+        .map(b => `<li>✅ ${escapeHtml(b)}</li>`).join('') || '<li style="color: var(--text-muted);">Coming soon.</li>';
+      document.getElementById('content-tips').innerHTML = (ma.tips || [])
+        .map(t => `<li>${escapeHtml(t)}</li>`).join('') || '<li style="color: var(--text-muted);">Coming soon.</li>';
+
+      // Techniques / equipment: objects {name, description} (older entries: plain strings)
+      const cards = list => (list || []).map(item => {
+        const name = typeof item === 'string' ? item : item.name;
+        const description = typeof item === 'string' ? '' : item.description;
+        return `
+          <div class="card card-glass" style="padding: 20px;">
+            <h4 class="text-accent" style="font-size: 1.15rem; margin-bottom: 8px;">${escapeHtml(name)}</h4>
+            ${description ? `<p style="font-size: 0.9rem; margin-bottom: 0; color: var(--text-secondary);">${escapeHtml(description)}</p>` : ''}
+          </div>`;
+      }).join('') || '<p style="color: var(--text-muted);">Coming soon.</p>';
+      document.getElementById('content-techniques').innerHTML = cards(ma.techniques);
+      document.getElementById('content-equipment').innerHTML = cards(ma.equipment);
+
+      // Famous fighters link to their profile search on the fighters page
+      document.getElementById('content-fighters').innerHTML = (ma.famousFighters || []).map(name => `
+        <a class="card card-glass" href="fighters.html?q=${encodeURIComponent(name)}" style="padding: 18px 20px; display: flex; align-items: center; gap: 15px; text-decoration: none;">
+          <div style="font-size: 1.8rem;">${escapeHtml(ma.icon || '🥋')}</div>
+          <div>
+            <h4 style="margin-bottom: 2px;">${escapeHtml(name)}</h4>
+            <p style="font-size: 0.8rem; color: var(--accent); margin: 0;">View in fighter database →</p>
+          </div>
+        </a>`).join('') || '<p style="color: var(--text-muted);">Coming soon.</p>';
+
+      if (ma.sourceUrl) {
+        document.getElementById('ma-source').innerHTML = `Based on the Wikipedia article <a href="${safeUrl(ma.sourceUrl, '#')}" target="_blank" rel="noopener">${escapeHtml(ma.wikipediaTitle || ma.name)}</a> (CC BY-SA).`;
+      }
+
+      // Tabs
+      const tabs = document.querySelectorAll('#ma-tabs .tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          tabContents.forEach(tc => tc.classList.remove('active'));
+          document.getElementById(`tab-${tab.getAttribute('data-tab')}`)?.classList.add('active');
+        });
+      });
+
+      initScrollAnimations();
+    });
+  </script>
+</body>
+</html>

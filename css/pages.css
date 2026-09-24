@@ -1226,3 +1226,94 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ---- Martial art detail page (martial-art.html) ---- */
+.ma-hero-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--space-2xl);
+  align-items: center;
+}
+.ma-hero-photo {
+  margin: 0;
+}
+.ma-hero-photo img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+.ma-hero-photo figcaption {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+.tab-text p {
+  margin-bottom: 1em;
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+.ma-benefits, .ma-tips {
+  display: grid;
+  gap: 10px;
+  padding-left: 0;
+  list-style: none;
+  color: var(--text-secondary);
+}
+.ma-tips {
+  list-style: decimal inside;
+}
+.ma-tips li, .ma-benefits li {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+}
+@media (max-width: 800px) {
+  .ma-hero-grid { grid-template-columns: 1fr; }
+}
+
+/* ---- Fighters page: sport folders ---- */
+.sport-folder {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  gap: 12px 16px;
+  align-items: center;
+  text-align: left;
+  padding: var(--space-xl);
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  color: inherit;
+  font: inherit;
+  transition: transform var(--transition-base), border-color var(--transition-base);
+}
+.sport-folder:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+}
+.sport-folder-icon {
+  font-size: 2.4rem;
+}
+.sport-folder-text h3 {
+  font-size: 1.25rem;
+  margin: 0 0 4px;
+}
+.sport-folder-text span {
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.sport-folder-faces {
+  grid-column: 1 / -1;
+  display: flex;
+}
+.sport-folder-faces img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--bg-card);
+  margin-right: -10px;
+}

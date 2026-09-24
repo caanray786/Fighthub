@@ -10,6 +10,7 @@ import { runNews } from './jobs/news.js';
 import { runNewFighters } from './jobs/fighters.js';
 import { runPhotos } from './jobs/photos.js';
 import { runBackfill } from './jobs/backfill.js';
+import { runMartialArts } from './jobs/martialArts.js';
 import { runEventHousekeeping } from './jobs/events.js';
 
 async function main() {
@@ -27,6 +28,7 @@ async function main() {
     fighters: await getAll('fighters'),
     articles: await getAll('articles'),
     events: await getAll('events'),
+    martialArts: await getAll('martial_arts'),
     mentionedFighters: new Set(),
     summary: { errors: [] }
   };
@@ -36,6 +38,7 @@ async function main() {
   const jobs = [
     ['news', runNews],
     ['newFighters', runNewFighters],
+    ['martialArts', runMartialArts],
     ['backfill', runBackfill],
     ['photos', runPhotos],
     ['events', runEventHousekeeping]
