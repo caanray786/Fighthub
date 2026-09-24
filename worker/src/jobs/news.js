@@ -52,6 +52,7 @@ function baseArticle(item) {
     image: '',
     sourceName: item.source,
     sourceUrl: item.link,
+    sourceDescription: item.description, // kept for fact-checking and later rewrites
     likes: 0,
     comments: 0,
     status: 'published',
@@ -68,7 +69,6 @@ function newsBrief(item, aiAttempts = 0) {
     title: item.title,
     excerpt: item.description.slice(0, 160),
     content: item.description.slice(0, 600),
-    sourceDescription: item.description,
     author: item.source,
     tags: [item.category],
     taggedFighters: [],
@@ -150,10 +150,20 @@ function sameStory(a, b) {
   return shared >= 3 && shared / Math.min(a.size, b.size) >= 0.6;
 }
 
+const baseModel = m => String(m || '').replace(/:free$/, '');
+
 export async function runNews(state) {
   log('NEWS: fetching feeds');
-  const known = new Set(state.articles.map(a => a.id));
-  const knownTitles = new Set(state.articles.map(a => (a.title || '').toLowerCase()));
+  // Articles written by a model no longer on the approved list are rewritten
+  // from the original feed item (while it is still in the feed)
+  const approved = new Set(config.models.map(baseModel));
+  const redoIds = new Set(state.articles
+    .filter(a => a.isAIPreview && a.aiModel && !approved.has(baseModel(a.aiModel)) && !a.duplicate)
+    .map(a => a.id));
+  const current = state.articles.filter(a => !redoIds.has(a.id));
+
+  const known = new Set(current.map(a => a.id));
+  const knownTitles = new Set(current.map(a => (a.title || '').toLowerCase()));
 
   const fresh = (await fetchFeedItems())
     .filter(item => !known.has(item.id) && !knownTitles.has(item.title.toLowerCase()))
@@ -180,10 +190,13 @@ export async function runNews(state) {
     byFeed.get(key).push(item);
   });
   const queues = [...byFeed.values()];
-  const toProcess = [];
-  const covered = state.articles
-    .filter(a => a.date && (Date.now() - new Date(a.date).getTime()) < 7 * 86400000)
+  const recentTitles = (excludeIds = new Set()) => current
+    .filter(a => !excludeIds.has(a.id) && !a.duplicate && a.date && (Date.now() - new Date(a.date).getTime()) < 7 * 86400000)
     .map(a => keywords(a.title || ''));
+  const toProcess = unique.filter(item => redoIds.has(item.id));
+  queues.forEach(q => q.splice(0, q.length, ...q.filter(item => !redoIds.has(item.id))));
+  if (toProcess.length) log(`NEWS: rewriting ${toProcess.length} article(s) from a model no longer approved`);
+  const covered = recentTitles();
   while (toProcess.length < config.maxArticlesPerRun && queues.some(q => q.length)) {
     for (const q of queues) {
       if (!q.length || toProcess.length >= config.maxArticlesPerRun) continue;
@@ -201,6 +214,9 @@ export async function runNews(state) {
 
   log(`NEWS: ${fresh.length} new stories; processing ${queue.length} (${retries.length} rewrite retries)`);
   const articles = [];
+  // Rewritten headlines match far better than raw ones across outlets, so each
+  // AI title is checked against this week's titles to catch the same story twice
+  const publishedTitles = recentTitles(new Set(queue.map(item => item.id)));
   let aiBlocked = false; // once every model has failed, stop spending quota this run
   for (const item of queue) {
     const attempts = (item.aiAttempts || 0) + 1;
@@ -208,7 +224,15 @@ export async function runNews(state) {
     if (aiAvailable() && !aiBlocked) {
       try {
         article = await aiArticle(item);
-        log(`  + "${article.title}" (${article.aiModel})`);
+        const words = keywords(article.title);
+        if (publishedTitles.some(t => sameStory(t, words))) {
+          // Kept hidden (not deleted) so the feed item isn't picked up again
+          Object.assign(article, { draft: true, duplicate: true });
+          log(`  = duplicate of an existing story, hidden: "${article.title}"`);
+        } else {
+          publishedTitles.push(words);
+          log(`  + "${article.title}" (${article.aiModel})`);
+        }
       } catch (err) {
         log(`  ! AI failed for "${item.title}": ${err.message}; saved as brief, will retry`);
         if (/No model available/.test(err.message)) aiBlocked = true;
@@ -227,6 +251,7 @@ export async function runNews(state) {
   const byId = new Map(state.articles.map(a => [a.id, a]));
   articles.forEach(a => byId.set(a.id, a));
   state.articles = [...byId.values()];
-  state.summary.articles = articles.filter(a => a.isAIPreview).length;
+  state.summary.articles = articles.filter(a => a.isAIPreview && !a.duplicate).length;
+  state.summary.duplicates = articles.filter(a => a.duplicate).length;
   state.summary.briefs = articles.filter(a => !a.isAIPreview).length;
 }

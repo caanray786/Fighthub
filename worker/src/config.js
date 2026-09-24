@@ -13,8 +13,9 @@ export const config = {
 
   openRouterKey: env.OPENROUTER_API_KEY || '',
   // Primary model first; the worker falls back through the list when one is busy.
-  // openrouter/free lets OpenRouter pick whichever free model has capacity.
-  models: (env.OPENROUTER_MODELS || 'z-ai/glm-5.2:free,google/gemma-4-31b-it:free,qwen/qwen3.8-27b:free,nvidia/nemotron-3-super-120b-a12b:free,openrouter/free')
+  // Only capable models: the openrouter/free router can pick tiny models that
+  // invent facts, so if all of these are busy the story waits for the next run.
+  models: (env.OPENROUTER_MODELS || 'z-ai/glm-5.2:free,google/gemma-4-31b-it:free,qwen/qwen3.8-27b:free,nvidia/nemotron-3-super-120b-a12b:free')
     .split(',').map(s => s.trim()).filter(Boolean),
 
   // Free OpenRouter models allow ~50 requests/day without purchased credits, so each

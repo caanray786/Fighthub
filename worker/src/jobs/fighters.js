@@ -40,7 +40,9 @@ Reply with JSON only:
 
   const { json, model } = await askJson(prompt, { temperature: 0.1 });
   return {
-    name: String(json.name || page.title).slice(0, 100),
+    // The page title is the name they're known by ("Anthony Joshua"), not the
+    // full legal name the article opens with; drop disambiguators like "(boxer)"
+    name: displayName(page.title).slice(0, 100),
     nickname: String(json.nickname || '').slice(0, 60),
     nationality: String(json.nationality || '').slice(0, 16),
     country: String(json.country || '').slice(0, 60),
@@ -62,7 +64,19 @@ Reply with JSON only:
   };
 }
 
+const displayName = title => title.replace(/\s*\([^)]*\)\s*$/, '');
+
 export async function runNewFighters(state) {
+  // Earlier AI profiles used the full legal name; switch them to the known name
+  const renamed = state.fighters
+    .filter(f => f.createdBy === 'ai-worker' && f.wikipediaTitle && f.name !== displayName(f.wikipediaTitle))
+    .map(f => ({ ...f, name: displayName(f.wikipediaTitle) }));
+  if (renamed.length) {
+    await upsert('fighters', renamed);
+    renamed.forEach(r => Object.assign(state.fighters.find(f => f.id === r.id), r));
+    log(`FIGHTERS: renamed ${renamed.map(r => r.name).join(', ')}`);
+  }
+
   const known = new Set(state.fighters.map(f => nameKey(f.name)));
   const candidates = [...state.mentionedFighters].filter(name => name && !known.has(nameKey(name)));
   log(`FIGHTERS: ${candidates.length} mentioned fighters not in the database`);
