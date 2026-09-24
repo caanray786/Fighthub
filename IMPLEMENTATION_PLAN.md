@@ -91,7 +91,9 @@ Built: `worker/` (Node) + `.github/workflows/ai-worker.yml`, running every 4 h o
 - [x] Real photos from Wikimedia Commons with photographer/licence credit (dry run: 25 of 27 seed fighters found).
 - [x] Past events auto-marked completed; `ai_runs` log shown in admin Settings.
 - [x] Browser-side pipeline removed (API keys no longer in the browser).
-- [ ] Owner: run `003_ai_worker.sql`, add GitHub secrets `SUPABASE_SERVICE_ROLE_KEY` + `OPENROUTER_API_KEY`, first run.
+- [x] Owner ran `003_ai_worker.sql` and added the GitHub secrets; worker live since 2026-09-24 (first runs: 12 AI articles, 6 draft fighters, 24 real photos).
+- [x] Hardening after the first live runs: own fallback across approved models when free models are busy, briefs retried later, duplicate detection on AI headlines, stricter tense rules (the AI once reported an upcoming fight as won), prompt versioning so old articles are rewritten, ESPN dropped (blocks GitHub).
+- Model quality note: the `openrouter/free` auto-router picked a 2.6B model that invented a fact, so only named, capable models are allowed.
 - [ ] Next: event discovery (confirmed cards from Wikipedia) and results; weekly evergreen blog post; rankings suggestions.
 - Free-tier limit: ~50 OpenRouter requests/day without purchased credits (1,000/day after a one-off $10 top-up). Current caps use ≤36/day.
 

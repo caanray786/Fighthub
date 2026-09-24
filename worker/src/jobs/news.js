@@ -220,7 +220,10 @@ export async function runNews(state) {
 
   // Earlier briefs waiting for an AI rewrite go first, within the same per-run cap
   const retries = aiAvailable() ? pendingRewrites(state.articles).slice(0, Math.ceil(config.maxArticlesPerRun / 2)) : [];
-  const queue = [...retries, ...toProcess].slice(0, config.maxArticlesPerRun);
+  // Corrections to live articles first, then waiting briefs, then new stories
+  const redoFirst = toProcess.filter(item => redoIds.has(item.id));
+  const newStories = toProcess.filter(item => !redoIds.has(item.id));
+  const queue = [...redoFirst, ...retries, ...newStories].slice(0, config.maxArticlesPerRun);
 
   log(`NEWS: ${fresh.length} new stories; processing ${queue.length} (${retries.length} rewrite retries)`);
   const articles = [];
