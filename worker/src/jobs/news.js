@@ -10,6 +10,10 @@ import { shortHash, slugify, stripHtml } from '../util.js';
 
 const CATEGORIES = ['UFC', 'MMA', 'Boxing', 'ONE', 'PFL', 'Muay Thai', 'Kickboxing', 'BJJ', 'General'];
 
+// Bump when the writing rules change: recent AI articles written under older
+// rules are rewritten from their feed item (while it is still in the feed).
+const PROMPT_VERSION = 2;
+
 async function fetchFeedItems() {
   const parser = new Parser();
   const items = [];
@@ -106,8 +110,12 @@ Title: ${item.title}
 Source: ${item.source}
 Details: ${item.description || '(no details beyond the title)'}
 
+TODAY'S DATE: ${new Date().toISOString().slice(0, 10)}
+
 RULES
 - Use ONLY facts stated in the news item. Never add records, dates, venues, results, quotes, odds or rumours that are not in it.
+- Tense matters. Do NOT say a fight has happened, or give a result, unless the item explicitly says it took place. Headlines like "eyes title shot with win", "targets", "set for", "ahead of" describe FUTURE fights: write them as upcoming.
+- Do not invent context such as "speaking after the fight" or "in a press conference" unless the item says so.
 - Length follows the source: 60-120 words if the details are brief, up to 180 words if they are rich. Never pad with invented facts.
 - Neutral, clear sports-journalism tone. No clickbait.
 - "taggedFighters": full names of every fighter named in the item (empty list if none).
@@ -131,6 +139,7 @@ Reply with JSON only:
     prediction: String(json.prediction || '').slice(0, 300),
     author: `FightHub AI (source: ${item.source})`,
     aiModel: model,
+    promptVersion: PROMPT_VERSION,
     isAIPreview: true
   };
 }
@@ -154,11 +163,12 @@ const baseModel = m => String(m || '').replace(/:free$/, '');
 
 export async function runNews(state) {
   log('NEWS: fetching feeds');
-  // Articles written by a model no longer on the approved list are rewritten
-  // from the original feed item (while it is still in the feed)
+  // Articles written by a model no longer on the approved list, or under older
+  // writing rules, are rewritten from the original feed item (while still in the feed)
   const approved = new Set(config.models.map(baseModel));
   const redoIds = new Set(state.articles
-    .filter(a => a.isAIPreview && a.aiModel && !approved.has(baseModel(a.aiModel)) && !a.duplicate)
+    .filter(a => a.isAIPreview && !a.duplicate && a.aiModel
+      && (!approved.has(baseModel(a.aiModel)) || (a.promptVersion || 1) < PROMPT_VERSION))
     .map(a => a.id));
   const current = state.articles.filter(a => !redoIds.has(a.id));
 
@@ -195,7 +205,7 @@ export async function runNews(state) {
     .map(a => keywords(a.title || ''));
   const toProcess = unique.filter(item => redoIds.has(item.id));
   queues.forEach(q => q.splice(0, q.length, ...q.filter(item => !redoIds.has(item.id))));
-  if (toProcess.length) log(`NEWS: rewriting ${toProcess.length} article(s) from a model no longer approved`);
+  if (toProcess.length) log(`NEWS: rewriting ${toProcess.length} article(s) written by an unapproved model or older rules`);
   const covered = recentTitles();
   while (toProcess.length < config.maxArticlesPerRun && queues.some(q => q.length)) {
     for (const q of queues) {
