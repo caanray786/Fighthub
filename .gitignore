@@ -17,3 +17,6 @@ dist/
 
 # Local backups exported from the admin panel
 fighthub-backup-*.json
+
+# Raw hero animation frames (converted copies live in images/hero/)
+images/hero-source/

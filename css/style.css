@@ -1060,3 +1060,19 @@ p {
     font-size: 0.8rem;
   }
 }
+
+/* ---- Brand logo ---- */
+.brand-logo {
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+  flex-shrink: 0;
+}
+.navbar-brand .brand-logo {
+  width: 48px;
+  height: 48px;
+}
+.footer-brand .brand-logo {
+  width: 56px;
+  height: 56px;
+}

@@ -1133,3 +1133,9 @@
   gap: var(--space-md);
   justify-content: center;
 }
+
+.admin-sidebar-brand .brand-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
