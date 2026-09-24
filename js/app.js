@@ -41,7 +41,7 @@ function initHeroScrollAnimation() {
   if (!wrapper || !hero || !canvas) return;
 
   const ctx = canvas.getContext('2d');
-  const totalFrames = 76;
+  const totalFrames = 100;
   const images = new Array(totalFrames);
   let currentFrameIndex = -1;
 
