@@ -17,6 +17,10 @@ export const config = {
   // invent facts, so if all of these are busy the story waits for the next run.
   models: (env.OPENROUTER_MODELS || 'z-ai/glm-5.2:free,google/gemma-4-31b-it:free,qwen/qwen3.8-27b:free,nvidia/nemotron-3-super-120b-a12b:free')
     .split(',').map(s => s.trim()).filter(Boolean),
+  // Used only when every free model is busy. ~$0.0008 per fighter profile at
+  // 2026-09 prices. Set the repo variable OPENROUTER_PAID_MODELS to "none" to disable.
+  paidModels: (env.OPENROUTER_PAID_MODELS || 'google/gemma-4-31b-it,nvidia/nemotron-3-super-120b-a12b')
+    .split(',').map(s => s.trim()).filter(s => s && s !== 'none'),
 
   // Free OpenRouter models allow ~50 requests/day without purchased credits, so each
   // run is capped. At 6 runs/day: (4 + 2) * 6 = 36 AI calls/day.

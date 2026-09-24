@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       panel.innerHTML = `
         <table class="admin-table">
-          <thead><tr><th>Started</th><th>Result</th><th>Articles</th><th>New fighters</th><th>Photos</th><th>Details</th></tr></thead>
+          <thead><tr><th>Started</th><th>Result</th><th>Articles</th><th>Fighters imported</th><th>Draft fighters</th><th>Photos</th><th>Paid AI calls</th><th>Details</th></tr></thead>
           <tbody>${runs.map(run => {
             const s = run.summary || {};
             const state = run.finished_at ? (run.ok ? '🟢 OK' : '🟠 Partial') : '⏳ Running / stopped';
@@ -29,8 +29,10 @@ document.addEventListener('DOMContentLoaded', async () => {
               <td>${escapeHtml(new Date(run.started_at).toLocaleString())}</td>
               <td>${state}</td>
               <td>${escapeHtml(s.articles ?? 0)}</td>
+              <td>${escapeHtml(s.backfilled ?? 0)}</td>
               <td>${escapeHtml(s.newFighters ?? 0)}</td>
               <td>${escapeHtml(s.photosAdded ?? 0)}</td>
+              <td>${escapeHtml(s.paidAiCalls ?? 0)}</td>
               <td><details><summary style="cursor:pointer;">Log</summary><pre style="white-space:pre-wrap; max-height:300px; overflow:auto; font-size:0.75rem;">${escapeHtml(run.log || '')}</pre></details></td>
             </tr>`;
           }).join('')}</tbody>

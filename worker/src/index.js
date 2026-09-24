@@ -4,7 +4,7 @@
 
 import { config } from './config.js';
 import { log, fullLog } from './log.js';
-import { aiAvailable } from './openrouter.js';
+import { aiAvailable, usage } from './openrouter.js';
 import { getAll, startRun, finishRun } from './supabase.js';
 import { runNews } from './jobs/news.js';
 import { runNewFighters } from './jobs/fighters.js';
@@ -49,6 +49,7 @@ async function main() {
     }
   }
 
+  state.summary.paidAiCalls = usage.paidCalls;
   const ok = state.summary.errors.length === 0;
   log(`Finished: ${JSON.stringify(state.summary)}`);
   await finishRun(runId, ok, state.summary, fullLog());

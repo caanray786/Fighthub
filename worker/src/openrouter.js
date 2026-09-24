@@ -35,6 +35,7 @@ async function callModel(model, prompt, temperature) {
   if (!res.ok) {
     const detail = await res.text();
     // 429 = rate limited, 5xx = provider trouble: worth trying another model
+    if (res.status === 402) throw new Error(`OpenRouter 402 (${model}): insufficient credits`);
     if (res.status === 429 || res.status >= 500) {
       throw new RetryableError(`${model} ${res.status} (${describeLimit(detail)})`);
     }
@@ -47,20 +48,42 @@ async function callModel(model, prompt, temperature) {
   return { json: parseJsonObject(text), model: data.model || model };
 }
 
+// Paid fallback usage this run (shown in the run summary)
+export const usage = { paidCalls: 0 };
+let paidDisabled = false; // set when the account has no credits
+
 export async function askJson(prompt, { temperature = 0.3 } = {}) {
   const failures = [];
-  for (let attempt = 0; attempt < 2; attempt++) {
-    if (attempt > 0) {
-      log(`  (all models busy: ${failures.join('; ')}; waiting ${RETRY_WAIT_MS / 1000}s)`);
-      await new Promise(r => setTimeout(r, RETRY_WAIT_MS));
-    }
-    for (const model of config.models) {
+  const tryModels = async (models, paid) => {
+    for (const model of models) {
       try {
-        return await callModel(model, prompt, temperature);
+        const result = await callModel(model, prompt, temperature);
+        if (paid) usage.paidCalls++;
+        return result;
       } catch (err) {
+        if (paid && /\b402\b|credits/i.test(err.message)) {
+          paidDisabled = true;
+          log('  (paid fallback unavailable: no OpenRouter credits; free models only)');
+          return null;
+        }
         if (!(err instanceof RetryableError) && !(err instanceof SyntaxError)) throw err;
         failures.push(err.message);
       }
+    }
+    return null;
+  };
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (attempt > 0) {
+      log(`  (all models busy; waiting ${RETRY_WAIT_MS / 1000}s)`);
+      await new Promise(r => setTimeout(r, RETRY_WAIT_MS));
+    }
+    const free = await tryModels(config.models, false);
+    if (free) return free;
+    // Every free model is busy: use the cheap paid versions instead of waiting
+    if (config.paidModels.length && !paidDisabled) {
+      const paid = await tryModels(config.paidModels, true);
+      if (paid) return paid;
     }
   }
   throw new Error(`No model available: ${failures.slice(-3).join('; ')}`);

@@ -46,6 +46,7 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           # Optional overrides (Settings -> Secrets and variables -> Actions -> Variables)
           OPENROUTER_MODELS: ${{ vars.OPENROUTER_MODELS }}
+          OPENROUTER_PAID_MODELS: ${{ vars.OPENROUTER_PAID_MODELS }}
           MAX_ARTICLES_PER_RUN: ${{ vars.MAX_ARTICLES_PER_RUN }}
           MAX_NEW_FIGHTERS_PER_RUN: ${{ vars.MAX_NEW_FIGHTERS_PER_RUN }}
           MAX_BACKFILL_PER_RUN: ${{ vars.MAX_BACKFILL_PER_RUN }}
