@@ -9,7 +9,7 @@ import { upsert } from '../supabase.js';
 import { summary, pageText, commonsPhoto } from '../wikipedia.js';
 
 // Bump to rewrite every guide (e.g. after changing the sections below)
-const CONTENT_VERSION = 1;
+const CONTENT_VERSION = 2; // v2: core techniques every beginner learns, careful origins
 
 // Existing ids (ma1-ma11) are kept so links and rankings still work
 export const DISCIPLINES = [
@@ -63,6 +63,8 @@ RULES
 - Technique descriptions, the beginner guide, equipment and training tips may use general, widely known practical knowledge, but name no brands, gyms or organisations that are not in the article.
 - Write clear, engaging British English for someone new to the sport. Separate paragraphs with a blank line.
 - If the discipline has no competition rules or no rank system, say so briefly rather than inventing one.
+- "origin" and "founded" are short labels. Where the article says the origin is uncertain or disputed, say so (e.g. "Ancient (disputed); modern rules: England"), never state a disputed theory as fact.
+- "techniques": 8-12 entries, starting with the fundamental techniques every beginner learns in this discipline (e.g. for boxing: jab, cross, hook, uppercut, footwork, guard), then more advanced ones.
 - "famousFighters": only people the article names as notable practitioners or champions (up to 10).
 
 ARTICLE

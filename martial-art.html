@@ -96,7 +96,14 @@
         <ol class="ma-tips" id="content-tips"></ol>
         <p style="margin-top: var(--space-lg);"><a href="gyms.html" class="btn btn-primary">Find a club near you</a></p>
       </div>
-      <div class="tab-content" id="tab-fighters"><div class="grid grid-2" id="content-fighters" style="margin-top: 20px;"></div></div>
+      <div class="tab-content" id="tab-fighters">
+        <div id="db-fighters-wrap" hidden>
+          <h3 class="text-accent" style="margin-top: 10px;">Top fighters in our database</h3>
+          <div class="grid grid-4" id="db-fighters" style="margin: 16px 0 var(--space-xl);"></div>
+        </div>
+        <h3 class="text-accent">Pioneers and names from its history</h3>
+        <div class="grid grid-2" id="content-fighters" style="margin-top: 16px;"></div>
+      </div>
 
       <p id="ma-source" style="margin-top: var(--space-2xl); font-size: 0.8rem; color: var(--text-muted);"></p>
     </div>
@@ -235,6 +242,38 @@
             <p style="font-size: 0.8rem; color: var(--accent); margin: 0;">View in fighter database →</p>
           </div>
         </a>`).join('') || '<p style="color: var(--text-muted);">Coming soon.</p>';
+
+      // Top fighters from our own database for this discipline (with photos first)
+      const SPORT_FOR_STYLE = {
+        ma1: 'MMA', ma4: 'Boxing', 'ma-bare-knuckle': 'Boxing', ma2: 'Muay Thai', ma9: 'Muay Thai', 'ma-lethwei': 'Muay Thai',
+        'ma-kun-khmer': 'Muay Thai', 'ma-sanda': 'Muay Thai', 'ma-savate': 'Muay Thai', 'ma-kyokushin': 'Muay Thai',
+        ma3: 'Grappling', ma5: 'Grappling', 'ma-greco-roman': 'Grappling', ma6: 'Grappling', ma10: 'Grappling', 'ma-catch-wrestling': 'Grappling', 'ma-sumo': 'Grappling'
+      };
+      const sport = SPORT_FOR_STYLE[ma.id];
+      if (sport) {
+        const [summaries, rankings] = await Promise.all([
+          dataStore.getSummaries('fighters', ['name', 'sport', 'image', 'wins', 'losses', 'draws', 'nationality', 'draft']),
+          dataStore.getAll('rankings')
+        ]);
+        // The sport's all-time ranking first, then the rest by number of wins
+        const ranked = (rankings.find(r => r.sport === sport) || {}).rankings || [];
+        const order = f => { const i = ranked.indexOf(f.id); return i === -1 ? 1000 : i; };
+        const top = summaries
+          .filter(f => f.sport === sport && !f.draft && f.image && !/unsplash/.test(f.image))
+          .sort((a, b) => order(a) - order(b) || (b.wins || 0) - (a.wins || 0))
+          .slice(0, 8);
+        if (top.length) {
+          document.getElementById('db-fighters-wrap').hidden = false;
+          document.getElementById('db-fighters').innerHTML = top.map(f => `
+            <a class="card card-glass" href="fighters.html?q=${encodeURIComponent(f.name)}" style="padding: 0; overflow: hidden; text-decoration: none;">
+              <img src="${safeUrl(f.image)}" alt="${escapeHtml(f.name)}" loading="lazy" style="width: 100%; aspect-ratio: 1; object-fit: cover; object-position: top;">
+              <div style="padding: 10px 12px;">
+                <strong>${escapeHtml(f.name)}</strong>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(f.nationality || '')} ${f.wins !== null && f.wins !== undefined ? `${escapeHtml(f.wins)}-${escapeHtml(f.losses ?? 0)}-${escapeHtml(f.draws ?? 0)}` : ''}</div>
+              </div>
+            </a>`).join('');
+        }
+      }
 
       if (ma.sourceUrl) {
         document.getElementById('ma-source').innerHTML = `Based on the Wikipedia article <a href="${safeUrl(ma.sourceUrl, '#')}" target="_blank" rel="noopener">${escapeHtml(ma.wikipediaTitle || ma.name)}</a> (CC BY-SA).`;
