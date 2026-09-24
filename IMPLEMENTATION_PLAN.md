@@ -72,7 +72,7 @@ A static HTML/CSS/vanilla-JS site (11 public pages + 10 admin pages), served loc
 - [x] Deleted dead `autopilot-agent.js` and fake `run-pipeline.ps1`.
 - [x] Extra: stock photos no longer shown as fighters (initials until a real photo is added); fake gym distances, map and hours replaced with a real OpenStreetMap embed; events calendar uses today's date; admin pipeline tiles show real status.
 
-### Phase 1 — Real back end (in progress)
+### Phase 1 — Real back end ✅ done 2026-09-24 · live at https://fighthub-swart.vercel.app
 - [x] Supabase project created (by owner).
 - [x] `supabase/migrations/001_schema.sql`: one table per content type (`fighters, articles, events, rankings, gyms, martial_arts, training_plans`). Each record is stored as a JSON `doc`, so AI-added fields need no migration. Admins table + `is_admin()`. *(Tables for `ai_jobs`, `sources`, `media` come with Phase 2/3.)*
 - [x] Row Level Security: the public can read everything except `status = 'draft'`; only admins can write.
@@ -81,7 +81,8 @@ A static HTML/CSS/vanilla-JS site (11 public pages + 10 admin pages), served loc
 - [x] `supabase/seed.sql`: starter content (74 records).
 - [x] SQL run on the live project, admin user created, public sign-ups disabled, `js/config.js` connected (2026-09-24). Verified: visitors read all 74 records, and anonymous insert/update/delete are blocked. Owner confirmed admin login and a live edit showing on the site.
 - [x] Admin tables: click a row to edit, Edit/Delete pinned right; edits merge into the stored record so fields not on the form are kept.
-- [ ] Deploy the site (Netlify / Cloudflare Pages drag-and-drop works without git) with a custom domain.
+- [x] Git installed; local folder linked to the GitHub repo; Phase 0 + 1 pushed to `main` (commit 48fb080).
+- [x] Vercel connected to the repo: every push to `main` deploys to https://fighthub-swart.vercel.app. `.vercelignore` keeps SQL, notes and scripts private (verified 404). Custom domain: later.
 
 ### Phase 2 — AI engine with OpenRouter (≈1–2 weeks)
 - [ ] Edge Function `ai-worker` with the `OPENROUTER_API_KEY` secret (set via `supabase secrets set`, **never committed**). Model is configurable in the admin panel.
