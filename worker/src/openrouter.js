@@ -33,10 +33,12 @@ async function callModel(model, prompt, temperature) {
   });
 
   if (!res.ok) {
-    const detail = (await res.text()).slice(0, 200);
+    const detail = await res.text();
     // 429 = rate limited, 5xx = provider trouble: worth trying another model
-    if (res.status === 429 || res.status >= 500) throw new RetryableError(`${model} ${res.status}`);
-    throw new Error(`OpenRouter ${res.status} (${model}): ${detail}`);
+    if (res.status === 429 || res.status >= 500) {
+      throw new RetryableError(`${model} ${res.status} (${describeLimit(detail)})`);
+    }
+    throw new Error(`OpenRouter ${res.status} (${model}): ${detail.slice(0, 200)}`);
   }
   const data = await res.json();
   if (data.error) throw new RetryableError(`${model}: ${data.error.message || 'provider error'}`);
@@ -62,6 +64,20 @@ export async function askJson(prompt, { temperature = 0.3 } = {}) {
     }
   }
   throw new Error(`No model available: ${failures.slice(-3).join('; ')}`);
+}
+
+// Distinguish "this free model is busy right now" from "your account's daily
+// free-model allowance is used up", which need different fixes.
+function describeLimit(body) {
+  try {
+    const err = JSON.parse(body).error || {};
+    const text = `${err.message || ''} ${err.metadata?.raw || ''}`;
+    if (/free-models-per-day|per day|daily/i.test(text)) return 'DAILY FREE LIMIT REACHED';
+    if (/upstream|temporarily/i.test(text)) return 'model busy upstream';
+    return text.trim().slice(0, 120) || 'rate limited';
+  } catch {
+    return body.slice(0, 120);
+  }
 }
 
 // Models sometimes wrap JSON in prose or code fences; take the outermost object.

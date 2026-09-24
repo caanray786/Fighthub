@@ -32,9 +32,8 @@ export const config = {
     { name: 'MMA Fighting', url: 'https://www.mmafighting.com/rss/index.xml', category: 'MMA' },
     { name: 'Sherdog', url: 'https://www.sherdog.com/rss/news.xml', category: 'MMA' },
     { name: 'BBC Sport', url: 'https://feeds.bbci.co.uk/sport/mixed-martial-arts/rss.xml', category: 'MMA' },
-    { name: 'ESPN', url: 'https://www.espn.com/espn/rss/mma/news', category: 'MMA' },
     { name: 'BBC Sport', url: 'https://feeds.bbci.co.uk/sport/boxing/rss.xml', category: 'Boxing' },
-    { name: 'ESPN', url: 'https://www.espn.com/espn/rss/boxing/news', category: 'Boxing' },
+    // ESPN's feeds block GitHub's servers, so they are not used
     { name: 'Bad Left Hook', url: 'https://www.badlefthook.com/rss/index.xml', category: 'Boxing' },
     { name: 'Boxing News', url: 'https://www.boxingnewsonline.net/feed/', category: 'Boxing' },
     { name: 'ONE Championship', url: 'https://www.onefc.com/feed/', category: 'ONE' },

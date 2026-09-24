@@ -60,17 +60,42 @@ function baseArticle(item) {
   };
 }
 
-function newsBrief(item) {
+// Plain source-linked summary. When the AI was only temporarily unavailable the
+// brief is marked so a later run can rewrite it (up to MAX_AI_ATTEMPTS times).
+function newsBrief(item, aiAttempts = 0) {
   return {
     ...baseArticle(item),
     title: item.title,
     excerpt: item.description.slice(0, 160),
     content: item.description.slice(0, 600),
+    sourceDescription: item.description,
     author: item.source,
     tags: [item.category],
     taggedFighters: [],
-    isAIPreview: false
+    isAIPreview: false,
+    aiAttempts
   };
+}
+
+const MAX_AI_ATTEMPTS = 3;
+const RETRY_WINDOW_MS = 3 * 86400000;
+
+// Briefs saved while the AI was busy, rebuilt as feed items for another attempt
+function pendingRewrites(articles) {
+  return articles
+    .filter(a => a.id.startsWith('news-') && a.isAIPreview === false && (a.aiAttempts || 0) < MAX_AI_ATTEMPTS
+      && a.sourceUrl && (Date.now() - new Date(a.createdAt || a.date).getTime()) < RETRY_WINDOW_MS)
+    .map(a => ({
+      id: a.id,
+      title: a.title,
+      link: a.sourceUrl,
+      source: a.sourceName,
+      category: a.category,
+      description: a.sourceDescription || a.content || '',
+      pubDate: a.date ? `${a.date}T00:00:00Z` : new Date().toISOString(),
+      aiAttempts: a.aiAttempts || 0,
+      createdAt: a.createdAt
+    }));
 }
 
 async function aiArticle(item) {
@@ -170,27 +195,38 @@ export async function runNews(state) {
     }
   }
 
-  log(`NEWS: ${fresh.length} new stories, processing ${toProcess.length}`);
+  // Earlier briefs waiting for an AI rewrite go first, within the same per-run cap
+  const retries = aiAvailable() ? pendingRewrites(state.articles).slice(0, Math.ceil(config.maxArticlesPerRun / 2)) : [];
+  const queue = [...retries, ...toProcess].slice(0, config.maxArticlesPerRun);
+
+  log(`NEWS: ${fresh.length} new stories; processing ${queue.length} (${retries.length} rewrite retries)`);
   const articles = [];
-  for (const item of toProcess) {
+  let aiBlocked = false; // once every model has failed, stop spending quota this run
+  for (const item of queue) {
+    const attempts = (item.aiAttempts || 0) + 1;
     let article;
-    if (aiAvailable()) {
+    if (aiAvailable() && !aiBlocked) {
       try {
         article = await aiArticle(item);
         log(`  + "${article.title}" (${article.aiModel})`);
       } catch (err) {
-        log(`  ! AI failed for "${item.title}": ${err.message}; saving as brief`);
-        article = newsBrief(item);
+        log(`  ! AI failed for "${item.title}": ${err.message}; saved as brief, will retry`);
+        if (/No model available/.test(err.message)) aiBlocked = true;
+        article = newsBrief(item, attempts);
       }
     } else {
-      article = newsBrief(item);
+      article = newsBrief(item, aiAvailable() ? item.aiAttempts || 0 : MAX_AI_ATTEMPTS);
       log(`  + brief: "${item.title}"`);
     }
+    if (item.createdAt) article.createdAt = item.createdAt;
     articles.push(article);
     (article.taggedFighters || []).forEach(name => state.mentionedFighters.add(name));
   }
 
   await upsert('articles', articles);
-  state.articles.push(...articles);
-  state.summary.articles = articles.length;
+  const byId = new Map(state.articles.map(a => [a.id, a]));
+  articles.forEach(a => byId.set(a.id, a));
+  state.articles = [...byId.values()];
+  state.summary.articles = articles.filter(a => a.isAIPreview).length;
+  state.summary.briefs = articles.filter(a => !a.isAIPreview).length;
 }
