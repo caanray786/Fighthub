@@ -39,7 +39,7 @@ jobs:
       - run: npm ci --no-audit --no-fund
 
       - name: Run worker
-        run: node src/index.js ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: node src/index.js --skip=clubs ${{ inputs.dry_run && '--dry-run' || '' }}
         env:
           SUPABASE_URL: https://ewfuhrlgdivwtdremkdv.supabase.co
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

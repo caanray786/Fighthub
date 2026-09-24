@@ -35,8 +35,12 @@ async function main() {
   };
   log(`Loaded ${state.fighters.length} fighters, ${state.articles.length} articles, ${state.events.length} events`);
 
-  // Each job is independent: one failing doesn't stop the others
-  const jobs = [
+  // Each job is independent: one failing doesn't stop the others.
+  // --only=clubs / --skip=clubs split slow jobs into their own workflow.
+  const arg = name => (process.argv.find(a => a.startsWith(`--${name}=`)) || '').split('=')[1];
+  const only = arg('only')?.split(',');
+  const skip = arg('skip')?.split(',') || [];
+  const allJobs = [
     ['news', runNews],
     ['newFighters', runNewFighters],
     ['martialArts', runMartialArts],
@@ -45,6 +49,7 @@ async function main() {
     ['events', runEventHousekeeping],
     ['clubs', runClubs]
   ];
+  const jobs = allJobs.filter(([name]) => (!only || only.includes(name)) && !skip.includes(name));
   for (const [name, job] of jobs) {
     try {
       await job(state);
