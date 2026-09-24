@@ -54,6 +54,18 @@ export async function upsert(table, items) {
   });
 }
 
+export async function remove(table, ids) {
+  if (!ids.length) return;
+  if (config.dryRun) {
+    log(`  [dry-run] would delete from ${table}: ${ids.join(', ')}`);
+    return;
+  }
+  await request(`${table}?id=in.(${ids.map(id => `"${id.replace(/"/g, '')}"`).join(',')})`, {
+    method: 'DELETE',
+    headers: { Prefer: 'return=minimal' }
+  });
+}
+
 // Small JSON documents that let long jobs resume where they left off
 export async function getState(key) {
   const rows = await request(`worker_state?select=value&key=eq.${encodeURIComponent(key)}`);

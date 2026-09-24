@@ -7,7 +7,7 @@ import { log } from '../log.js';
 import { aiAvailable } from '../openrouter.js';
 import { upsert } from '../supabase.js';
 import { findFighterPage } from '../wikipedia.js';
-import { buildFighter, displayName } from '../profile.js';
+import { buildFighter, displayName, isNonAthlete } from '../profile.js';
 import { nameKey } from '../util.js';
 
 export async function runNewFighters(state) {
@@ -37,6 +37,10 @@ export async function runNewFighters(state) {
         continue;
       }
       if (knownTitles.has(page.title) || known.has(nameKey(displayName(page.title)))) continue;
+      if (isNonAthlete(page)) {
+        log(`  - ${name}: not an athlete, skipped`);
+        continue;
+      }
 
       const fighter = await buildFighter(page, { draft: true, source: 'news mention' });
       created.push(fighter);

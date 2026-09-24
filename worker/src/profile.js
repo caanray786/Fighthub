@@ -23,6 +23,18 @@ export function sportFromDescription(description = '', extract = '') {
   return 'Martial Arts';
 }
 
+// Hall of Fame lists include promoters, referees, trainers and writers, and
+// Wikipedia's short description is sometimes wrong ("Aileen Eaton: American
+// boxer", actually a promoter), so the article's first sentence decides.
+const NON_ATHLETE = /\b(promoter|referee|trainer|manager|journalist|\w*writer|commentator|announcer|broadcaster|cutman|cut man|matchmaker|executive|historian|photographer|official|judge)\b/i;
+const ATHLETE = /\b(boxer|fighter|martial artist|kickboxer|wrestler|judoka|grappler|nak muay|karateka)\b/i;
+
+export function isNonAthlete(page) {
+  // Opening text rather than the first sentence: abbreviations ("Mrs.", "Sr.") split sentences early
+  const opening = (page.extract || '').slice(0, 250);
+  return NON_ATHLETE.test(opening) && !ATHLETE.test(opening);
+}
+
 function flagEmoji(code) {
   return /^[A-Za-z]{2}$/.test(code || '')
     ? String.fromCodePoint(...[...code.toUpperCase()].map(c => 0x1F1E6 + c.charCodeAt(0) - 65))
