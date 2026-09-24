@@ -140,7 +140,9 @@ Built: `worker/` (Node) + `.github/workflows/ai-worker.yml`, running every 4 h o
 
 ### Phase 5 — Design & quality (≈1 week, overlaps)
 - [ ] Consistent design system (type scale, colours, cards), a proper logo instead of the 🥋 emoji (owner is providing the logo).
-- [ ] New hero video without UFC branding or watermark (owner is providing it).
+- [x] New hero animation without branding (owner's 100 frames, 2026-09-24).
+- [x] Owner's martial arts images for MMA, Boxing, Muay Thai, BJJ, Judo, Kickboxing, Karate and Krav Maga (`images/martial-arts/`, mapped in `js/datastore.js`).
+- [ ] Replace the Judo image (shows adidas/Mizuno/Tissot branding) with an unbranded version; add images for Sambo and Kyokushin.
 - [ ] Country flags: Windows shows flag emoji as letters (e.g. "PH"). Use small flag images instead.
 - [x] Toast pop-ups: one at a time, no toasts for likes/favourites/filters/theme (done 2026-09-24).
 - [ ] Mobile-first pass on every page; Lighthouse ≥ 90 (performance, accessibility, SEO).
