@@ -804,7 +804,7 @@ function todayStr() {
 // FightHub's own martial arts images (images/martial-arts/) take priority over
 // Wikimedia photos. Returns { src, credit, sourceUrl } or null.
 const OWN_MARTIAL_ART_IMAGES = {
-  ma1: 'mma', ma4: 'boxing', ma2: 'muay-thai', ma3: 'bjj', ma7: 'karate', ma9: 'kickboxing', ma11: 'krav-maga'
+  ma1: 'mma', ma4: 'boxing', ma2: 'muay-thai', ma3: 'bjj', ma6: 'judo', ma7: 'karate', ma9: 'kickboxing', ma11: 'krav-maga'
 };
 
 function martialArtImage(ma, pathPrefix = '') {
