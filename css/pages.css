@@ -1317,3 +1317,105 @@
   border: 2px solid var(--bg-card);
   margin-right: -10px;
 }
+
+/* ---- Clubs page (gyms.html) ---- */
+.club-search-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: var(--space-md);
+}
+.club-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.club-search input,
+.club-search select {
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-primary);
+}
+.club-search-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+.club-status {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.club-results {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: var(--space-xl);
+  align-items: start;
+}
+.club-results:has(.club-map[hidden]) {
+  grid-template-columns: 1fr;
+}
+.club-map {
+  height: 560px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  position: sticky;
+  top: 90px;
+  z-index: 0;
+}
+.club-list {
+  display: grid;
+  gap: var(--space-md);
+}
+.club-results:has(.club-map[hidden]) .club-list {
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+.club-card {
+  padding: var(--space-lg);
+}
+.club-card p {
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
+.club-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+}
+.club-card-head h3 {
+  font-size: 1.15rem;
+  margin: 0 0 6px;
+}
+.club-distance {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.club-styles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.club-links {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.club-attribution {
+  margin-top: var(--space-xl);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+@media (max-width: 900px) {
+  .club-search-grid, .club-results { grid-template-columns: 1fr; }
+  .club-map { position: static; height: 360px; }
+}

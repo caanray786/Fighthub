@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 </head>
 <body>
 
@@ -51,78 +52,76 @@
         <span>Clubs Directory</span>
       </div>
       <h1>Clubs <span class="text-accent">Near You</span></h1>
-      <p>Enter your location to discover elite academies, boxing rings, and combat sports gyms in your local area.</p>
+      <p>Boxing gyms, MMA academies, Muay Thai camps, BJJ and martial arts clubs near you, in the UK, Europe, the USA and beyond.</p>
     </div>
   </header>
 
-  <!-- Search & Filter Controls -->
+  <!-- Search Controls -->
   <section class="section" style="padding-bottom: 0;">
     <div class="container">
-      <div class="card card-glass" style="padding: var(--space-xl);">
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-md); flex-wrap: wrap;">
-          
-          <!-- Location Input -->
+      <form class="card card-glass club-search" id="club-search-form" style="padding: var(--space-xl);">
+        <div class="club-search-grid">
           <div>
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted);">Your Location</label>
-            <div style="position: relative;">
-              <input type="text" id="location-input" placeholder="e.g. New York, London, Toronto, or Zip..." style="width: 100%; padding: 12px 15px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: var(--text-primary);">
-              <span style="position: absolute; right: 12px; top: 12px; color: var(--text-muted);">📍</span>
-            </div>
+            <label for="location-input" class="club-label">Town, city or postcode</label>
+            <input type="text" id="location-input" placeholder="e.g. Manchester, Brooklyn NY, 10115 Berlin, SW1A 1AA" autocomplete="off" required>
           </div>
-
-          <!-- Style Select -->
           <div>
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted);">Martial Art Style</label>
-            <select id="style-select" style="width: 100%; padding: 12px 15px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: var(--text-primary); cursor: pointer;">
-              <option value="all">All Styles</option>
+            <label for="style-select" class="club-label">Style</label>
+            <select id="style-select">
+              <option value="">All styles</option>
+              <option value="Boxing">Boxing</option>
               <option value="MMA">MMA</option>
               <option value="Muay Thai">Muay Thai</option>
+              <option value="Kickboxing">Kickboxing</option>
               <option value="BJJ">BJJ (Jiu-Jitsu)</option>
-              <option value="Boxing">Boxing</option>
               <option value="Wrestling">Wrestling</option>
               <option value="Judo">Judo</option>
               <option value="Karate">Karate</option>
               <option value="Taekwondo">Taekwondo</option>
-              <option value="Kickboxing">Kickboxing</option>
-              <option value="Sambo">Sambo</option>
+              <option value="Kung Fu">Kung Fu</option>
               <option value="Krav Maga">Krav Maga</option>
+              <option value="Sambo">Sambo</option>
+              <option value="Aikido">Aikido</option>
+              <option value="Capoeira">Capoeira</option>
+              <option value="Martial Arts">Other martial arts</option>
             </select>
           </div>
-
+          <div>
+            <label for="radius-select" class="club-label">Distance</label>
+            <select id="radius-select">
+              <option value="5">5 km (3 mi)</option>
+              <option value="10">10 km (6 mi)</option>
+              <option value="25" selected>25 km (15 mi)</option>
+              <option value="50">50 km (30 mi)</option>
+            </select>
+          </div>
         </div>
-      </div>
+        <div class="club-search-actions">
+          <button type="submit" class="btn btn-primary">🔍 Find clubs</button>
+          <button type="button" class="btn btn-secondary" id="use-location">📍 Use my location</button>
+          <span id="search-status" class="club-status" role="status"></span>
+        </div>
+      </form>
     </div>
   </section>
 
-  <!-- Gyms Grid Section -->
+  <!-- Results: map + list -->
   <section class="section">
     <div class="container">
-      <div id="gyms-grid" class="grid grid-3">
-        <!-- Loaded dynamically -->
-        <div class="text-center" style="grid-column: 1/-1; padding: 50px 0; color: var(--text-muted);">
-          <p>Loading gyms list...</p>
+      <h2 id="results-title" style="margin-bottom: var(--space-lg);">Featured <span class="text-accent">Clubs</span></h2>
+      <div class="club-results">
+        <div id="club-map" class="club-map" hidden></div>
+        <div id="gyms-grid" class="club-list">
+          <p style="color: var(--text-muted);">Loading…</p>
         </div>
       </div>
+      <p class="club-attribution">
+        Club data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL), plus clubs listed on FightHub.
+        Missing a club? <a href="https://www.openstreetmap.org/" target="_blank" rel="noopener">Add it to OpenStreetMap</a> and it will appear here within a month.
+        <strong>Own a club?</strong> Featured listings are coming soon.
+      </p>
     </div>
   </section>
-
-  <!-- Map Modal -->
-  <div class="modal-backdrop" id="map-modal-backdrop"></div>
-  <div class="modal modal-md" id="map-modal">
-    <div class="modal-header">
-      <h3 id="modal-gym-name">Gym Location Map</h3>
-      <button class="modal-close" id="map-modal-close">&times;</button>
-    </div>
-    <div class="modal-body" style="padding: var(--space-xl);">
-      <iframe id="modal-gym-map" title="Gym location map" loading="lazy" style="width: 100%; height: 280px; border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: var(--space-lg); background: #1a1a1a;"></iframe>
-
-      <div style="display: flex; flex-direction: column; gap: var(--space-xs);">
-        <p><strong>Address:</strong> <span id="modal-gym-address">Address here</span></p>
-        <p><strong>Contact:</strong> <span id="modal-gym-phone">Phone</span> | <span id="modal-gym-email">Email</span></p>
-        <p id="modal-gym-directions"></p>
-      </div>
-    </div>
-  </div>
 
   <!-- Footer -->
   <footer class="footer">
@@ -179,155 +178,145 @@
   <script src="js/data-defaults.js"></script>
   <script src="js/datastore.js"></script>
   <script src="js/app.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script>
+    // Club finder: place name -> coordinates (OpenStreetMap Nominatim), then the
+    // nearest clubs from FightHub's own directory, as a list and on a map.
     document.addEventListener('DOMContentLoaded', async () => {
       await dataStore.ready;
-      
-      const grid = document.getElementById('gyms-grid');
+
+      const form = document.getElementById('club-search-form');
       const locationInput = document.getElementById('location-input');
       const styleSelect = document.getElementById('style-select');
-      
-      const modal = document.getElementById('map-modal');
-      const backdrop = document.getElementById('map-modal-backdrop');
-      const closeBtn = document.getElementById('map-modal-close');
-      
-      let allGyms = [];
-      
-      // Load all gyms
-      try {
-        allGyms = await dataStore.getAll('gyms');
-      } catch (err) {
-        console.error("Error loading gyms:", err);
+      const radiusSelect = document.getElementById('radius-select');
+      const status = document.getElementById('search-status');
+      const list = document.getElementById('gyms-grid');
+      const mapEl = document.getElementById('club-map');
+      const title = document.getElementById('results-title');
+
+      let map = null;
+      let markers = null;
+
+      const km = d => `${d < 10 ? d.toFixed(1) : Math.round(d)} km (${(d * 0.621).toFixed(1)} mi)`;
+      const setStatus = text => { status.textContent = text; };
+
+      function clubCard(gym, index) {
+        const address = [gym.address, gym.city, gym.zip].filter(Boolean).join(', ');
+        const styles = (gym.styles || []).map(s => `<span class="badge badge-info">${escapeHtml(s)}</span>`).join(' ');
+        const website = safeUrl(gym.website && !/^https?:/i.test(gym.website) ? `https://${gym.website}` : gym.website);
+        const directions = `https://www.google.com/maps/dir/?api=1&destination=${gym.lat},${gym.lng}`;
+        return `
+          <article class="card card-glass club-card" data-index="${index}">
+            <div class="club-card-head">
+              <h3>${gym.featured ? '⭐ ' : ''}${escapeHtml(gym.name)}</h3>
+              ${gym.distanceKm !== undefined ? `<span class="club-distance">${km(gym.distanceKm)}</span>` : ''}
+            </div>
+            ${gym.featured ? '<div class="badge badge-accent" style="margin-bottom: 6px;">Featured club</div>' : ''}
+            <div class="club-styles">${styles}</div>
+            ${address ? `<p>📍 ${escapeHtml(address)}</p>` : ''}
+            ${gym.phone ? `<p>📞 <a href="tel:${escapeHtml(gym.phone.replace(/[^+\d]/g, ''))}">${escapeHtml(gym.phone)}</a></p>` : ''}
+            ${gym.openingHours ? `<p>🕒 ${escapeHtml(gym.openingHours)}</p>` : ''}
+            ${gym.description ? `<p style="color: var(--text-secondary);">${escapeHtml(gym.description)}</p>` : ''}
+            <div class="club-links">
+              ${website ? `<a href="${website}" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Website</a>` : ''}
+              <a href="${directions}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Directions</a>
+            </div>
+          </article>`;
       }
-      
-      function renderGyms(filtered) {
-        if (!filtered || filtered.length === 0) {
-          grid.innerHTML = `
-            <div class="text-center" style="grid-column: 1/-1; padding: 40px 0;">
-              <p style="color:var(--text-muted); font-size:1.1rem;">No gyms found matching your filters.</p>
-            </div>`;
-          return;
+
+      function showMap(center, gyms) {
+        if (!window.L) return; // map library failed to load: list still works
+        mapEl.hidden = false;
+        if (!map) {
+          map = L.map(mapEl, { scrollWheelZoom: false });
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          }).addTo(map);
+          markers = L.layerGroup().addTo(map);
         }
-        
-        grid.innerHTML = '';
-        filtered.forEach(gym => {
-          const styles = gym.styles || [];
-          const styleBadges = styles.map(s => `<span class="badge badge-info" style="margin-right:4px; margin-bottom:4px; font-size:0.75rem;">${escapeHtml(s)}</span>`).join('');
-
-          const rating = Number(gym.rating) || 0;
-          const ratingStars = rating
-            ? '⭐'.repeat(Math.round(rating)) + ` <span style="font-size:0.85rem; color:var(--text-muted); font-weight:600;">(${rating})</span>`
-            : '';
-
-          // Real distances arrive with the location-aware gym finder (Phase 4)
-          const distanceHtml = `🌍 ${escapeHtml([gym.city, gym.country].filter(Boolean).join(', '))}`;
-          
-          const card = document.createElement('div');
-          card.className = 'card card-glass animate-on-scroll';
-          card.style.display = 'flex';
-          card.style.flexDirection = 'column';
-          card.style.overflow = 'hidden';
-          card.style.padding = '0';
-          
-          card.innerHTML = `
-            <div style="width:100%; height:160px; overflow:hidden; position:relative;">
-              <img src="${safeUrl(gym.image, 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=800&q=80')}" alt="${escapeHtml(gym.name)}" loading="lazy" style="width:100%; height:100%; object-fit:cover; transition:transform 0.5s ease;">
-              ${styles[0] ? `<span class="badge badge-accent" style="position:absolute; top:12px; left:12px;">${escapeHtml(styles[0])}</span>` : ''}
-            </div>
-
-            <div style="padding:var(--space-xl); display:flex; flex-direction:column; flex-grow:1; gap:10px;">
-              <h3 style="font-size:1.4rem; margin:0; font-family:var(--font-heading); color:var(--text-primary); text-transform:uppercase;">${escapeHtml(gym.name)}</h3>
-              <div style="font-size:0.9rem; color:var(--accent); font-weight:600; display:flex; align-items:center; gap:5px;">
-                ${distanceHtml}
-              </div>
-              <div style="margin-bottom:5px;">
-                ${ratingStars}
-              </div>
-              <p style="font-size:0.85rem; color:var(--text-secondary); line-height:1.5; margin:0; flex-grow:1;">${escapeHtml(gym.description)}</p>
-              
-              <div style="border-top:1px solid var(--border-color); padding-top:10px; margin-top:5px;">
-                <div style="display:flex; flex-wrap:wrap;">${styleBadges}</div>
-              </div>
-              
-              <div style="display:grid; grid-template-columns:1fr 1.2fr; gap:10px; margin-top:10px;">
-                <button class="btn btn-secondary btn-sm js-gym-details">Details</button>
-                ${gym.website ? `<a href="${safeUrl(gym.website, '#')}" target="_blank" rel="noopener" class="btn btn-primary btn-sm text-center" style="display:flex; align-items:center; justify-content:center;">Visit Site</a>` : ''}
-              </div>
-            </div>
-          `;
-          card.querySelector('.js-gym-details').addEventListener('click', () => openMapModal(gym.id));
-          grid.appendChild(card);
+        markers.clearLayers();
+        L.circleMarker(center, { radius: 8, color: '#3b82f6', fillOpacity: 0.9 }).addTo(markers).bindPopup('Your search');
+        gyms.forEach((g, i) => {
+          L.marker([g.lat, g.lng]).addTo(markers)
+            .bindPopup(`<strong>${escapeHtml(g.name)}</strong><br>${escapeHtml((g.styles || []).join(', '))}`)
+            .on('click', () => list.querySelector(`[data-index="${i}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
         });
-        
-        // Trigger animations
-        initScrollAnimations();
+        const bounds = L.latLngBounds([center, ...gyms.map(g => [g.lat, g.lng])]);
+        map.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
+        setTimeout(() => map.invalidateSize(), 50);
       }
-      
-      function filterGyms() {
-        const searchLoc = locationInput.value.trim().toLowerCase();
-        const style = styleSelect.value;
 
-        let filtered = allGyms;
-
-        // 1. Filter by city, name, address or country
-        if (searchLoc) {
-          filtered = filtered.filter(gym =>
-            [gym.city, gym.name, gym.address, gym.country, gym.zip]
-              .some(v => (v || '').toLowerCase().includes(searchLoc))
-          );
-        }
-
-        // 2. Filter by style
-        if (style !== 'all') {
-          filtered = filtered.filter(gym => (gym.styles || []).includes(style));
-        }
-
-        renderGyms(filtered);
+      async function geocode(query) {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=en&q=${encodeURIComponent(query)}`);
+        if (!res.ok) throw new Error('Location search is busy, please try again in a moment.');
+        const [place] = await res.json();
+        if (!place) throw new Error(`We couldn't find "${query}". Try adding the country, e.g. "Newport, Wales".`);
+        return { lat: parseFloat(place.lat), lng: parseFloat(place.lon), label: place.display_name.split(',').slice(0, 3).join(',') };
       }
-      
-      // Bind Events
-      locationInput.addEventListener('input', filterGyms);
-      styleSelect.addEventListener('change', filterGyms);
-      
-      // Map Modal Trigger
-      window.openMapModal = (id) => {
-        const gym = allGyms.find(g => g.id === id);
-        if (!gym) return;
-        
-        document.getElementById('modal-gym-name').innerText = gym.name;
-        document.getElementById('modal-gym-address').innerText = [gym.address, gym.city, [gym.state, gym.zip].filter(Boolean).join(' '), gym.country].filter(Boolean).join(', ');
-        document.getElementById('modal-gym-phone').innerText = gym.phone || 'N/A';
-        document.getElementById('modal-gym-email').innerText = gym.email || 'N/A';
 
-        // Real OpenStreetMap embed centred on the gym's coordinates
-        const mapFrame = document.getElementById('modal-gym-map');
-        const directions = document.getElementById('modal-gym-directions');
-        const lat = Number(gym.lat), lng = Number(gym.lng);
-        if (Number.isFinite(lat) && Number.isFinite(lng)) {
-          const bbox = [lng - 0.01, lat - 0.006, lng + 0.01, lat + 0.006].join(',');
-          mapFrame.src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`;
-          mapFrame.style.display = 'block';
-          directions.innerHTML = `<a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener">Get directions ↗</a>`;
-        } else {
-          mapFrame.removeAttribute('src');
-          mapFrame.style.display = 'none';
-          directions.innerHTML = '';
+      async function search(center, label) {
+        const radius = parseFloat(radiusSelect.value);
+        const style = styleSelect.value || null;
+        setStatus('Searching…');
+        try {
+          const gyms = await dataStore.gymsNear(center.lat, center.lng, radius, style);
+          const styleLabel = style ? `${styleSelect.options[styleSelect.selectedIndex].text} clubs` : 'Clubs';
+          title.innerHTML = `${escapeHtml(styleLabel)} near <span class="text-accent">${escapeHtml(label)}</span>`;
+          setStatus(`${gyms.length} found within ${radius} km`);
+          if (!gyms.length) {
+            list.innerHTML = `<div class="card card-glass" style="padding: var(--space-xl);"><p>No clubs found within ${radius} km yet.</p><p style="color: var(--text-muted);">Try a larger distance or "All styles". Our directory is still being filled region by region, so check back soon.</p></div>`;
+            mapEl.hidden = true;
+            return;
+          }
+          list.innerHTML = gyms.map(clubCard).join('');
+          showMap([center.lat, center.lng], gyms);
+        } catch (err) {
+          console.error(err);
+          setStatus('');
+          list.innerHTML = `<p class="text-accent">Search failed: ${escapeHtml(err.message)}</p>`;
         }
-        
-        modal.classList.add('active');
-        backdrop.classList.add('active');
-      };
-      
-      function closeMap() {
-        modal.classList.remove('active');
-        backdrop.classList.remove('active');
       }
-      
-      closeBtn.addEventListener('click', closeMap);
-      backdrop.addEventListener('click', closeMap);
-      
-      // Initial render
-      renderGyms(allGyms);
+
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const query = locationInput.value.trim();
+        if (!query) return;
+        history.replaceState(null, '', `?near=${encodeURIComponent(query)}${styleSelect.value ? `&style=${encodeURIComponent(styleSelect.value)}` : ''}`);
+        setStatus('Finding location…');
+        try {
+          const place = await geocode(query);
+          await search(place, place.label);
+        } catch (err) {
+          setStatus(err.message);
+        }
+      });
+
+      document.getElementById('use-location').addEventListener('click', () => {
+        if (!navigator.geolocation) return setStatus('Your browser does not support location.');
+        setStatus('Getting your location…');
+        navigator.geolocation.getCurrentPosition(
+          pos => search({ lat: pos.coords.latitude, lng: pos.coords.longitude }, 'your location'),
+          () => setStatus('Location permission was denied. Type your town or postcode instead.'),
+          { enableHighAccuracy: false, timeout: 10000 }
+        );
+      });
+
+      // Shared links: gyms.html?near=Leeds&style=Boxing
+      const params = new URLSearchParams(location.search);
+      if (params.get('style')) styleSelect.value = params.get('style');
+      if (params.get('near')) {
+        locationInput.value = params.get('near');
+        form.requestSubmit();
+      } else {
+        // Before a search: show FightHub's own / featured clubs
+        const own = (await dataStore.getSummaries('gyms', ['name', 'address', 'city', 'zip', 'country', 'phone', 'website', 'styles', 'featured', 'source', 'openingHours', 'description', 'lat', 'lng']))
+          .filter(g => g.source !== 'OpenStreetMap' || g.featured)
+          .sort((a, b) => !!b.featured - !!a.featured);
+        list.innerHTML = own.length
+          ? own.map(clubCard).join('')
+          : '<p style="color: var(--text-muted);">Search for your town to see clubs near you.</p>';
+      }
     });
   </script>
 </body>

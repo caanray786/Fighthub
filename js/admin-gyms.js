@@ -39,27 +39,42 @@ document.addEventListener('DOMContentLoaded', async () => {
   const zipInput = document.getElementById('gym-zip');
   const countryInput = document.getElementById('gym-country');
 
+  // "Featured" tick box (sponsored / partner clubs are listed first in search results)
+  const featuredLabel = document.createElement('label');
+  featuredLabel.style.cssText = 'display: flex; align-items: center; gap: 8px; margin: 12px 0; font-weight: 600;';
+  featuredLabel.innerHTML = '<input type="checkbox" id="gym-featured"> ⭐ Featured club (sponsor / partner: shown first in search results)';
+  descriptionInput.closest('.form-group, div').after(featuredLabel);
+  const featuredInput = featuredLabel.querySelector('input');
+
   // Load and Render List
+  // The directory holds thousands of clubs imported from OpenStreetMap, so the
+  // list loads summaries and shows your own / featured clubs unless you search
   async function fetchAndRender() {
-    allGyms = await dataStore.getAll('gyms');
+    allGyms = await dataStore.getSummaries('gyms', ['name', 'address', 'city', 'country', 'phone', 'email', 'website', 'styles', 'image', 'source', 'featured', 'editedOnFightHub']);
     applyFilters();
   }
+
+  const isOwnClub = gym => gym.source !== 'OpenStreetMap' || gym.featured || gym.editedOnFightHub;
 
   function applyFilters() {
     const q = searchInput.value.toLowerCase().trim();
     const st = filterStyle.value;
 
     filteredGyms = allGyms.filter(gym => {
-      const matchesSearch = !q || 
-        gym.name.toLowerCase().includes(q) || 
-        gym.city.toLowerCase().includes(q) || 
-        gym.address.toLowerCase().includes(q) ||
-        gym.description.toLowerCase().includes(q);
-
-      const matchesStyle = !st || gym.styles.includes(st);
-
+      const matchesSearch = q.length >= 2
+        ? [gym.name, gym.city, gym.address].some(v => (v || '').toLowerCase().includes(q))
+        : isOwnClub(gym);
+      const matchesStyle = !st || (gym.styles || []).includes(st);
       return matchesSearch && matchesStyle;
-    });
+    }).slice(0, 200);
+
+    const imported = allGyms.filter(g => g.source === 'OpenStreetMap').length;
+    const hint = document.getElementById('gyms-directory-hint') || Object.assign(document.createElement('p'), { id: 'gyms-directory-hint' });
+    hint.style.cssText = 'color: var(--admin-text-muted); font-size: 0.85rem; margin: 0 0 12px;';
+    hint.textContent = q.length >= 2
+      ? `Searching all ${allGyms.length.toLocaleString()} clubs (first 200 matches shown).`
+      : `Showing your own and featured clubs. ${imported.toLocaleString()} more are imported from OpenStreetMap: search by name or city to find and feature one.`;
+    tableBody.closest('table').before(hint);
 
     renderTable();
   }
@@ -81,14 +96,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     filteredGyms.forEach(gym => {
       const tr = document.createElement('tr');
       
-      const ratingStars = '⭐'.repeat(Math.round(gym.rating)) + ` (${escapeHtml(gym.rating)})`;
-      const stylesList = gym.styles.map(s => `<span class="badge badge-info" style="margin-right:2px; font-size:0.75rem;">${escapeHtml(s)}</span>`).join('');
+      const ratingStars = gym.featured ? '⭐ Featured' : escapeHtml(gym.source === 'OpenStreetMap' ? 'OpenStreetMap' : 'FightHub');
+      const stylesList = (gym.styles || []).map(s => `<span class="badge badge-info" style="margin-right:2px; font-size:0.75rem;">${escapeHtml(s)}</span>`).join('');
       const websiteLink = gym.website ? `<a href="${safeUrl(gym.website, '#')}" target="_blank" style="color: var(--admin-accent); text-decoration: underline;">Visit Site</a>` : 'N/A';
 
       tr.innerHTML = `
         <td>
           <div style="display:flex; align-items:center; gap:10px;">
-            <img src="${safeUrl(gym.image, 'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=80&q=80')}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">
+            ${gym.image && !/unsplash/.test(gym.image) ? `<img src="${safeUrl(gym.image)}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">` : '<div style="width: 40px; height: 40px; border-radius: 4px; background: var(--admin-bg); display: flex; align-items: center; justify-content: center;">🥊</div>'}
             <div>
               <strong style="color:var(--admin-text-primary); font-size:0.95rem;">${escapeHtml(gym.name)}</strong>
               <div style="font-size:0.8rem; color:var(--admin-text-muted);">${escapeHtml(gym.phone || 'No Phone')}</div>
@@ -137,9 +152,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     formSection.style.display = 'block';
   }
 
-  function openEditForm(id) {
-    const gym = allGyms.find(g => g.id === id);
+  async function openEditForm(id) {
+    const gym = await dataStore.getById('gyms', id);
     if (!gym) return;
+    featuredInput.checked = !!gym.featured;
 
     formTitle.textContent = `Edit: ${gym.name}`;
     idInput.value = gym.id;
@@ -152,15 +168,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     latInput.value = gym.lat || '';
     lngInput.value = gym.lng || '';
     descriptionInput.value = gym.description || '';
-    addressInput.value = gym.address;
-    cityInput.value = gym.city;
+    addressInput.value = gym.address || '';
+    cityInput.value = gym.city || '';
     stateInput.value = gym.state || '';
     zipInput.value = gym.zip || '';
-    countryInput.value = gym.country;
+    countryInput.value = gym.country || '';
 
     // Check correct checkboxes
     document.querySelectorAll('input[name="gym-styles"]').forEach(cb => {
-      cb.checked = gym.styles.includes(cb.value);
+      cb.checked = (gym.styles || []).includes(cb.value);
     });
 
     listSection.style.display = 'none';
@@ -174,7 +190,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Delete Action
   async function deleteGym(id) {
-    const gym = allGyms.find(g => g.id === id);
+    const gym = allGyms.find(g => g.id === id) || await dataStore.getById('gyms', id);
     if (!gym) return;
 
     if (confirm(`Are you sure you want to delete "${gym.name}" from the clubs directory?`)) {
@@ -227,7 +243,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       lat: parseFloat(latInput.value) || 0,
       lng: parseFloat(lngInput.value) || 0,
       description: descriptionInput.value.trim(),
-      styles
+      styles,
+      featured: featuredInput.checked,
+      // Tells the club import to keep these edits when it refreshes the region
+      editedOnFightHub: true
     };
 
     if (id) {

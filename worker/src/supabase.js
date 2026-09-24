@@ -35,6 +35,19 @@ export async function getAll(table) {
   return rows;
 }
 
+// Records whose doc field equals a value, e.g. getWhere('gyms', 'region', 'GB')
+export async function getWhere(table, field, value) {
+  const rows = [];
+  for (let from = 0; ; from += 1000) {
+    const page = await request(`${table}?select=id,doc&doc->>${field}=eq.${encodeURIComponent(value)}&order=id`, {
+      headers: { Range: `${from}-${from + 999}` }
+    });
+    rows.push(...page.map(r => ({ ...r.doc, id: r.id })));
+    if (page.length < 1000) break;
+  }
+  return rows;
+}
+
 // Insert or replace records. Skipped (logged only) in dry-run mode.
 export async function upsert(table, items) {
   if (!items.length) return;

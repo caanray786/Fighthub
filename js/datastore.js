@@ -181,6 +181,26 @@ class FightHubDataStore {
     }
   }
 
+  // Nearest clubs to a point (distance in km), featured clubs first
+  async gymsNear(lat, lng, radiusKm = 25, style = null) {
+    await this.dbOpen;
+    if (this.cloud) {
+      const { data, error } = await this.supabaseClient.rpc('gyms_near', {
+        p_lat: lat, p_lng: lng, p_km: radiusKm, p_style: style, p_limit: 150
+      });
+      if (error) throw error;
+      return data.map(row => ({ ...row.doc, id: row.id, distanceKm: row.distance_km }));
+    }
+    const toRad = d => d * Math.PI / 180;
+    const dist = (g) => 6371 * 2 * Math.asin(Math.sqrt(
+      Math.sin(toRad(g.lat - lat) / 2) ** 2 + Math.cos(toRad(lat)) * Math.cos(toRad(g.lat)) * Math.sin(toRad(g.lng - lng) / 2) ** 2));
+    return (await this.getAll('gyms'))
+      .filter(g => Number.isFinite(g.lat) && Number.isFinite(g.lng) && (!style || (g.styles || []).includes(style)))
+      .map(g => ({ ...g, distanceKm: dist(g) }))
+      .filter(g => g.distanceKm <= radiusKm)
+      .sort((a, b) => (!!b.featured - !!a.featured) || a.distanceKm - b.distanceKm);
+  }
+
   // Records whose field equals a value, e.g. query('fighters', 'draft', true)
   async query(storeName, field, value) {
     await this.dbOpen;

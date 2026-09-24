@@ -11,6 +11,7 @@ import { runNewFighters } from './jobs/fighters.js';
 import { runPhotos } from './jobs/photos.js';
 import { runBackfill } from './jobs/backfill.js';
 import { runMartialArts } from './jobs/martialArts.js';
+import { runClubs } from './jobs/clubs.js';
 import { runEventHousekeeping } from './jobs/events.js';
 
 async function main() {
@@ -41,7 +42,8 @@ async function main() {
     ['martialArts', runMartialArts],
     ['backfill', runBackfill],
     ['photos', runPhotos],
-    ['events', runEventHousekeeping]
+    ['events', runEventHousekeeping],
+    ['clubs', runClubs]
   ];
   for (const [name, job] of jobs) {
     try {

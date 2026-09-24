@@ -34,6 +34,8 @@ export const config = {
   // Imported profiles have records read straight from Wikipedia, so they publish
   // directly; set BACKFILL_AS_DRAFTS=true to review each one first
   backfillAsDrafts: env.BACKFILL_AS_DRAFTS === 'true',
+  // Club directory: OpenStreetMap regions imported per run (no AI used)
+  maxClubRegionsPerRun: parseInt(env.MAX_CLUB_REGIONS_PER_RUN || '4', 10),
   // Stop starting new work after this long (GitHub job timeout is 30 min)
   maxRunMinutes: parseInt(env.MAX_RUN_MINUTES || '22', 10),
 
