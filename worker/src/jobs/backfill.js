@@ -7,10 +7,13 @@ import { log } from '../log.js';
 import { aiAvailable } from '../openrouter.js';
 import { upsert, remove, getState, setState } from '../supabase.js';
 import { summary } from '../wikipedia.js';
-import { buildFighter, displayName, isNonAthlete } from '../profile.js';
+import { buildFighter, displayName, isNonAthlete, sportFromDescription } from '../profile.js';
 import { nameKey } from '../util.js';
 
 const MAX_FAILURES = 2;
+
+// Target mix of the fighter database (relative weights)
+const SPORT_SHARE = { MMA: 3, Boxing: 3, 'Muay Thai': 2, Grappling: 1.5, 'Martial Arts': 0.5 };
 
 export async function runBackfill(state) {
   if (!aiAvailable() || config.maxBackfillPerRun <= 0) return;
@@ -48,8 +51,21 @@ export async function runBackfill(state) {
     && (progress.failed[c.title] || 0) < MAX_FAILURES);
   log(`BACKFILL: ${todo.length} of ${candidates.length} candidate fighters still to add`);
 
+  // Balance the sports: the candidate list starts with the Boxing Hall of Fame,
+  // so always take the next fighter from the sport furthest below its share
+  const queues = new Map(Object.keys(SPORT_SHARE).map(s => [s, []]));
+  todo.forEach(c => queues.get(sportFromDescription(c.description)).push(c));
+  const counts = new Map(Object.keys(SPORT_SHARE).map(s => [s, state.fighters.filter(f => f.sport === s && !f.draft).length]));
+  const nextCandidate = () => {
+    const open = [...queues.keys()].filter(s => queues.get(s).length);
+    if (!open.length) return null;
+    const sport = open.sort((a, b) => counts.get(a) / SPORT_SHARE[a] - counts.get(b) / SPORT_SHARE[b])[0];
+    counts.set(sport, counts.get(sport) + 1);
+    return queues.get(sport).shift();
+  };
+
   let added = 0;
-  for (const candidate of todo) {
+  for (let candidate = nextCandidate(); candidate; candidate = nextCandidate()) {
     if (added >= config.maxBackfillPerRun) break;
     if (Date.now() - state.startedAt > config.maxRunMinutes * 60000) {
       log('BACKFILL: time budget used, continuing next run');
