@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (evt.promotion === 'PFL') badgeClass = 'badge-success';
 
       const location = [evt.venue, evt.city, evt.country].filter(v => v && v !== 'TBA').join(', ') || 'Venue TBA';
-      const fightsListHtml = (evt.fights || []).map(f => `<li>🥊 ${escapeHtml(f)}</li>`).join('');
+      const fightsListHtml = (evt.fights || []).map(f => `<li>${escapeHtml(f)}</li>`).join('');
       const ticketUrl = safeUrl(evt.ticketUrl);
       const sourceUrl = safeUrl(evt.sourceUrl);
 
@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             ${isPast ? '<span class="badge" style="margin-bottom: 5px;">Completed</span>' : ''}
             <h3>${escapeHtml(evt.name)}</h3>
             <div class="event-location" style="margin-bottom: 10px;">
-              📍 ${escapeHtml(location)} &nbsp;|&nbsp; 🕒 ${escapeHtml(evt.time || 'TBA')}
+              ${icon('map-pin')} ${escapeHtml(location)} &nbsp;|&nbsp; ${icon('clock')} ${escapeHtml(evt.time || 'TBA')}
             </div>
 
             ${evt.description ? `<p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 10px;">${escapeHtml(evt.description)}</p>` : ''}

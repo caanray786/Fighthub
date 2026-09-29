@@ -34,7 +34,7 @@
         <a href="admin/login.html" class="btn btn-secondary btn-sm" style="margin-left: 10px;">Admin Portal</a>
       </div>
       <div style="display: flex; align-items: center;">
-        <button class="theme-toggle" aria-label="Toggle Dark/Light Mode">☀️</button>
+        <button class="theme-toggle" aria-label="Toggle Dark/Light Mode"><svg class="icon" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
         <div class="mobile-toggle" aria-label="Toggle Mobile Menu">
           <span></span>
           <span></span>
@@ -98,8 +98,8 @@
           </div>
         </div>
         <div class="club-search-actions">
-          <button type="submit" class="btn btn-primary">🔍 Find clubs</button>
-          <button type="button" class="btn btn-secondary" id="use-location">📍 Use my location</button>
+          <button type="submit" class="btn btn-primary"><svg class="icon" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Find clubs</button>
+          <button type="button" class="btn btn-secondary" id="use-location"><svg class="icon" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 11 22 2l-9 19-2-8-8-2Z"/></svg> Use my location</button>
           <span id="search-status" class="club-status" role="status"></span>
         </div>
       </form>
@@ -175,6 +175,7 @@
   </footer>
 
   <!-- Scripts -->
+  <script src="js/icons.js"></script>
   <script src="js/config.js"></script>
   <script src="js/data-defaults.js"></script>
   <script src="js/datastore.js"></script>
@@ -209,14 +210,14 @@
         return `
           <article class="card card-glass club-card" data-index="${index}">
             <div class="club-card-head">
-              <h3>${gym.featured ? '⭐ ' : ''}${escapeHtml(gym.name)}</h3>
+              <h3>${gym.featured ? icon('star', 'icon-filled text-accent') + ' ' : ''}${escapeHtml(gym.name)}</h3>
               ${gym.distanceKm !== undefined ? `<span class="club-distance">${km(gym.distanceKm)}</span>` : ''}
             </div>
             ${gym.featured ? '<div class="badge badge-accent" style="margin-bottom: 6px;">Featured club</div>' : ''}
             <div class="club-styles">${styles}</div>
-            ${address ? `<p>📍 ${escapeHtml(address)}</p>` : ''}
-            ${gym.phone ? `<p>📞 <a href="tel:${escapeHtml(gym.phone.replace(/[^+\d]/g, ''))}">${escapeHtml(gym.phone)}</a></p>` : ''}
-            ${gym.openingHours ? `<p>🕒 ${escapeHtml(gym.openingHours)}</p>` : ''}
+            ${address ? `<p>${icon('map-pin')} ${escapeHtml(address)}</p>` : ''}
+            ${gym.phone ? `<p>${icon('phone')} <a href="tel:${escapeHtml(gym.phone.replace(/[^+\d]/g, ''))}">${escapeHtml(gym.phone)}</a></p>` : ''}
+            ${gym.openingHours ? `<p>${icon('clock')} ${escapeHtml(gym.openingHours)}</p>` : ''}
             ${gym.description ? `<p style="color: var(--text-secondary);">${escapeHtml(gym.description)}</p>` : ''}
             <div class="club-links">
               ${website ? `<a href="${website}" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Website</a>` : ''}

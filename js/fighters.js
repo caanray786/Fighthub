@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     return f.image && !/images\.unsplash\.com/.test(f.image) ? safeUrl(f.image) : '';
   }
 
+  const heart = fav => icon('heart', fav ? 'icon-filled' : '');
+  const favLabel = fav => `${heart(fav)} ${fav ? 'Favourite' : 'Add to favourites'}`;
+
   function initials(name) {
     return escapeHtml((name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase());
   }
@@ -45,11 +48,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Sport "folders"
   const SPORTS = [
-    { key: 'Boxing', label: 'Boxing', icon: '🥊' },
-    { key: 'MMA', label: 'MMA', icon: '🏆' },
-    { key: 'Muay Thai', label: 'Muay Thai & Kickboxing', icon: '🦵' },
-    { key: 'Grappling', label: 'Grappling: BJJ, Wrestling & Judo', icon: '🤼' },
-    { key: 'Martial Arts', label: 'Other Martial Arts', icon: '🥋' }
+    { key: 'Boxing', label: 'Boxing', image: 'boxing' },
+    { key: 'MMA', label: 'MMA', image: 'mma' },
+    { key: 'Muay Thai', label: 'Muay Thai & Kickboxing', image: 'muay-thai' },
+    { key: 'Grappling', label: 'Grappling: BJJ, Wrestling & Judo', image: 'bjj' },
+    { key: 'Martial Arts', label: 'Other Martial Arts', image: 'karate' }
   ];
 
   let filteredFighters = [];
@@ -153,20 +156,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         ${SPORTS.filter(s => counts.get(s.key)).map(s => {
           const faces = allFighters.filter(f => f.sport === s.key && fighterPhoto(f)).slice(0, 4);
           return `
-          <button type="button" class="card card-glass sport-folder" data-sport="${escapeHtml(s.key)}">
-            <div class="sport-folder-icon">${s.icon}</div>
+          <button type="button" class="sport-tile" data-sport="${escapeHtml(s.key)}"
+                  style="background-image: linear-gradient(to top, rgba(8,8,11,0.94) 12%, rgba(8,8,11,0.25) 70%), url('images/martial-arts/${s.image}.jpg');">
+            <div class="sport-folder-faces">${faces.map(f => `<img src="${fighterPhoto(f)}" alt="" loading="lazy">`).join('')}</div>
             <div class="sport-folder-text">
               <h3>${escapeHtml(s.label)}</h3>
               <span>${counts.get(s.key).toLocaleString()} fighters →</span>
             </div>
-            <div class="sport-folder-faces">${faces.map(f => `<img src="${fighterPhoto(f)}" alt="" loading="lazy">`).join('')}</div>
           </button>`;
         }).join('')}
       </div>`;
 
     const topGrid = homeView.querySelector('#top-fighters-grid');
     topFighters.forEach(f => topGrid.appendChild(buildCard(f)));
-    homeView.querySelectorAll('.sport-folder').forEach(btn => btn.addEventListener('click', () => {
+    homeView.querySelectorAll('.sport-tile').forEach(btn => btn.addEventListener('click', () => {
       styleSelect.value = btn.dataset.sport;
       onFiltersChanged();
       window.scrollTo({ top: homeView.getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth' });
@@ -189,7 +192,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       (!countrySelect.value || f.country === countrySelect.value));
 
     const sport = SPORTS.find(s => s.key === styleSelect.value);
-    const title = sport ? `${sport.icon} ${sport.label}` : query ? `Results for “${searchInput.value.trim()}”` : 'Filtered fighters';
+    const title = sport ? sport.label : query ? `Results for “${searchInput.value.trim()}”` : 'Filtered fighters';
     listHead.innerHTML = `
       <button type="button" class="btn btn-secondary btn-sm" id="fighters-back">← All fighters</button>
       <h2 style="margin: var(--space-md) 0 0;">${escapeHtml(title)} <span style="color: var(--text-muted); font-size: 1rem; font-weight: 400;">· ${filtered.length.toLocaleString()} fighters</span></h2>`;
@@ -232,15 +235,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     card.innerHTML = `
       <div class="fighter-card-image" style="display:flex; align-items:center; justify-content:center; font-size:4rem; background: linear-gradient(135deg, #161616 0%, #2a2a2a 100%); overflow:hidden; position:relative;">
         ${photoOrInitials(f, '3.5rem')}
-        <span class="fighter-flag">${escapeHtml(f.nationality || '🌍')}</span>
-        <button class="favorite-btn ${isFav ? 'active' : ''}" data-id="${escapeHtml(f.id)}" aria-label="Add to favorites" style="position: absolute; top: 15px; left: 15px; font-size: 1.5rem; color: ${isFav ? 'var(--accent)' : 'rgba(255,255,255,0.4)'}; background: rgba(0,0,0,0.4); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; z-index: 10;">
-          ${isFav ? '❤️' : '🤍'}
+        ${countryCode(f.nationality) ? `<span class="fighter-flag" title="${escapeHtml(f.country || '')}">${countryCode(f.nationality)}</span>` : ''}
+        <button class="favorite-btn ${isFav ? 'active' : ''}" data-id="${escapeHtml(f.id)}" aria-label="Add to favorites" style="position: absolute; top: 15px; left: 15px; font-size: 1.15rem; color: ${isFav ? 'var(--accent)' : 'rgba(255,255,255,0.85)'}; background: rgba(0,0,0,0.4); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; z-index: 10;">
+          ${heart(isFav)}
         </button>
       </div>
       <div class="fighter-card-body">
         <div class="fighter-weight-class">${escapeHtml([f.sport, f.weightClass].filter(Boolean).join(' · '))}</div>
         <h3>${escapeHtml(f.name)}</h3>
-        <div class="fighter-nickname">${f.nickname ? `"${escapeHtml(f.nickname)}"` : '&nbsp;'}</div>
+        <div class="fighter-nickname">${realNickname(f.nickname) ? `"${escapeHtml(realNickname(f.nickname))}"` : '&nbsp;'}</div>
 
         <div class="fighter-record">
           ${hasRecord ? `
@@ -269,8 +272,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const btn = e.currentTarget;
       const isNowFav = dataStore.toggleFavorite(f.id);
       btn.classList.toggle('active', isNowFav);
-      btn.innerHTML = isNowFav ? '❤️' : '🤍';
-      btn.style.color = isNowFav ? 'var(--accent)' : 'rgba(255,255,255,0.4)';
+      btn.innerHTML = heart(isNowFav);
+      btn.style.color = isNowFav ? 'var(--accent)' : 'rgba(255,255,255,0.85)';
     });
     return card;
   }
@@ -321,12 +324,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let championshipsHtml = '';
     if (f.championships && f.championships.length > 0) {
-      championshipsHtml = f.championships.map(c => `<span class="badge badge-success" style="margin-right: 5px; margin-bottom: 5px;">🏆 ${escapeHtml(c)}</span>`).join('');
+      championshipsHtml = f.championships.map(c => `<span class="badge badge-success" style="margin-right: 5px; margin-bottom: 5px;">${icon('trophy')} ${escapeHtml(c)}</span>`).join('');
     }
 
     let highlightsHtml = '';
     if (f.highlights && f.highlights.length > 0) {
-      highlightsHtml = f.highlights.map(h => `<li>⚡ ${escapeHtml(h)}</li>`).join('');
+      highlightsHtml = f.highlights.map(h => `<li>${icon('zap', 'text-accent')} ${escapeHtml(h)}</li>`).join('');
     }
 
     // Build timeline HTML
@@ -388,7 +391,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div style="display: flex; flex-direction: column; gap: var(--space-md);">
           <div style="width: 100%; aspect-ratio: 1; background: linear-gradient(135deg, #111 0%, #3a0007 100%); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 5rem; position: relative; overflow: hidden;">
             ${photoOrInitials(f, '5rem')}
-            <span style="position: absolute; top: 10px; right: 10px; font-size: 2rem; background:rgba(0,0,0,0.6); padding: 2px 6px; border-radius:4px;">${escapeHtml(f.nationality || '🌍')}</span>
+            ${countryCode(f.nationality) ? `<span class="fighter-flag">${countryCode(f.nationality)}</span>` : ''}
           </div>
           ${fighterPhoto(f) && f.imageCredit ? `
           <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: -8px; line-height: 1.4;">
@@ -396,7 +399,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>` : ''}
           
           <button id="modal-fav-btn" class="btn btn-secondary w-full ${isFav ? 'active' : ''}">
-            ${isFav ? '❤️ Favorite' : '🤍 Add Favorite'}
+            ${favLabel(isFav)}
           </button>
           
           <!-- Record box -->
@@ -426,7 +429,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <!-- Tab Contents -->
           <!-- Tab 1: Bio-Data -->
           <div id="tab-bio" class="fighter-tab-content" style="display: block;">
-            <h4 style="font-size: 1.1rem; color: var(--text-muted); font-style: italic; margin-bottom: 15px;">${f.nickname ? `"${escapeHtml(f.nickname)}"` : ''}</h4>
+            <h4 style="font-size: 1.1rem; color: var(--text-muted); font-style: italic; margin-bottom: 15px;">${realNickname(f.nickname) ? `"${escapeHtml(realNickname(f.nickname))}"` : ''}</h4>
             <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
               ${f.sport ? `<span class="badge badge-accent">${escapeHtml(f.sport)}</span>` : ''}
               <span class="badge badge-accent">${escapeHtml(f.weightClass)}</span>
@@ -479,14 +482,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       // Update modal button state
       modalFavBtn.classList.toggle('active', isNowFav);
-      modalFavBtn.innerHTML = isNowFav ? '❤️ Favorite' : '🤍 Add Favorite';
+      modalFavBtn.innerHTML = favLabel(isNowFav);
       
       // Sync card favorite button state
       const cardBtn = document.querySelector(`.favorite-btn[data-id="${CSS.escape(f.id)}"]`);
       if (cardBtn) {
         cardBtn.classList.toggle('active', isNowFav);
-        cardBtn.innerHTML = isNowFav ? '❤️' : '🤍';
-        cardBtn.style.color = isNowFav ? 'var(--accent)' : 'rgba(255,255,255,0.4)';
+        cardBtn.innerHTML = heart(isNowFav);
+        cardBtn.style.color = isNowFav ? 'var(--accent)' : 'rgba(255,255,255,0.85)';
       }
       
     });

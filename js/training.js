@@ -39,7 +39,7 @@ async function initConditioningPlans() {
       card.className = 'training-card animate-on-scroll';
       card.innerHTML = `
         <div class="training-card-image" style="width: 100%; height: 160px; overflow: hidden; border-radius: var(--radius-sm); margin-bottom: 15px; background: linear-gradient(135deg, #161616 0%, #2a2a2a 100%);">
-          ${plan.image ? `<img src="${safeUrl(plan.image)}" alt="${escapeHtml(plan.title)}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;">` : `<div style="font-size: 3rem; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">🏋️</div>`}
+          ${plan.image ? `<img src="${safeUrl(plan.image)}" alt="${escapeHtml(plan.title)}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;">` : `<div style="font-size: 3rem; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--accent);">${icon('zap')}</div>`}
         </div>
         <h3>${escapeHtml(plan.title)}</h3>
         <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">${escapeHtml(plan.description || '')}</p>
@@ -77,7 +77,7 @@ function openPlanModal(plan) {
             <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0;">${escapeHtml(ex.description || 'No description provided.')}</p>
             ${ex.videoUrl ? `
               <div style="margin-top: var(--space-sm);">
-                <a href="${safeUrl(ex.videoUrl, '#')}" target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.75rem; padding: 4px 8px;">🎬 Watch Demonstration</a>
+                <a href="${safeUrl(ex.videoUrl, '#')}" target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.75rem; padding: 4px 8px;">${icon('play')} Watch Demonstration</a>
               </div>
             ` : ''}
           </div>

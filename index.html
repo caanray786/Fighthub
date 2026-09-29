@@ -34,7 +34,7 @@
         <a href="admin/login.html" class="btn btn-secondary btn-sm" style="margin-left: 10px;">Admin Portal</a>
       </div>
       <div style="display: flex; align-items: center;">
-        <button class="theme-toggle" aria-label="Toggle Dark/Light Mode">☀️</button>
+        <button class="theme-toggle" aria-label="Toggle Dark/Light Mode"><svg class="icon" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
         <div class="mobile-toggle" aria-label="Toggle Mobile Menu">
           <span></span>
           <span></span>
@@ -212,6 +212,7 @@
   </footer>
 
   <!-- Script Imports -->
+  <script src="js/icons.js"></script>
   <script src="js/config.js"></script>
   <script src="js/data-defaults.js"></script>
   <script src="js/datastore.js"></script>
@@ -223,9 +224,6 @@
       const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
       const today = todayStr();
 
-      // Articles without their own photo borrow the matching discipline image
-      const CATEGORY_IMAGE = { MMA: 'mma', UFC: 'mma', PFL: 'mma', Boxing: 'boxing', ONE: 'muay-thai', 'Muay Thai': 'muay-thai', Kickboxing: 'kickboxing', BJJ: 'bjj' };
-      const articleImage = a => safeUrl(a.image) || `images/martial-arts/${CATEGORY_IMAGE[a.category] || 'mma'}.jpg`;
       const formatDate = d => parseLocalDate(d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
       const locationText = evt => [evt.venue, evt.city, evt.country].filter(v => v && v !== 'TBA').join(', ') || 'Venue TBA';
 
@@ -240,6 +238,9 @@
       const upcoming = events.filter(e => e.date >= today && e.status !== 'completed').sort((a, b) => a.date.localeCompare(b.date));
       const news = articles.filter(a => a.status !== 'draft' && !a.draft).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
       const published = fighters.filter(f => !f.draft);
+      // Story photos: the fighter in the headline, else the sport
+      const articleImage = articleImageFinder(published);
+      const storyLink = a => `news.html?id=${encodeURIComponent(a.id)}`;
 
       // ---- Hero facts line ----
       document.getElementById('hero-facts').textContent =
@@ -276,8 +277,9 @@
       const newsEl = document.getElementById('news-editorial');
       if (news.length) {
         const [lead, ...rest] = news;
+        const leadImage = articleImage(lead);
         newsEl.innerHTML = `
-          <a class="news-lead" href="news.html" style="background-image: linear-gradient(to top, rgba(8,8,11,0.95) 8%, rgba(8,8,11,0.2) 60%), url('${articleImage(lead)}');">
+          <a class="news-lead" href="${storyLink(lead)}" style="background-image: linear-gradient(to top, rgba(8,8,11,0.95) 8%, rgba(8,8,11,0.2) 60%), ${cssUrl(leadImage.src)};${leadImage.fighter ? ' background-position: center 25%;' : ''}">
             <span class="badge badge-accent">${escapeHtml(lead.category || 'News')}</span>
             <h3>${escapeHtml(lead.title)}</h3>
             <p>${escapeHtml(lead.excerpt || (lead.content || '').slice(0, 160))}</p>
@@ -285,7 +287,7 @@
           </a>
           <ul class="news-list glass">
             ${rest.slice(0, 5).map(a => `
-              <li><a href="news.html">
+              <li><a href="${storyLink(a)}">
                 <small>${escapeHtml(a.category || 'News')} · ${escapeHtml(formatDate(a.date))}</small>
                 <strong>${escapeHtml(a.title)}</strong>
               </a></li>`).join('')}
@@ -316,7 +318,7 @@
         const photo = martialArtImage(s);
         return `
           <a class="ma-tile ${i === 0 ? 'ma-tile-lead' : ''}" href="martial-art.html?id=${encodeURIComponent(s.id)}"
-             style="background-image: linear-gradient(to top, rgba(8,8,11,0.92) 5%, rgba(8,8,11,0.1) 65%)${photo ? `, url('${safeUrl(photo.src)}')` : ''};">
+             style="background-image: linear-gradient(to top, rgba(8,8,11,0.92) 5%, rgba(8,8,11,0.1) 65%)${photo ? `, ${cssUrl(photo.src)}` : ''};">
             <h3>${escapeHtml(s.name)}</h3>
             ${i === 0 ? `<p>${escapeHtml(s.description || '')}</p>` : ''}
           </a>`;

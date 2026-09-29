@@ -33,7 +33,7 @@
         <a href="admin/login.html" class="btn btn-secondary btn-sm" style="margin-left: 10px;">Admin Portal</a>
       </div>
       <div style="display: flex; align-items: center;">
-        <button class="theme-toggle" aria-label="Toggle Dark/Light Mode">☀️</button>
+        <button class="theme-toggle" aria-label="Toggle Dark/Light Mode"><svg class="icon" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
         <div class="mobile-toggle" aria-label="Toggle Mobile Menu">
           <span></span>
           <span></span>
@@ -56,32 +56,25 @@
     </div>
   </header>
 
-  <!-- Featured Article Section -->
-  <section class="section" style="padding-bottom: 0;">
-    <div class="container" id="featured-article-container">
-      <!-- Loaded dynamically via JS -->
+  <!-- Top stories: lead + headlines -->
+  <section class="section">
+    <div class="container">
+      <div class="news-editorial" id="news-top">
+        <p style="color: var(--text-muted);">Loading the latest stories…</p>
+      </div>
     </div>
   </section>
 
-  <!-- Main News Section -->
-  <section class="section">
+  <!-- Every story, filterable by category -->
+  <section class="section" style="padding-top: 0;">
     <div class="container">
-      <!-- Category Tabs -->
-      <div class="tabs" style="margin-bottom: var(--space-2xl);">
-        <button class="tab active" data-category="All">All News</button>
-        <button class="tab" data-category="MMA">MMA</button>
-        <button class="tab" data-category="UFC">UFC</button>
-        <button class="tab" data-category="Boxing">Boxing</button>
-        <button class="tab" data-category="ONE">ONE Championship</button>
-        <button class="tab" data-category="PFL">PFL</button>
+      <div class="section-title">
+        <div><span class="eyebrow">Every story</span><h2>More <span class="text-accent">News</span></h2></div>
       </div>
-
-      <!-- Articles Grid -->
-      <div class="grid grid-3" id="articles-grid">
-        <!-- Dynamically loaded -->
-        <div class="text-center" style="grid-column: 1/-1; padding: 40px 0;">
-          <p>Loading articles...</p>
-        </div>
+      <div class="chip-row" id="news-filters"></div>
+      <div class="story-list" id="story-list"></div>
+      <div class="load-more-row">
+        <button type="button" class="btn btn-secondary" id="load-more" hidden>Load more stories</button>
       </div>
     </div>
   </section>
@@ -149,6 +142,7 @@
   </footer>
 
   <!-- Scripts -->
+  <script src="js/icons.js"></script>
   <script src="js/config.js"></script>
   <script src="js/data-defaults.js"></script>
   <script src="js/datastore.js"></script>

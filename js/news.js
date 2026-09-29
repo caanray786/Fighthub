@@ -1,185 +1,143 @@
 /* ============================================
    FightHub — News JS
-   Handles article queries, featured article render,
-   category filtering, likes, comments, and article detail modal.
+   Lead story + top headlines, category filter, story list,
+   likes, comments and the article reader (news.html?id=… opens a story).
    ============================================ */
 
 document.addEventListener('DOMContentLoaded', async () => {
   await dataStore.ready;
 
-  const featuredContainer = document.getElementById('featured-article-container');
-  const articlesGrid = document.getElementById('articles-grid');
-  const tabs = document.querySelectorAll('.tab');
-  
+  const topEl = document.getElementById('news-top');
+  const filtersEl = document.getElementById('news-filters');
+  const listEl = document.getElementById('story-list');
+  const moreBtn = document.getElementById('load-more');
+
   const modal = document.getElementById('news-modal');
   const modalBackdrop = document.getElementById('news-modal-backdrop');
   const modalClose = document.getElementById('modal-article-close');
 
+  const PAGE_SIZE = 18;
+  const CATEGORY_LABELS = { ONE: 'ONE Championship', General: 'General' };
+  const label = cat => CATEGORY_LABELS[cat] || cat || 'News';
+  const likeIcon = liked => icon('heart', liked ? 'icon-filled' : '');
+
   let allArticles = [];
-  let currentCategory = 'All';
+  let imageFor = () => ({ src: 'images/martial-arts/mma.jpg' });
+  let currentCategory = new URLSearchParams(location.search).get('category') || 'All';
+  let shown = PAGE_SIZE;
+
+  const storyLink = art => `news.html?id=${encodeURIComponent(art.id)}`;
+  const leadBackground = art => {
+    const img = imageFor(art);
+    return `background-image: linear-gradient(to top, rgba(8,8,11,0.95) 10%, rgba(8,8,11,0.25) 65%), ${cssUrl(img.src)};`
+      + (img.fighter ? ' background-position: center 25%;' : '');
+  };
 
   // 1. Fetch data
   try {
-    allArticles = (await dataStore.getAll('articles')).filter(a => a.status !== 'draft' && !a.draft);
-    // Sort articles by date descending
+    const [articles, fighters] = await Promise.all([
+      dataStore.getAll('articles'),
+      dataStore.getSummaries('fighters', ['name', 'image', 'imageCredit', 'imageSourceUrl', 'draft'])
+    ]);
+    allArticles = articles.filter(a => a.status !== 'draft' && !a.draft);
     allArticles.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    imageFor = articleImageFinder(fighters);
 
-    renderNews();
+    renderTop();
+    renderFilters();
+    renderList();
+
   } catch (err) {
     console.error('Error loading articles:', err);
-    articlesGrid.innerHTML = `<div class="text-center" style="grid-column:1/-1;"><p class="text-accent">Error loading articles.</p></div>`;
+    topEl.innerHTML = '<p class="text-accent">Error loading articles.</p>';
   }
 
-  // 2. Render News Section (Featured + Grid)
-  function renderNews() {
-    // Filter articles based on category
-    const filtered = currentCategory === 'All' 
-      ? allArticles 
-      : allArticles.filter(art => art.category === currentCategory);
-
-    // If 'All' is active and we have articles, show the first as Featured
-    if (currentCategory === 'All' && filtered.length > 0) {
-      featuredContainer.style.display = 'block';
-      const featured = filtered[0];
-      const rest = filtered.slice(1);
-      
-      renderFeatured(featured);
-      renderGrid(rest);
-    } else {
-      // Hide featured container and render all filtered in grid
-      featuredContainer.style.display = 'none';
-      renderGrid(filtered);
+  // 2. Lead story + the next five headlines
+  function renderTop() {
+    if (!allArticles.length) {
+      topEl.innerHTML = '<p style="color: var(--text-muted);">No stories yet. Check back soon.</p>';
+      return;
     }
+    const [lead, ...rest] = allArticles;
+    topEl.innerHTML = `
+      <a class="news-lead" href="${storyLink(lead)}" data-open-article="${escapeHtml(lead.id)}" style="${leadBackground(lead)}">
+        <span class="badge badge-accent">${escapeHtml(label(lead.category))}</span>
+        <h3>${escapeHtml(lead.title)}</h3>
+        <p>${escapeHtml(lead.excerpt || (lead.content || '').slice(0, 180))}</p>
+        <small>${escapeHtml(formatDate(lead.date))}${lead.sourceName ? ` · via ${escapeHtml(lead.sourceName)}` : ''}</small>
+      </a>
+      <ul class="news-list">
+        ${rest.slice(0, 5).map(a => `
+          <li><a href="${storyLink(a)}" data-open-article="${escapeHtml(a.id)}">
+            <small>${escapeHtml(label(a.category))} · ${escapeHtml(formatDate(a.date))}</small>
+            <strong>${escapeHtml(a.title)}</strong>
+          </a></li>`).join('')}
+      </ul>`;
   }
 
-  // 3. Render Featured Card
-  function renderFeatured(art) {
-    const isLiked = dataStore.isLiked(art.id);
-    const commentCount = getCommentCount(art.id);
-    
-    // Increment default likes count if stored liked
-    const likeDisplayCount = (art.likes || 0) + (isLiked ? 1 : 0);
+  // 3. Category chips, built from the categories that actually have stories
+  function renderFilters() {
+    const counts = {};
+    allArticles.forEach(a => { counts[a.category] = (counts[a.category] || 0) + 1; });
+    const cats = Object.keys(counts).filter(Boolean).sort((a, b) => counts[b] - counts[a]);
+    if (currentCategory !== 'All' && !counts[currentCategory]) currentCategory = 'All';
 
-    featuredContainer.innerHTML = `
-      <div class="section-header" style="text-align:left; margin-bottom:var(--space-xl);">
-        <h2>Featured <span class="text-accent">Story</span></h2>
-        <div class="section-line" style="margin: 10px 0;"></div>
-      </div>
-      <div class="article-featured animate-on-scroll">
-        <div class="article-image" style="background: linear-gradient(135deg, #1e0205 0%, #0c0001 100%); display:flex; align-items:center; justify-content:center; font-size:6rem; cursor:pointer;" data-open-article="${escapeHtml(art.id)}">
-          📰
-        </div>
-        <div class="article-body">
-          <div class="article-meta">
-            <span class="badge badge-accent">${escapeHtml(art.category)}</span>
-            <span>${formatDate(art.date)}</span>
-            <span>By ${escapeHtml(art.author)}</span>
-          </div>
-          <h3 class="article-title" style="cursor:pointer;" data-open-article="${escapeHtml(art.id)}">${escapeHtml(art.title)}</h3>
-          <p class="article-excerpt">${escapeHtml(art.excerpt)}</p>
-          <div class="article-actions" style="margin-top:auto;">
-            <button class="article-action-btn like-btn ${isLiked ? 'liked' : ''}" data-id="${escapeHtml(art.id)}">
-              <span>${isLiked ? '❤️' : '🤍'}</span> <span class="like-count">${likeDisplayCount}</span> Likes
-            </button>
-            <button class="article-action-btn" data-open-article="${escapeHtml(art.id)}">
-              💬 <span>${commentCount}</span> Comments
-            </button>
-            <button class="btn btn-secondary btn-sm" data-open-article="${escapeHtml(art.id)}" style="margin-left:auto;">Read Full Article</button>
-          </div>
-        </div>
-      </div>
-    `;
+    filtersEl.innerHTML = [['All', allArticles.length], ...cats.map(c => [c, counts[c]])].map(([cat, n]) => `
+      <button type="button" class="chip ${cat === currentCategory ? 'active' : ''}" data-category="${escapeHtml(cat)}">
+        ${escapeHtml(cat === 'All' ? 'All news' : label(cat))} <span>${n}</span>
+      </button>`).join('');
 
-    setupLikeButton(featuredContainer.querySelector('.like-btn'), art);
+    filtersEl.querySelectorAll('.chip').forEach(chip => chip.addEventListener('click', () => {
+      currentCategory = chip.dataset.category;
+      shown = PAGE_SIZE;
+      filtersEl.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === chip));
+      renderList();
+    }));
   }
 
-  // 4. Render Grid of Cards
-  function renderGrid(articles) {
-    articlesGrid.innerHTML = '';
-    
-    if (articles.length === 0) {
-      articlesGrid.innerHTML = `<div class="text-center" style="grid-column:1/-1; padding:40px 0;"><p>No articles found in this category.</p></div>`;
+  // 4. Story list (the top six are already shown above when viewing everything)
+  function renderList() {
+    const stories = currentCategory === 'All'
+      ? allArticles.slice(6)
+      : allArticles.filter(a => a.category === currentCategory);
+
+    if (!stories.length) {
+      listEl.innerHTML = '<p style="color: var(--text-muted); padding: var(--space-lg) 0;">No more stories in this category yet.</p>';
+      moreBtn.hidden = true;
       return;
     }
 
-    articles.forEach(art => {
-      const isLiked = dataStore.isLiked(art.id);
-      const commentCount = getCommentCount(art.id);
-      const likeDisplayCount = (art.likes || 0) + (isLiked ? 1 : 0);
-
-      const card = document.createElement('div');
-      card.className = 'article-card animate-on-scroll';
-      card.innerHTML = `
-        <div class="article-image" style="background: linear-gradient(135deg, #111 0%, #1c1c1c 100%); display:flex; align-items:center; justify-content:center; font-size:3.5rem; height: 180px; cursor:pointer;" data-open-article="${escapeHtml(art.id)}">
-          📰
-        </div>
-        <div class="article-body">
-          <div class="article-meta">
-            <span class="badge badge-accent">${escapeHtml(art.category)}</span>
-            <span>${formatDate(art.date)}</span>
+    listEl.innerHTML = stories.slice(0, shown).map(art => {
+      const img = imageFor(art);
+      return `
+        <a class="story" href="${storyLink(art)}" data-open-article="${escapeHtml(art.id)}">
+          <img class="story-thumb" src="${safeUrl(img.src)}" alt="" loading="lazy"${img.fighter ? ' style="object-position: center 25%;"' : ''}>
+          <div class="story-body">
+            <small>${escapeHtml(label(art.category))} · ${escapeHtml(formatDate(art.date))}</small>
+            <strong>${escapeHtml(art.title)}</strong>
+            <p>${escapeHtml(art.excerpt || '')}</p>
+            ${art.sourceName ? `<span class="story-source">via ${escapeHtml(art.sourceName)}</span>` : ''}
           </div>
-          <h3 class="article-title" style="cursor:pointer; font-size: 1.15rem;" data-open-article="${escapeHtml(art.id)}">${escapeHtml(art.title)}</h3>
-          <p class="article-excerpt" style="font-size:0.85rem; height: 60px; overflow:hidden;">${escapeHtml(art.excerpt)}</p>
-          <div class="article-actions">
-            <button class="article-action-btn like-btn ${isLiked ? 'liked' : ''}" data-id="${escapeHtml(art.id)}">
-              <span>${isLiked ? '❤️' : '🤍'}</span> <span class="like-count">${likeDisplayCount}</span>
-            </button>
-            <button class="article-action-btn" data-open-article="${escapeHtml(art.id)}">
-              💬 <span>${commentCount}</span>
-            </button>
-            <button class="btn btn-secondary btn-sm" data-open-article="${escapeHtml(art.id)}" style="margin-left:auto; padding: 4px 10px; font-size:0.75rem;">Read</button>
-          </div>
-        </div>
-      `;
-      articlesGrid.appendChild(card);
-      setupLikeButton(card.querySelector('.like-btn'), art);
-    });
+        </a>`;
+    }).join('');
 
-    if (window.initScrollAnimations) {
-      window.initScrollAnimations();
-    }
+    moreBtn.hidden = stories.length <= shown;
   }
 
-  // 5. Setup Like Toggle Behavior
-  function setupLikeButton(btn, art) {
-    if (!btn) return;
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isLikedNow = dataStore.toggleLike(art.id);
-      
-      btn.classList.toggle('liked', isLikedNow);
-      btn.querySelector('span:first-child').innerText = isLikedNow ? '❤️' : '🤍';
-      btn.querySelector('.like-count').innerText = (art.likes || 0) + (isLikedNow ? 1 : 0);
-      
-      
-      // Update other occurrences (e.g. sync featured and grid if they share same article)
-      document.querySelectorAll(`.like-btn[data-id="${CSS.escape(art.id)}"]`).forEach(otherBtn => {
-        if (otherBtn !== btn) {
-          otherBtn.classList.toggle('liked', isLikedNow);
-          otherBtn.querySelector('span:first-child').innerText = isLikedNow ? '❤️' : '🤍';
-          otherBtn.querySelector('.like-count').innerText = (art.likes || 0) + (isLikedNow ? 1 : 0);
-        }
-      });
-    });
-  }
+  moreBtn.addEventListener('click', () => {
+    shown += PAGE_SIZE;
+    renderList();
+  });
 
-  // Open the article modal from any element tagged with data-open-article
+  // Open a story from any link tagged with data-open-article (new-tab clicks still work)
   document.addEventListener('click', (e) => {
     const trigger = e.target.closest('[data-open-article]');
-    if (trigger) openArticleModal(trigger.getAttribute('data-open-article'));
+    if (!trigger || e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault();
+    openArticleModal(trigger.getAttribute('data-open-article'));
   });
 
-  // 6. Category Tabs handler
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      currentCategory = tab.getAttribute('data-category');
-      renderNews();
-    });
-  });
-
-  // 7. Comments Storage Helpers
+  // 5. Comments (kept in this browser only)
   function getComments(articleId) {
     try {
       return JSON.parse(localStorage.getItem(`fighthub_comments_${articleId}`)) || [];
@@ -188,17 +146,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function getCommentCount(articleId) {
-    return getComments(articleId).length;
-  }
-
   function saveComment(articleId, comment) {
     const comments = getComments(articleId);
     comments.push(comment);
-    localStorage.setItem(`fighthub_comments_${articleId}`, JSON.stringify(comments));
+    try {
+      localStorage.setItem(`fighthub_comments_${articleId}`, JSON.stringify(comments));
+    } catch { /* storage unavailable */ }
   }
 
-  // 8. Open Article Detail Modal
+  // 6. Article reader
   window.openArticleModal = (id) => {
     const art = allArticles.find(a => a.id === id);
     if (!art) return;
@@ -206,136 +162,101 @@ document.addEventListener('DOMContentLoaded', async () => {
     const isLiked = dataStore.isLiked(art.id);
     const likeDisplayCount = (art.likes || 0) + (isLiked ? 1 : 0);
     const comments = getComments(art.id);
+    const img = imageFor(art);
 
-    document.getElementById('modal-article-title').innerText = (art.category || 'Latest') + ' News';
-    
-    // Render Modal Body Content
+    document.getElementById('modal-article-title').innerText = `${label(art.category)} News`;
+
     const modalBody = document.getElementById('modal-article-body');
     modalBody.innerHTML = `
-      <div style="display:flex; flex-direction:column; gap: var(--space-lg);">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-          <span class="badge badge-accent">${escapeHtml(art.category)}</span>
-          <div style="color:var(--text-muted); font-size:0.85rem;">
-            Published: <strong>${formatDate(art.date)}</strong> &nbsp;|&nbsp; By <strong>${escapeHtml(art.author)}</strong>
-          </div>
+      <article class="article-reader">
+        <div class="article-reader-meta">
+          <span class="badge badge-accent">${escapeHtml(label(art.category))}</span>
+          <span>${escapeHtml(formatDate(art.date))}${art.author ? ` · By ${escapeHtml(art.author)}` : ''}</span>
         </div>
 
-        <h1 style="font-size:2rem; line-height:1.2; font-family:var(--font-body); font-weight:800;">${escapeHtml(art.title)}</h1>
-        
-        <!-- Placeholder banner in modal -->
-        <div style="width:100%; height:280px; background:linear-gradient(135deg, #161616 0%, #2a2a2a 100%); border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:5rem;">
-          📰
-        </div>
+        <h1>${escapeHtml(art.title)}</h1>
 
-        <div style="font-size:1.05rem; line-height:1.8; color:var(--text-secondary); white-space:pre-line;">${escapeHtml(art.content)}</div>
+        <figure class="article-figure">
+          <img src="${safeUrl(img.src)}" alt=""${img.fighter ? ' style="object-position: center 25%;"' : ''}>
+          ${img.credit ? `<figcaption>${img.fighter ? `${escapeHtml(img.fighter.name)}. ` : ''}Photo: ${img.sourceUrl ? `<a href="${safeUrl(img.sourceUrl, '#')}" target="_blank" rel="noopener">${escapeHtml(img.credit)}</a>` : escapeHtml(img.credit)}</figcaption>` : ''}
+        </figure>
+
+        <div class="article-text">${escapeHtml(art.content)}</div>
 
         ${art.sourceUrl ? `
-        <p style="font-size:0.9rem; color:var(--text-muted); margin:0;">
+        <p class="article-source">
           ${art.isAIPreview ? 'AI-assisted rewrite. ' : ''}Original story: <a href="${safeUrl(art.sourceUrl, '#')}" target="_blank" rel="noopener">${escapeHtml(art.sourceName || 'source')}</a>
         </p>` : ''}
 
-        <!-- Tags -->
-        <div style="display:flex; gap:8px; flex-wrap:wrap; border-top:1px solid var(--border-color); padding-top:15px; margin-top:10px;">
-          ${(art.tags || []).map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
-        </div>
+        ${img.fighter ? `<a class="btn btn-secondary btn-sm" href="fighters.html?q=${encodeURIComponent(img.fighter.name)}">${escapeHtml(img.fighter.name)}: fighter profile →</a>` : ''}
 
-        <!-- Actions in Modal -->
-        <div style="display:flex; gap:20px; align-items:center; border-top:1px solid var(--border-color); border-bottom:1px solid var(--border-color); padding: 15px 0;">
-          <button id="modal-like-btn" class="article-action-btn like-btn ${isLiked ? 'liked' : ''}" style="font-size: 1rem;">
-            <span>${isLiked ? '❤️' : '🤍'}</span> <span class="modal-like-count">${likeDisplayCount}</span> Likes
+        ${(art.tags || []).length ? `<div class="article-tags">${art.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
+
+        <div class="article-reader-actions">
+          <button id="modal-like-btn" class="article-action-btn like-btn ${isLiked ? 'liked' : ''}">
+            <span>${likeIcon(isLiked)}</span> <span class="modal-like-count">${likeDisplayCount}</span> Likes
           </button>
-          <span style="color:var(--text-muted); font-size:0.9rem;">
-            💬 <span id="modal-comments-count">${comments.length}</span> Comments
-          </span>
+          <span>${icon('message')} <span id="modal-comments-count">${comments.length}</span> Comments</span>
         </div>
 
-        <!-- Comments Section -->
         <div>
-          <h3 style="margin-bottom:15px; font-family:var(--font-body); font-weight:700; font-size:1.2rem;">Discussion</h3>
-          
-          <!-- Comments List -->
-          <div id="comments-list" style="display:flex; flex-direction:column; gap:12px; margin-bottom:25px;">
-            ${renderCommentsList(comments)}
-          </div>
-
-          <!-- Add Comment Form -->
-          <form id="comment-form" style="display:grid; gap:10px; background:var(--bg-glass); border:1px solid var(--bg-glass-border); padding:20px; border-radius:var(--radius-md);">
-            <h4 style="font-family:var(--font-body); font-weight:600; font-size:0.95rem; margin-bottom:5px;">Join the conversation</h4>
-            <div style="display:grid; grid-template-columns: 1fr 2fr; gap:10px;">
-              <input type="text" id="comment-author" placeholder="Your name" required style="height:40px;">
-              <input type="text" id="comment-text" placeholder="Share your thoughts..." required style="height:40px;">
+          <h3 class="article-reader-subhead">Discussion</h3>
+          <div id="comments-list" class="comments-list">${renderCommentsList(comments)}</div>
+          <form id="comment-form" class="comment-form">
+            <h4>Join the conversation</h4>
+            <div class="comment-form-fields">
+              <input type="text" id="comment-author" placeholder="Your name" required>
+              <input type="text" id="comment-text" placeholder="Share your thoughts..." required>
             </div>
-            <button type="submit" class="btn btn-primary btn-sm" style="justify-self:end; height:40px; padding: 0 20px;">Post Comment</button>
+            <button type="submit" class="btn btn-primary btn-sm">Post Comment</button>
           </form>
         </div>
-      </div>
+      </article>
     `;
 
-    // Modal Like click handler
     const modalLikeBtn = document.getElementById('modal-like-btn');
     modalLikeBtn.addEventListener('click', () => {
       const isLikedNow = dataStore.toggleLike(art.id);
       modalLikeBtn.classList.toggle('liked', isLikedNow);
-      modalLikeBtn.querySelector('span:first-child').innerText = isLikedNow ? '❤️' : '🤍';
-      
-      const newCount = (art.likes || 0) + (isLikedNow ? 1 : 0);
-      modalLikeBtn.querySelector('.modal-like-count').innerText = newCount;
-      
-      // Sync on main page grid/featured
-      document.querySelectorAll(`.like-btn[data-id="${CSS.escape(art.id)}"]`).forEach(otherBtn => {
-        otherBtn.classList.toggle('liked', isLikedNow);
-        otherBtn.querySelector('span:first-child').innerText = isLikedNow ? '❤️' : '🤍';
-        otherBtn.querySelector('.like-count').innerText = newCount;
-      });
-
+      modalLikeBtn.querySelector('span:first-child').innerHTML = likeIcon(isLikedNow);
+      modalLikeBtn.querySelector('.modal-like-count').innerText = (art.likes || 0) + (isLikedNow ? 1 : 0);
     });
 
-    // Form Comment submit handler
-    const form = document.getElementById('comment-form');
-    form.addEventListener('submit', (e) => {
+    document.getElementById('comment-form').addEventListener('submit', (e) => {
       e.preventDefault();
-      
       const authorInput = document.getElementById('comment-author');
       const textInput = document.getElementById('comment-text');
-      
-      const newComment = {
+      saveComment(art.id, {
         author: authorInput.value.trim(),
         text: textInput.value.trim(),
         date: new Date().toISOString()
-      };
-
-      saveComment(art.id, newComment);
-      
-      // Update Modal Comments View
-      const updatedComments = getComments(art.id);
-      document.getElementById('comments-list').innerHTML = renderCommentsList(updatedComments);
-      document.getElementById('modal-comments-count').innerText = updatedComments.length;
-      
-      // Reset inputs
+      });
+      const updated = getComments(art.id);
+      document.getElementById('comments-list').innerHTML = renderCommentsList(updated);
+      document.getElementById('modal-comments-count').innerText = updated.length;
       authorInput.value = '';
       textInput.value = '';
-
       showToast('Comment posted!', 'success');
-
-      // Sync comment count display on original cards/featured
-      renderNews(); 
     });
 
+    // Shareable address for the open story
+    history.replaceState(null, '', storyLink(art));
     modal.classList.add('active');
     modalBackdrop.classList.add('active');
+    modal.scrollTop = 0;
   };
 
   function renderCommentsList(comments) {
     if (comments.length === 0) {
-      return `<p style="font-size:0.9rem; color:var(--text-muted); font-style:italic;">No comments yet. Be the first to share your thoughts!</p>`;
+      return '<p class="comments-empty">No comments yet. Be the first to share your thoughts!</p>';
     }
     return comments.map(c => `
-      <div style="background:var(--bg-card); border:1px solid var(--border-color); padding:12px 15px; border-radius:var(--radius-sm);">
-        <div style="display:flex; justify-content:between; align-items:center; font-size:0.8rem; margin-bottom:4px;">
+      <div class="comment">
+        <div class="comment-head">
           <strong class="text-accent">${escapeHtml(c.author)}</strong>
-          <span style="color:var(--text-muted); margin-left:auto;">${formatRelativeTime(c.date)}</span>
+          <span>${formatRelativeTime(c.date)}</span>
         </div>
-        <p style="font-size:0.9rem; margin-bottom:0; color:var(--text-secondary); line-height:1.4;">${escapeHtml(c.text)}</p>
+        <p>${escapeHtml(c.text)}</p>
       </div>
     `).join('');
   }
@@ -343,15 +264,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const closeModal = () => {
     modal.classList.remove('active');
     modalBackdrop.classList.remove('active');
+    history.replaceState(null, '', 'news.html');
   };
 
   modalClose.addEventListener('click', closeModal);
   modalBackdrop.addEventListener('click', closeModal);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
 
-  // Helper date formatter
+  // news.html?id=… opens that story straight away
+  const openId = new URLSearchParams(location.search).get('id');
+  if (openId) openArticleModal(openId);
+
   function formatDate(dateStr) {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return parseLocalDate(dateStr).toLocaleDateString(undefined, options);
+    if (!dateStr) return '';
+    return parseLocalDate(dateStr).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
   }
 
   function formatRelativeTime(dateStr) {
@@ -361,6 +287,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (minutes < 60) return `${minutes}m ago`;
     const hours = Math.floor(minutes / 60);
     if (hours < 24) return `${hours}h ago`;
-    return formatDate(dateStr);
+    return formatDate(dateStr.slice(0, 10));
   }
 });

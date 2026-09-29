@@ -1092,3 +1092,26 @@ p {
   .navbar-brand .brand-logo { width: 72px; height: 72px; }
   .navbar.scrolled .brand-logo { width: 50px; height: 50px; }
 }
+
+/* ---- Line icons (js/icons.js) ---- */
+.icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.14em;
+  flex-shrink: 0;
+}
+
+.icon-filled {
+  fill: currentColor;
+}
+
+.toast-icon {
+  display: flex;
+  font-size: 1.25rem;
+  color: var(--info);
+}
+
+.toast-success .toast-icon { color: var(--success); }
+.toast-error .toast-icon { color: var(--error); }
+.toast-warning .toast-icon { color: var(--warning, #f5a524); }

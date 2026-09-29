@@ -788,6 +788,13 @@ function safeUrl(value, fallback = '') {
   return fallback;
 }
 
+// For style="background-image: …": quotes and brackets in a photo address
+// (e.g. O'Malley.jpg) would end the CSS url() early, so percent-encode them.
+function cssUrl(value) {
+  const url = safeUrl(value);
+  return url ? `url('${url.replace(/&#39;|'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29')}')` : 'none';
+}
+
 // 'YYYY-MM-DD' strings parse as UTC midnight with new Date(), which shows the
 // previous day in the Americas. Parse them as local dates instead.
 function parseLocalDate(dateStr) {
@@ -816,9 +823,63 @@ function martialArtImage(ma, pathPrefix = '') {
   return null;
 }
 
+// Picture for a news story: its own photo, else the fighter named in the
+// headline (full names only, so "Silva" alone never matches), else the sport.
+const ARTICLE_CATEGORY_IMAGES = {
+  MMA: 'mma', UFC: 'mma', PFL: 'mma', Bellator: 'mma', Boxing: 'boxing',
+  ONE: 'muay-thai', 'Muay Thai': 'muay-thai', Kickboxing: 'kickboxing', BJJ: 'bjj', Judo: 'judo', Karate: 'karate'
+};
+
+function articleImageFinder(fighters = [], pathPrefix = '') {
+  const plain = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const escape = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const named = fighters
+    .filter(f => f.name && f.name.trim().includes(' ') && f.image && !/images\.unsplash\.com/.test(f.image) && !f.draft)
+    .sort((a, b) => b.name.length - a.name.length)
+    .map(f => ({ f, re: new RegExp(`\\b${escape(plain(f.name))}\\b`) }));
+
+  return article => {
+    if (article.image && !/images\.unsplash\.com/.test(article.image)) {
+      return { src: article.image, credit: article.imageCredit || '', sourceUrl: article.imageSourceUrl || '' };
+    }
+    // The first fighter named is usually the story's subject
+    const title = plain(article.title);
+    let hit = null, hitAt = Infinity;
+    for (const n of named) {
+      const m = n.re.exec(title);
+      if (m && m.index < hitAt) { hit = n; hitAt = m.index; }
+    }
+    if (hit) return { src: hit.f.image, credit: hit.f.imageCredit || '', sourceUrl: hit.f.imageSourceUrl || '', fighter: hit.f };
+    return { src: `${pathPrefix}images/martial-arts/${ARTICLE_CATEGORY_IMAGES[article.category] || 'mma'}.jpg`, credit: '', sourceUrl: '' };
+  };
+}
+
+// Fighter nationality is stored as a flag emoji (e.g. 🇺🇸). Phones draw those
+// as emoji, so pages show the plain two-letter code ("US") instead.
+function countryCode(nationality) {
+  const value = String(nationality || '').trim();
+  const letters = [...value]
+    .map(ch => ch.codePointAt(0))
+    .filter(cp => cp >= 0x1F1E6 && cp <= 0x1F1FF)
+    .map(cp => String.fromCharCode(cp - 0x1F1E6 + 65))
+    .join('');
+  if (letters.length === 2) return letters;
+  return /^[A-Za-z]{2,3}$/.test(value) ? value.toUpperCase() : '';
+}
+
+// Placeholder nicknames ("N/A", "None") are treated as no nickname
+function realNickname(nickname) {
+  const value = String(nickname || '').trim();
+  return /^(n\/?a|none|null|unknown|-+|—)$/i.test(value) ? '' : value;
+}
+
 window.martialArtImage = martialArtImage;
+window.articleImageFinder = articleImageFinder;
+window.countryCode = countryCode;
+window.realNickname = realNickname;
 window.escapeHtml = escapeHtml;
 window.safeUrl = safeUrl;
+window.cssUrl = cssUrl;
 window.parseLocalDate = parseLocalDate;
 window.todayStr = todayStr;
 

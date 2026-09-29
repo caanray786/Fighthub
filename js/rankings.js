@@ -15,10 +15,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   let allRankings = [];
   let allFighters = [];
 
+  // Real photo where we have one, otherwise the fighter's initials
+  function avatar(f) {
+    if (f.image && !/images\.unsplash\.com/.test(f.image)) {
+      return `<img src="${safeUrl(f.image)}" alt="" loading="lazy">`;
+    }
+    return `<span>${escapeHtml((f.name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase())}</span>`;
+  }
+
   // 1. Fetch data
   try {
     allRankings = await dataStore.getAll('rankings');
-    allFighters = await dataStore.getSummaries('fighters', ['name', 'nickname', 'nationality', 'country', 'style', 'wins', 'losses', 'draws', 'ko', 'sub', 'status']);
+    allFighters = await dataStore.getSummaries('fighters', ['name', 'nickname', 'image', 'nationality', 'country', 'style', 'wins', 'losses', 'draws', 'ko', 'sub', 'status']);
 
     // Build the list picker from whatever lists exist in the database
     // Cross-sport pound-for-pound list first, then per-sport lists alphabetically
@@ -74,16 +82,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     championContainer.innerHTML = `
       <div style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.05) 0%, rgba(230, 57, 70, 0.05) 100%); border: 1px solid rgba(255, 215, 0, 0.3); border-radius: var(--radius-lg); padding: var(--space-xl); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
         <div style="display: flex; align-items: center; gap: var(--space-xl); flex-wrap: wrap;">
-          <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #000; box-shadow: 0 0 20px rgba(255,215,0,0.2);">
-            👑
-          </div>
+          <div class="rank-avatar rank-avatar-champ">${avatar(champ)}</div>
           <div>
             <div class="champion-badge" style="margin-bottom: 6px;">Divisional Champion</div>
             <h2 style="font-family: var(--font-body); font-weight: 800; font-size: 2rem; margin-bottom: 2px;">
-              ${escapeHtml(champ.name)} <span style="font-size: 1.5rem;">${escapeHtml(champ.nationality)}</span>
+              ${escapeHtml(champ.name)}
             </h2>
             <div style="font-size: 0.9rem; color: var(--text-muted); font-style: italic;">
-              ${champ.nickname ? `"${escapeHtml(champ.nickname)}"` : ''} &nbsp;|&nbsp; Style: <span class="text-accent">${escapeHtml(champ.style)}</span>
+              ${realNickname(champ.nickname) ? `"${escapeHtml(realNickname(champ.nickname))}" &nbsp;|&nbsp; ` : ''}Style: <span class="text-accent">${escapeHtml(champ.style)}</span>
             </div>
           </div>
         </div>
@@ -126,12 +132,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         </td>
         <td>
           <div class="rank-fighter">
-            <div style="font-size: 1.5rem; background: var(--bg-tertiary); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
-              🥋
-            </div>
+            <div class="rank-avatar">${avatar(f)}</div>
             <div>
               <div style="font-weight: 700; color: var(--text-primary);">${escapeHtml(f.name)}</div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">${f.nickname ? `"${escapeHtml(f.nickname)}"` : ''}</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">${realNickname(f.nickname) ? `"${escapeHtml(realNickname(f.nickname))}"` : ''}</div>
             </div>
           </div>
         </td>
@@ -143,7 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <span class="badge badge-accent" style="font-size:0.7rem; font-weight:500; text-transform:none;">${escapeHtml(f.style)}</span>
         </td>
         <td>
-          <span style="font-size:1.1rem; margin-right:5px;">${escapeHtml(f.nationality)}</span> <span style="font-size: 0.85rem; color: var(--text-secondary);">${escapeHtml(f.country)}</span>
+          <span style="font-size: 0.85rem; color: var(--text-secondary);">${escapeHtml(f.country || countryCode(f.nationality))}</span>
         </td>
         <td>
           <span class="badge ${f.status === 'Active' ? 'badge-success' : 'badge-error'}">${escapeHtml(f.status)}</span>

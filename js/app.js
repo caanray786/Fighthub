@@ -186,10 +186,10 @@ function initTheme() {
 
 function updateThemeIcon(btn, theme) {
   if (theme === 'dark') {
-    btn.innerHTML = '☀️'; // Sun icon for switching to light mode
+    btn.innerHTML = icon('sun'); // switch to light mode
     btn.setAttribute('title', 'Switch to Light Mode');
   } else {
-    btn.innerHTML = '🌙'; // Moon icon for switching to dark mode
+    btn.innerHTML = icon('moon'); // switch to dark mode
     btn.setAttribute('title', 'Switch to Dark Mode');
   }
 }
@@ -285,13 +285,10 @@ function showToast(message, type = 'info') {
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
   
-  let icon = 'ℹ️';
-  if (type === 'success') icon = '✅';
-  if (type === 'error') icon = '❌';
-  if (type === 'warning') icon = '⚠️';
+  const toastIcon = ['success', 'error', 'warning'].includes(type) ? type : 'info';
 
   toast.innerHTML = `
-    <span class="toast-icon">${icon}</span>
+    <span class="toast-icon">${icon(toastIcon)}</span>
     <span class="toast-message"></span>
   `;
   toast.querySelector('.toast-message').textContent = message;

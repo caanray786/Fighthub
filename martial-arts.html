@@ -33,7 +33,7 @@
         <a href="admin/login.html" class="btn btn-secondary btn-sm" style="margin-left: 10px;">Admin Portal</a>
       </div>
       <div style="display: flex; align-items: center;">
-        <button class="theme-toggle" aria-label="Toggle Dark/Light Mode">☀️</button>
+        <button class="theme-toggle" aria-label="Toggle Dark/Light Mode"><svg class="icon" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
         <div class="mobile-toggle" aria-label="Toggle Mobile Menu">
           <span></span>
           <span></span>
@@ -131,6 +131,7 @@
   </footer>
 
   <!-- Scripts -->
+  <script src="js/icons.js"></script>
   <script src="js/config.js"></script>
   <script src="js/data-defaults.js"></script>
   <script src="js/datastore.js"></script>
@@ -187,7 +188,7 @@
         card.innerHTML = `
           ${photo
             ? `<img src="${photo}" alt="${escapeHtml(ma.name)}" loading="lazy">`
-            : `<div style="width:100%; height:100%; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:5rem; background:${gradients[ma.id] || 'linear-gradient(135deg, #111 0%, #2a0a0e 100%)'};">${escapeHtml(ma.icon || '🥋')}</div>`}
+            : `<div style="width:100%; height:100%; position:absolute; inset:0; background:${gradients[ma.id] || 'linear-gradient(135deg, #111 0%, #2a0a0e 100%)'};"></div>`}
           <div class="ma-card-content">
             <h3>${escapeHtml(ma.name)}</h3>
             <p>${escapeHtml(ma.description)}</p>
@@ -227,13 +228,13 @@
 
         let famousHtml = '';
         if (ma.famousFighters && ma.famousFighters.length > 0) {
-          famousHtml = ma.famousFighters.map(f => `<li>⭐ ${escapeHtml(f)}</li>`).join('');
+          famousHtml = ma.famousFighters.map(f => `<li>${icon('star', 'text-accent')} ${escapeHtml(f)}</li>`).join('');
         }
         
         document.getElementById('modal-body-content').innerHTML = `
           <div style="margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
-            <div class="badge badge-success">📍 Origin: ${escapeHtml(ma.origin || 'Unknown')}</div>
-            <div class="badge badge-info">📅 Founded: ${escapeHtml(ma.founded || 'Unknown')}</div>
+            <div class="badge badge-success">${icon('map-pin')} Origin: ${escapeHtml(ma.origin || 'Unknown')}</div>
+            <div class="badge badge-info">${icon('calendar')} Founded: ${escapeHtml(ma.founded || 'Unknown')}</div>
           </div>
           
           <h4 style="margin-bottom: 10px; color: var(--accent);">Description</h4>

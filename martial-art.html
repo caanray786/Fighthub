@@ -33,7 +33,7 @@
         <a href="admin/login.html" class="btn btn-secondary btn-sm" style="margin-left: 10px;">Admin Portal</a>
       </div>
       <div style="display: flex; align-items: center;">
-        <button class="theme-toggle" aria-label="Toggle Dark/Light Mode">☀️</button>
+        <button class="theme-toggle" aria-label="Toggle Dark/Light Mode"><svg class="icon" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
         <div class="mobile-toggle" aria-label="Toggle Mobile Menu">
           <span></span>
           <span></span>
@@ -161,6 +161,7 @@
   </footer>
 
   <!-- Scripts -->
+  <script src="js/icons.js"></script>
   <script src="js/config.js"></script>
   <script src="js/data-defaults.js"></script>
   <script src="js/datastore.js"></script>
@@ -192,12 +193,12 @@
       document.getElementById('ma-desc').textContent = ma.description || '';
 
       const facts = [
-        ma.origin && ['📍', `Origin: ${ma.origin}`],
-        ma.founded && ['📅', `Founded: ${ma.founded}`],
-        ma.category && ['🥋', `Type: ${ma.category}`]
+        ma.origin && ['map-pin', `Origin: ${ma.origin}`],
+        ma.founded && ['calendar', `Founded: ${ma.founded}`],
+        ma.category && ['tag', `Type: ${ma.category}`]
       ].filter(Boolean);
       document.getElementById('ma-facts').innerHTML = facts
-        .map(([icon, text]) => `<div class="ma-quick-fact"><span class="fact-icon">${icon}</span> ${escapeHtml(text)}</div>`).join('');
+        .map(([name, text]) => `<div class="ma-quick-fact"><span class="fact-icon">${icon(name)}</span> ${escapeHtml(text)}</div>`).join('');
 
       const photo = martialArtImage(ma);
       if (photo) {
@@ -218,7 +219,7 @@
       document.getElementById('content-guide').innerHTML = paragraphs(ma.beginnerGuide);
 
       document.getElementById('content-benefits').innerHTML = (ma.benefits || [])
-        .map(b => `<li>✅ ${escapeHtml(b)}</li>`).join('') || '<li style="color: var(--text-muted);">Coming soon.</li>';
+        .map(b => `<li>${icon('check', 'text-accent')} ${escapeHtml(b)}</li>`).join('') || '<li style="color: var(--text-muted);">Coming soon.</li>';
       document.getElementById('content-tips').innerHTML = (ma.tips || [])
         .map(t => `<li>${escapeHtml(t)}</li>`).join('') || '<li style="color: var(--text-muted);">Coming soon.</li>';
 
@@ -238,7 +239,7 @@
       // Famous fighters link to their profile search on the fighters page
       document.getElementById('content-fighters').innerHTML = (ma.famousFighters || []).map(name => `
         <a class="card card-glass" href="fighters.html?q=${encodeURIComponent(name)}" style="padding: 18px 20px; display: flex; align-items: center; gap: 15px; text-decoration: none;">
-          <div style="font-size: 1.8rem;">${escapeHtml(ma.icon || '🥋')}</div>
+          <div style="font-size: 1.5rem; color: var(--accent); display: flex;">${icon('users')}</div>
           <div>
             <h4 style="margin-bottom: 2px;">${escapeHtml(name)}</h4>
             <p style="font-size: 0.8rem; color: var(--accent); margin: 0;">View in fighter database →</p>
