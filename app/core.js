@@ -2,7 +2,7 @@
    Feature modules (training, routine, HIIT, mobility, membership...) load after
    this file and wrap render() to add or replace their own screens. */
 
-const SITE_URL = 'https://fighthub-swart.vercel.app';
+const SITE_URL = 'https://www.fighthub.world';
 const appKey = 'fight-hub-app-v1';
 const labels = { welcome: 'Welcome', setup: 'Setup', today: 'Today', plan: 'Weekly plan', workout: 'Workout', review: 'Weekly review', explore: 'Explore' };
 let state;
