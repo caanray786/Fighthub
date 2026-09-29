@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fight Hub Training</title>
+<meta name="description" content="Weekly training routines, 85 illustrated exercises, HIIT and martial-arts mobility, with the latest boxing, MMA and Muay Thai news.">
+<meta name="theme-color" content="#0c0c10">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fight Hub">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="base.css?v=2">
+<link rel="stylesheet" href="glass.css?v=2">
+<link rel="stylesheet" href="training.css?v=2">
+<link rel="stylesheet" href="app.css?v=2">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><img class="brand-logo" src="assets/fight-hub-logo.png" alt="" width="44" height="44"><span>Fight <b>Hub</b></span></div>
+    <div class="top-actions">
+      <button type="button" class="install-button" id="install-button" hidden>Install app</button>
+      <button type="button" class="premium-pill" data-go="premium">Premium</button>
+    </div>
+  </header>
+  <main class="screen" id="screen" tabindex="-1"></main>
+  <nav aria-label="Main navigation" id="nav"></nav>
+</div>
+
+<dialog class="install-dialog" id="install-dialog" aria-labelledby="install-title">
+  <h2 id="install-title">Add Fight Hub to your home screen</h2>
+  <div id="install-steps"></div>
+  <form method="dialog"><button class="primary full">Done</button></form>
+</dialog>
+
+<script src="config.js"></script>
+<script src="icons.js?v=2"></script>
+<script src="core.js?v=2"></script>
+<script src="training-data.js?v=2"></script>
+<script src="exercise-content.js?v=2"></script>
+<script src="exercise-media.js?v=2"></script>
+<script src="training.js?v=2"></script>
+<script src="interval-model.js?v=2"></script>
+<script src="conditioning-model.js?v=2"></script>
+<script src="hiit.js?v=2"></script>
+<script src="guided-model.js?v=2"></script>
+<script src="guided.js?v=2"></script>
+<script src="exercise-experience.js?v=2"></script>
+<script src="mobility.js?v=2"></script>
+<script src="membership-model.js?v=2"></script>
+<script src="membership.js?v=2"></script>
+<script src="routine-model.js?v=2"></script>
+<script src="routine.js?v=2"></script>
+<script src="exercise-navigation.js?v=2"></script>
+<script src="shell.js?v=2"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+/* One primary journey: setup -> dated week -> session overview -> preparation. */
+const routineStorage='fight-hub-routine-v1';
+const nextMonday=new Date(localDate()+'T12:00:00');nextMonday.setDate(nextMonday.getDate()+((8-nextMonday.getDay())%7));
+let routine={draft:{start:RoutineModel.iso(nextMonday),days:[1,3,5],location:'Gym',split:'split',level:'Starter'},plan:null,selected:0,message:''};
+try{const saved=JSON.parse(localStorage.getItem(routineStorage)||'null');if(saved?.plan){routine.plan=RoutineModel.build(saved.plan);routine.draft={...routine.plan,days:[...routine.plan.days]};}}catch{}
+const rbtn=(name,a,id='',cls='full')=>`<button class="${cls}" data-routine="${a}" data-id="${id}">${name}</button>`;
+const dayName=d=>new Date(d+'T12:00:00').toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'short'});
+const routineId=s=>'routine-'+routine.plan.start+'-'+routine.plan.location+'-'+routine.plan.split+'-'+s.date;
+function routineOverview(s){return `<ol class="routine-exercises">${s.ids.map(id=>`<li><strong>${ex(id).name}</strong>${training.premium?'<span class="small">'+ExerciseContent.target(ex(id),routine.plan.level)+'</span>'+act('Instructions & image','exercise',id):'<span class="small">Workload and demonstration included with Premium</span>'}</li>`).join('')}</ol>`;}
+function weekMarkup(){const p=routine.plan;if(!p)return title('My week','Build your<br>weekly routine.')+`<p>Choose three days. We’ll put a named workout and its exercises on each day.</p>${rbtn('Set up my routine','setup','','primary full')}`;
+ const days=[];for(let i=0;i<7;i++){const d=new Date(p.start+'T12:00:00');d.setDate(d.getDate()+i);const date=RoutineModel.iso(d),s=p.sessions.find(x=>x.date===date),log=s?training.history.find(h=>h.id===routineId(s)):null;days.push(s?`<article class="routine-day"><span class="eyebrow">${dayName(date)}${date===localDate()?' · Today':''}</span><h3>${s.name}</h3><p>${s.focus}</p><p class="small">${s.ids.map(id=>ex(id).name).join(' · ')}</p><span class="badge">${log?(log.complete?'LOGGED COMPLETE':'PARTIALLY LOGGED'):'PLANNED'}</span>${rbtn('View session','view',p.sessions.indexOf(s),'primary full')}</article>`:`<div class="routine-rest"><strong>${dayName(date)}</strong><span>Recovery / optional gentle movement</span></div>`);}
+ return title('My week / '+p.location,'Your days.<br>Your routine.')+`<p>${p.split==='split'?'Push → pull → legs':'Three full-body sessions'} · ${p.level==='Starter'?'Starting workload':'Build-up workload'}</p>${!training.premium?'<p class="draft-note">Schedule preview only. Premium is required to start this routine.</p>':''}${days.join('')}${rbtn('Edit days or routine','setup')}<p class="small">A one-week draft. Days are not shifted or progressed automatically. This split is a preference, not a claim that it is optimal for every member.</p>`;
+}
+const beforeRoutine=render;
+render=function(){
+ const page=state.page;
+ // Avoid rendering the superseded guided setup or week before the new screen.
+ if(['setup','plan','routine-session'].includes(page)||(page==='today'&&state.mode!=='fan'))state.page='routine-shell';
+ beforeRoutine();state.page=page;
+ if(page==='setup'){
+ const p=routine.draft;screen.innerHTML=title('Set up your routine','Choose days.<br>We’ll organise the week.')+`<p>Three sessions, each with a clear focus and exercise list.</p>${pick('routine-location','Where will you train?',['Gym','Home'],p.location)}<p class="small">${p.location==='Gym'?'This gym routine uses machines, a cable station, dumbbells, a bench and a stable seat.':'This home routine uses dumbbells, a resistance band, a stable chair and a solid wall.'} Check these are available before starting.</p><label class="field">Routine style<select id="routine-split"><option value="split" ${p.split==='split'?'selected':''}>Push / pull / legs</option><option value="full" ${p.split==='full'?'selected':''}>Full body on all three days</option></select></label>${pick('routine-level','Workload examples',['Starter','Build'],p.level)}<label class="field">Week starting (Monday)<input id="routine-start" type="date" value="${p.start}"></label><fieldset><legend>Your three training days</legend><div class="day-picker">${[1,2,3,4,5,6,0].map(d=>`<label><input type="checkbox" data-routine-day="${d}" ${p.days.includes(d)?'checked':''}>${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]}</label>`).join('')}</div></fieldset><p class="small">${p.days.length} / 3 selected. The first selected day gets ${p.split==='split'?'Push, the second Pull, and the third Legs':'Full body A, followed by B and C'}. Mon/Wed/Fri leaves recovery days between sessions.</p>${rbtn('Show my weekly routine','build','','primary full')}<p role="status">${escapeText(routine.message)}</p><p class="draft-note">Exercise selections and workloads are editable product drafts requiring professional review. No injury screening or automatic load selection is performed.</p>`;
+ }
+ if(page==='plan')screen.innerHTML=weekMarkup();
+ if(page==='today'&&state.mode!=='fan'){
+ const p=routine.plan,next=p?.sessions.find(s=>s.date>=localDate()&&!training.history.some(h=>h.id===routineId(s)&&h.complete));
+ screen.innerHTML=title('Your training dashboard','One clear<br>next session.')+(p?`<div class="card feature"><span class="eyebrow">${next?dayName(next.date):'Week complete or ended'}</span><h3>${next?next.name:'Plan your next week'}</h3><p>${next?next.focus:'Your saved logs are in Progress. Choose the next week when ready.'}</p>${next?rbtn('View exercises before starting','view',p.sessions.indexOf(next),'primary full'):rbtn('Set up next week','setup','','primary full')}</div>${rbtn('See my whole week','week')}`:`<div class="card feature"><h3>Start with your weekly routine</h3><p>Choose your days, see which body areas you’ll train, then preview the exercises.</p>${rbtn('Set up my routine','setup','','primary full')}</div>`)+`${training.active?rbtn('Resume unfinished session','resume'):''}${!training.premium?'<details><summary>Try a free starter workout</summary>'+act('View free starters','page','training')+'</details>':''}`;
+ }
+ if(page==='routine-session'){
+ const s=routine.plan?.sessions[routine.selected];screen.innerHTML=s?title(dayName(s.date),s.name)+`<p>${s.focus}</p><div class="session-breakdown"><span><b>1</b>Warm-up · 6 min</span><span><b>2</b>${s.ids.length} exercises</span><span><b>3</b>Cooldown · 5 min</span></div><h3>Your exercises, in order</h3>${routineOverview(s)}<div class="card"><h3>Equipment</h3><p>${[...new Set(s.ids.map(id=>ex(id).equipment))].join(' · ')}</p><p class="small">Use a manageable load and allow the listed rest. Total workout duration varies; take more recovery if needed.</p></div><details><summary>Preview warm-up and cooldown</summary>${routineMarkup('Warm-up',ConditioningModel.warmup)}${routineMarkup('Cooldown',ConditioningModel.cooldown)}<p>Practise a light or unloaded version of the first strength exercise before working sets.</p></details>${training.active&&training.active.id!==routineId(s)?'<p class="status">Starting this session replaces your unsaved workout draft. Your saved history is retained.</p>':''}${rbtn(training.premium?'Start session → warm-up':'Unlock Premium to start','start','','primary full')}${rbtn('Back to my week','week')}<p class="draft-note">Draft routine and example workloads, not a professionally reviewed programme.</p>`:weekMarkup();
+ }
+ if(page==='session'&&training.active?.routine&&Membership.canSession(training.active,training.premium)){
+  const a=training.active;screen.insertAdjacentHTML('afterbegin',`<div class="routine-context"><strong>${escapeText(a.name)}</strong><p class="small">${a.entries.map(e=>ex(e.id).name).join(' → ')}</p>${rbtn('View weekly routine','week')}</div>`);
+  if(a.phase==='main')screen.querySelectorAll('[data-log="sets"]').forEach((input,i)=>input.closest('.card').querySelector('h3').insertAdjacentHTML('afterend',`<p class="workload">${ExerciseContent.target(ex(a.entries[i].id),workloadLevel)}</p>`));
+ }
+ // Keep the member navigation stable; specialist tools live under Library.
+ document.querySelector('#nav').innerHTML=[['today','Today','home'],['plan','My week','calendar'],['training','Library','dumbbell'],['progress','Progress','chart'],['explore','Explore','newspaper']].map(([key,name,ic])=>`<button data-go="${key}" ${page===key?'aria-current="page"':''}>${icon(ic)}<span>${name}</span></button>`).join('');
+ const steps=document.querySelector('#steps');if(steps){steps.innerHTML=[['today','Dashboard'],['setup','Set up routine'],['plan','My week'],['training','Library'],['progress','Progress'],['premium','Premium']].map(([key,name])=>`<button data-go="${key}" aria-pressed="${page===key}">${name}</button>`).join('');if(resetPreviewButton)steps.append(resetPreviewButton);}
+ if(page==='premium'&&routine.plan)screen.insertAdjacentHTML('beforeend',rbtn('Return to my weekly routine','week'));
+ if(page==='training'){screen.querySelector('[data-guide="setup"]')?.remove();screen.insertAdjacentHTML('afterbegin',rbtn('Back to my weekly routine','week','','primary full'));}
+};
+document.addEventListener('change',e=>{
+ const field={'routine-location':'location','routine-split':'split','routine-level':'level','routine-start':'start'}[e.target.id];
+ if(field)routine.draft[field]=e.target.value;
+ else if(e.target.dataset.routineDay!==undefined){const d=Number(e.target.dataset.routineDay);routine.draft.days=e.target.checked?[...routine.draft.days,d]:routine.draft.days.filter(x=>x!==d);}else return;
+ routine.message='';render();
+});
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-routine]');if(!b)return;const a=b.dataset.routine;
+ if(a==='setup')return go('setup');if(a==='week')return go('plan');if(a==='resume')return go('session');
+ if(a==='build'){try{routine.plan=RoutineModel.build(routine.draft);routine.message='';try{localStorage.setItem(routineStorage,JSON.stringify({plan:routine.plan}));}catch{routine.message='This routine could not be saved on this device.';}go('plan');if(routine.message)screen.insertAdjacentHTML('afterbegin','<p role="status">'+routine.message+'</p>');}catch(err){routine.message=err.message;render();}return;}
+ if(a==='view'){routine.selected=Number(b.dataset.id);return go('routine-session');}
+ if(a==='start'){if(!training.premium){upgradeReason='Start your dated weekly routine with Premium.';return go('premium');}const s=routine.plan.sessions[routine.selected],id=routineId(s);if(training.active?.id===id)return go('session');const old=training.history.find(h=>h.id===id);workloadLevel=routine.plan.level;training.active={id,name:dayName(s.date)+' · '+s.name,routine:true,paused:false,phase:'warmup',entries:s.ids.map(x=>structuredClone(old?.entries.find(e=>e.id===x)||{id:x,sets:'',reps:'',minutes:'',done:false}))};return go('session');}
+});
+render();

@@ -1,0 +1,34 @@
+/* Frosted-glass visual layer. Opaque defaults remain readable without blur. */
+:root{--ink:#f5f5f7;--muted:#c0c0cb;--blue:#f14b55;--line:#ffffffb8;--soft:#44242b;--paper:#17171d}
+body{background:radial-gradient(ellipse at 12% 15%,#50151e 0,transparent 46%),radial-gradient(ellipse at 90% 45%,#33343f 0,transparent 48%),linear-gradient(145deg,#15151b,#0c0c10 60%,#202127);background-attachment:fixed;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.brand,h1,h2,h3{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-weight:750}
+h1{font-size:52px;letter-spacing:-2.5px}h2{font-size:31px;letter-spacing:-1.2px;line-height:1.12}h3{font-size:21px;line-height:1.2}.brand{font-size:23px;letter-spacing:-1.2px}
+.layout{align-items:start;gap:60px}.intro{padding-top:48px}.intro .eyebrow{color:#bcbcc8}
+button,select{border-radius:18px;background:#303038;border:1px solid #ffffff25;box-shadow:inset 0 1px 0 #ffffff25,0 3px 10px #00000020;transition:background .18s ease,box-shadow .18s ease}
+button:hover{background:#46464f;box-shadow:inset 0 1px 0 #ffffff25,0 5px 15px #2b466419;border-color:#ffffff60}
+button[aria-pressed=true]{background:#5b232d;border-color:#ffffff;color:#ffffff}
+.steps{gap:8px}.steps button{border-radius:16px}.note{line-height:1.6}
+.phone{position:relative;isolation:isolate;border-radius:42px;border:1px solid #ffffff38;background:radial-gradient(ellipse at 3% 12%,#56232d 0,transparent 54%),radial-gradient(ellipse at 100% 52%,#3f404c 0,transparent 49%),linear-gradient(165deg,#27272e,#15151c 60%,#303039);box-shadow:inset 0 0 0 5px #ffffff0a,0 30px 80px #00000060,0 4px 12px #00000040;padding:8px;overflow:hidden}
+.phone::before{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;box-shadow:inset 0 2px 2px #ffffff50,inset 0 -1px 2px #ffffff25;z-index:2}
+.top{padding:23px 20px 18px;border:0;background:transparent}.badge{background:#33333c;color:#dedee6;border:1px solid #ffffff25;border-radius:20px;font-size:9px;letter-spacing:.04em;padding:7px 9px}
+.screen{padding:18px 20px 25px;min-height:550px}.screen h2:focus{outline:none}.screen h2:focus-visible{outline:3px solid var(--blue);outline-offset:5px;border-radius:4px}
+.card{border-radius:26px;padding:22px;background:#303038;border:1px solid #ffffff30;box-shadow:inset 0 1px 0 #ffffff25,0 8px 24px #00000030}
+.feature{background:#383039;border:1px solid #ffffff38}.primary{background:linear-gradient(155deg,#c52a3b,#9a1026);color:white;border:1px solid #ffffff35;box-shadow:inset 0 1px 0 #ffffff35,0 7px 16px #c5183826;border-radius:18px}.primary:hover{background:linear-gradient(155deg,#b91d31,#880a20);color:white;border-color:#ffffff99}.full{min-height:50px}
+.week{gap:5px}.day{background:#33333e;border:1px solid #ffffff25;border-radius:15px;padding:10px 0;color:#d6d6e0}.day.active{background:linear-gradient(155deg,#c52a3b,#9a1026);border-color:#ffffff12;box-shadow:inset 0 1px 0 #ffffff30,0 4px 10px #b01c3320;color:#fff}.day b{font-size:19px}
+.session{border-color:#ffffff25}.meter{background:#ffffff20;box-shadow:inset 0 1px 3px #00000030}.meter span{border-radius:inherit}.metric{font-weight:700}.field{color:#dedee6}select{padding:13px}.check{font-size:15px}.small{line-height:1.55}
+nav{position:sticky;bottom:12px;margin:0 8px 10px;padding:7px;gap:3px;background:#303038;border:1px solid #ffffff38;border-radius:27px;box-shadow:inset 0 1px 0 #ffffff25,0 8px 26px #00000055;z-index:3}
+nav button{background:transparent;box-shadow:none;border-radius:20px;min-height:52px;font-weight:600;color:#d0d0dc}nav button[aria-current=page]{background:#46464f;color:#ffffff;box-shadow:0 3px 12px #00000030,inset 0 1px 0 #ffffff25}nav button:hover{background:#ffffff25}
+@supports ((backdrop-filter:blur(20px)) or (-webkit-backdrop-filter:blur(20px))){
+ .card,.feature{background:linear-gradient(135deg,#ffffff18,#ffffff08);-webkit-backdrop-filter:blur(24px) saturate(135%);backdrop-filter:blur(24px) saturate(135%)}
+ button,select,.badge{background-color:#ffffff12;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+ .day{background-color:#ffffff10}
+ nav{background:#ffffff12;-webkit-backdrop-filter:blur(28px) saturate(150%);backdrop-filter:blur(28px) saturate(150%)}
+ nav button{background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none}
+ nav button[aria-current=page]{background:#a41c32}
+}
+@media(max-width:760px){.layout{margin-top:20px;padding:0 12px}.intro{padding-top:0}.intro h1{font-size:31px;letter-spacing:-1.2px}.phone{border-radius:34px}.screen{min-height:520px;padding:17px 17px 25px}.top{padding:20px 17px 15px}.steps button{border-radius:14px}h2{font-size:30px}.card{padding:20px}.footer{line-height:1.5}nav{bottom:10px}}
+@media(max-width:360px){.brand{font-size:20px}.badge{font-size:8px;padding:6px}h2{font-size:27px}.screen{padding-left:13px;padding-right:13px}.card{padding:17px}nav{margin-left:2px;margin-right:2px}nav button{font-size:12px}}
+@media(prefers-reduced-transparency:reduce),(prefers-contrast:more){.card,.feature,nav,button,select,.badge,.day{backdrop-filter:none;-webkit-backdrop-filter:none;background-color:#292930}.primary,.day.active{background:#f14b55}.small,.note,.eyebrow{color:#e1e1e8}}
+@media(prefers-reduced-motion:reduce){button,select{transition:none}}
+
+:root{color-scheme:dark}.brand-logo{display:block;width:98px;height:98px;object-fit:contain;filter:drop-shadow(0 3px 9px #0008)}.top{padding-top:8px;padding-bottom:5px}.brand{line-height:0}select option{background:#292930;color:#f5f5f7}.status{color:#ff9aa4}.meter span{background:#ef4658}button:focus-visible,select:focus-visible,input:focus-visible{outline-color:#ff8c98}

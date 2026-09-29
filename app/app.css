@@ -1,0 +1,259 @@
+/* Installed-app shell: full screen on phones, a centred column on larger screens.
+   Loaded last, so it overrides the layout-study rules in base/glass/training.css. */
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 560px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* ---- Header ---- */
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  padding: calc(env(safe-area-inset-top) + 10px) 18px 10px;
+  border-bottom: 1px solid #ffffff14;
+  background: #0c0c10cc;
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+  z-index: 5;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.brand b {
+  color: #f14b55;
+}
+
+.brand-logo {
+  width: 44px;
+  height: 44px;
+}
+
+.top-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.top-actions button {
+  min-height: 38px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 999px;
+}
+
+.premium-pill {
+  background: linear-gradient(155deg, #c52a3b, #9a1026) !important;
+  border-color: #ffffff30 !important;
+  color: #fff;
+}
+
+/* ---- Screen ---- */
+.screen {
+  flex: 1;
+  min-height: 0 !important;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 20px 18px 28px !important;
+}
+
+.screen:focus {
+  outline: none;
+}
+
+.screen h2 {
+  font-size: 30px;
+}
+
+/* ---- Bottom tab bar ---- */
+nav#nav {
+  position: static;
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  margin: 0;
+  padding: 6px 6px calc(env(safe-area-inset-bottom) + 6px);
+  border: 0;
+  border-top: 1px solid #ffffff1c;
+  border-radius: 0;
+  background: #121217e6;
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  backdrop-filter: blur(24px) saturate(150%);
+  box-shadow: none;
+}
+
+nav#nav button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 54px;
+  padding: 6px 2px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent !important;
+  box-shadow: none;
+  color: #9d9daa;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+nav#nav button .icon {
+  font-size: 22px;
+}
+
+nav#nav button[aria-current=page] {
+  color: #fff;
+}
+
+nav#nav button[aria-current=page] .icon {
+  color: #f14b55;
+}
+
+body[data-page=welcome] nav#nav,
+body[data-page=welcome] .premium-pill {
+  display: none;
+}
+
+/* ---- Icons ---- */
+.icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.14em;
+  flex-shrink: 0;
+}
+
+.icon-filled {
+  fill: currentColor;
+}
+
+/* ---- Live fight feed ---- */
+.feed-event {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.feed-heading {
+  margin: 26px 0 4px;
+}
+
+.feed-story {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 0;
+  border-bottom: 1px solid #ffffff1a;
+  color: inherit;
+  text-decoration: none;
+}
+
+.feed-story strong {
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.feed-story .eyebrow {
+  color: #f14b55;
+}
+
+.button-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  margin-top: 20px;
+  border: 1px solid #ffffff25;
+  border-radius: 18px;
+  color: #f5f5f7;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* ---- Install instructions ---- */
+.install-button {
+  background: #ffffff14 !important;
+}
+
+.install-dialog {
+  width: min(440px, 92vw);
+  border: 1px solid #ffffff30;
+  border-radius: 24px;
+  background: #1c1c24;
+  color: #f5f5f7;
+  padding: 24px;
+}
+
+.install-dialog::backdrop {
+  background: #000a;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.install-dialog h2 {
+  font-size: 24px;
+  margin-top: 0;
+}
+
+.install-dialog ol {
+  padding-left: 22px;
+}
+
+.install-dialog li {
+  margin: 12px 0;
+}
+
+/* ---- Larger screens: the app sits in a centred column ---- */
+@media (min-width: 700px) {
+  body {
+    padding: 24px 0;
+    box-sizing: border-box;
+  }
+  .app {
+    height: calc(100dvh - 48px);
+    border: 1px solid #ffffff22;
+    border-radius: 34px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px #00000070;
+  }
+}
+
+/* Headings receive focus on screen change (for screen readers); no ring needed */
+.screen h2:focus,
+.screen h2:focus-visible {
+  outline: none;
+}
+
+.brand span {
+  color: #f5f5f7;
+}
