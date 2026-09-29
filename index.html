@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/pages.css">
+  <link rel="stylesheet" href="css/premium.css">
 </head>
 <body>
 
@@ -43,166 +44,119 @@
     </div>
   </nav>
 
-  <!-- Hero Scroll Wrapper for Sticky Pinning -->
+  <!-- Hero: scroll-driven animation with the headline over it -->
   <div id="hero-scroll-wrapper" style="height: 220vh; position: relative; margin-top: var(--navbar-height);">
     <header class="hero" style="position: sticky; top: var(--navbar-compact); height: calc(100vh - var(--navbar-compact)); min-height: 0; overflow: hidden; z-index: 10;">
       <div class="hero-bg">
         <canvas id="hero-scrub-canvas"></canvas>
       </div>
-
-      <div class="hero-shapes">
-        <div class="hero-shape"></div>
-        <div class="hero-shape"></div>
-        <div class="hero-shape"></div>
+      <div class="hero-content home-hero-content">
+        <div class="container">
+          <span class="eyebrow">The combat sports hub</span>
+          <h1>Follow your sport.<br><span class="text-gradient">Build your fitness.</span></h1>
+          <p>Boxing, MMA, Muay Thai, BJJ and every martial art: fighters and their full records, fight nights, news, guides and clubs near you.</p>
+          <div class="hero-buttons">
+            <a href="fighters.html" class="btn btn-primary btn-lg">Explore fighters</a>
+            <a href="gyms.html" class="btn btn-secondary btn-lg">Find a club</a>
+          </div>
+          <p class="hero-facts" id="hero-facts"></p>
+        </div>
       </div>
     </header>
   </div>
 
-  <!-- Pinned Hero Intro Section -->
-  <section class="section" style="background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); padding: var(--space-3xl) 0;">
+  <!-- Next fight night -->
+  <section class="section home-section" id="next-fight-section" hidden>
     <div class="container">
-      <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: var(--space-3xl); align-items: center;">
-        
-        <!-- Left Column: Title and Description -->
+      <div class="next-fight glass" id="next-fight"></div>
+    </div>
+  </section>
+
+  <!-- News: one lead story + headlines -->
+  <section class="section home-section">
+    <div class="container">
+      <div class="section-title">
+        <div><span class="eyebrow">Latest</span><h2>News &amp; <span class="text-accent">Analysis</span></h2></div>
+        <a class="more" href="news.html">All news →</a>
+      </div>
+      <div class="news-editorial" id="news-editorial">
+        <p style="color: var(--text-muted);">Loading the latest stories…</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fighters: portrait strip -->
+  <section class="section home-section">
+    <div class="container">
+      <div class="section-title">
+        <div><span class="eyebrow">The greats</span><h2>Legends &amp; <span class="text-accent">Champions</span></h2></div>
+        <a class="more" href="fighters.html">All fighters →</a>
+      </div>
+    </div>
+    <div class="fighter-strip" id="fighter-strip"></div>
+  </section>
+
+  <!-- Martial arts mosaic -->
+  <section class="section home-section">
+    <div class="container">
+      <div class="section-title">
+        <div><span class="eyebrow">Learn</span><h2>Martial <span class="text-accent">Arts</span></h2></div>
+        <a class="more" href="martial-arts.html" id="ma-more">All disciplines →</a>
+      </div>
+      <div class="ma-mosaic" id="ma-mosaic"></div>
+    </div>
+  </section>
+
+  <!-- Club finder -->
+  <section class="section home-section">
+    <div class="container">
+      <form class="club-band glass" action="gyms.html" method="get">
         <div>
-          <div class="hero-label" style="margin-bottom: var(--space-md);">
-            <span>⚡</span> The Combat Sports & Martial Arts Hub
-          </div>
-          <h2 style="font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.0; margin-bottom: var(--space-md); text-transform: uppercase;">Train. Learn. <span class="text-gradient">Improve.</span></h2>
-          <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: var(--space-xl); max-width: 600px;">
-            Your ultimate destination for mixed martial arts, fighter profiles, upcoming events, training programs, calculators, and equipment reviews.
-          </p>
+          <span class="eyebrow">Train near you</span>
+          <h2>Find a <span class="text-accent">club</span></h2>
+          <p>Boxing gyms, MMA academies, Muay Thai camps and dojos in the UK, Europe, the USA and beyond.</p>
+        </div>
+        <div class="club-band-search">
+          <input type="text" name="near" placeholder="Town, city or postcode" aria-label="Town, city or postcode" required>
+          <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Upcoming events -->
+  <section class="section home-section">
+    <div class="container">
+      <div class="section-title">
+        <div><span class="eyebrow">Fight calendar</span><h2>Upcoming <span class="text-accent">Events</span></h2></div>
+        <a class="more" href="events.html">Full calendar →</a>
+      </div>
+      <div class="event-list glass" id="event-list"></div>
+    </div>
+  </section>
+
+  <!-- Fight Hub training app -->
+  <section class="section home-section">
+    <div class="container">
+      <div class="app-promo glass">
+        <div class="app-promo-text">
+          <span class="eyebrow">Fight Hub Training · Premium</span>
+          <h2>Train like a <span class="text-accent">fighter</span></h2>
+          <p>Weekly routines, 85 illustrated exercises, HIIT and conditioning sessions, and martial-arts mobility, all in the Fight Hub app.</p>
+          <ul class="app-promo-list">
+            <li>Guided weekly plans for home or gym</li>
+            <li>HIIT and fighter conditioning circuits</li>
+            <li>Mobility and splits preparation</li>
+            <li>Track every session and your progress</li>
+          </ul>
           <div class="hero-buttons">
-            <a href="fighters.html" class="btn btn-primary">Explore Fighters</a>
-            <a href="training.html" class="btn btn-secondary" style="margin-left: 10px;">Get Training</a>
+            <a href="training.html" class="btn btn-primary">Try the training tools</a>
+            <span class="badge app-soon">App coming soon</span>
           </div>
         </div>
-
-        <!-- Right Column: Stats Cards -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md);">
-          <div class="card" style="padding: var(--space-lg); text-align: center; border-top: 3px solid var(--accent); background: var(--bg-card);">
-            <div style="font-family: var(--font-heading); font-size: 2.8rem; color: var(--text-primary); line-height: 1;">20+</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-top: 5px; font-weight: 700; letter-spacing: 0.05em;">Fighters</div>
-          </div>
-          <div class="card" style="padding: var(--space-lg); text-align: center; border-top: 3px solid var(--accent); background: var(--bg-card);">
-            <div style="font-family: var(--font-heading); font-size: 2.8rem; color: var(--text-primary); line-height: 1;">11</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-top: 5px; font-weight: 700; letter-spacing: 0.05em;">Styles</div>
-          </div>
-          <div class="card" style="padding: var(--space-lg); text-align: center; border-top: 3px solid var(--accent); background: var(--bg-card);">
-            <div style="font-family: var(--font-heading); font-size: 2.8rem; color: var(--text-primary); line-height: 1;">24/7</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-top: 5px; font-weight: 700; letter-spacing: 0.05em;">Timer</div>
-          </div>
+        <div class="app-promo-visual">
+          <img src="images/app-preview.jpg" alt="Fight Hub training app" loading="lazy">
         </div>
-
-      </div>
-    </div>
-  </section>
-
-
-
-  <!-- Featured Martial Arts Section -->
-  <section class="section">
-    <div class="container">
-      <div class="section-header animate-on-scroll">
-        <h2>Featured <span class="text-accent">Martial Arts</span></h2>
-        <div class="section-line"></div>
-        <p>Explore the history, rules, training techniques, and legendary fighters of the world's most dominant combat styles.</p>
-      </div>
-
-      <div class="grid grid-3 animate-on-scroll animate-delay-1">
-        <!-- MMA -->
-        <div class="ma-card" onclick="window.location.href='martial-art.html?id=ma1'">
-          <img data-ma-photo="ma1" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Mixed Martial Arts" loading="lazy">
-          <div class="ma-card-content">
-            <h3>MMA</h3>
-            <p>Mixed Martial Arts. The ultimate evolution of combat sports, uniting striking and grappling.</p>
-          </div>
-        </div>
-
-        <!-- Muay Thai -->
-        <div class="ma-card" onclick="window.location.href='martial-art.html?id=ma2'">
-          <img data-ma-photo="ma2" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Muay Thai" loading="lazy">
-          <div class="ma-card-content">
-            <h3>Muay Thai</h3>
-            <p>The Art of Eight Limbs. Devastating kicks, knees, elbows, and clinch sweeps.</p>
-          </div>
-        </div>
-
-        <!-- BJJ -->
-        <div class="ma-card" onclick="window.location.href='martial-art.html?id=ma3'">
-          <img data-ma-photo="ma3" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="Brazilian Jiu-Jitsu" loading="lazy">
-          <div class="ma-card-content">
-            <h3>Brazilian Jiu-Jitsu</h3>
-            <p>Ground fighting, submissions, and leverage. The gentle art that changed combat forever.</p>
-          </div>
-        </div>
-      </div>
-
-
-      <div class="text-center mt-xl">
-        <a href="martial-arts.html" class="btn btn-secondary">View All Martial Arts</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Next Event & AI Preview Section -->
-  <section class="section" id="featured-section" style="background: var(--bg-tertiary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
-    <div class="container">
-      <div class="section-header animate-on-scroll">
-        <div class="badge badge-accent" style="margin-bottom: 10px;">⚡ FIGHT WEEK</div>
-        <h2>Next Up <span class="text-accent">&amp; Fight Previews</span></h2>
-        <div class="section-line"></div>
-        <p>The next confirmed card on the calendar, plus our latest AI-assisted preview, always linked to its original source.</p>
-      </div>
-
-      <!-- Live Cards & Previews Grid -->
-      <div class="grid grid-2 animate-on-scroll animate-delay-1" id="live-pipeline-grid">
-        <!-- Will be dynamically populated via JS -->
-      </div>
-    </div>
-  </section>
-
-  <!-- Latest Articles (News) -->
-  <section class="section" style="background: var(--bg-secondary);">
-    <div class="container">
-      <div class="section-header animate-on-scroll">
-        <h2>Latest <span class="text-accent">Articles & News</span></h2>
-        <div class="section-line"></div>
-        <p>Stay up to date with UFC announcements, championship match reviews, and expert training advice.</p>
-      </div>
-
-      <div class="grid grid-3 animate-on-scroll animate-delay-1" id="latest-articles-grid">
-        <!-- Populated from the DataStore -->
-      </div>
-    </div>
-  </section>
-
-  <!-- Upcoming Events Timeline -->
-  <section class="section">
-    <div class="container">
-      <div class="section-header animate-on-scroll">
-        <h2>Upcoming <span class="text-accent">Fight Events</span></h2>
-        <div class="section-line"></div>
-        <p>Track championship fights and fight announcements across UFC, Boxing, ONE, and PFL.</p>
-      </div>
-
-      <div class="horizontal-scroll animate-on-scroll animate-delay-1" id="events-timeline" style="padding: 10px 0;">
-        <!-- Filled by JS -->
-      </div>
-
-      <div class="text-center mt-xl">
-        <a href="events.html" class="btn btn-secondary">View Event Calendar</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Community Call-To-Action -->
-  <section class="cta-section">
-    <div class="container">
-      <h2 class="animate-on-scroll">Join the FightHub Community</h2>
-      <p class="animate-on-scroll animate-delay-1">Connect with other practitioners, log your training hours, find gyms near you, and participate in challenges.</p>
-      <div class="animate-on-scroll animate-delay-2">
-        <a href="training.html" class="btn">Access Training Tools</a>
       </div>
     </div>
   </section>
@@ -267,133 +221,121 @@
       await dataStore.ready;
 
       const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-      const PROMO_BADGE = { Boxing: 'badge-info', ONE: 'badge-warning', PFL: 'badge-success' };
-      const FALLBACK_IMG = 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800&q=80';
-
       const today = todayStr();
-      const [allEvents, allArticles] = await Promise.all([
+
+      // Articles without their own photo borrow the matching discipline image
+      const CATEGORY_IMAGE = { MMA: 'mma', UFC: 'mma', PFL: 'mma', Boxing: 'boxing', ONE: 'muay-thai', 'Muay Thai': 'muay-thai', Kickboxing: 'kickboxing', BJJ: 'bjj' };
+      const articleImage = a => safeUrl(a.image) || `images/martial-arts/${CATEGORY_IMAGE[a.category] || 'mma'}.jpg`;
+      const formatDate = d => parseLocalDate(d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+      const locationText = evt => [evt.venue, evt.city, evt.country].filter(v => v && v !== 'TBA').join(', ') || 'Venue TBA';
+
+      const [events, articles, fighters, rankings, styles] = await Promise.all([
         dataStore.getAll('events'),
-        dataStore.getAll('articles')
+        dataStore.getAll('articles'),
+        dataStore.getSummaries('fighters', ['name', 'image', 'sport', 'wins', 'losses', 'draws', 'nationality', 'draft']),
+        dataStore.getAll('rankings'),
+        dataStore.getSummaries('martialArts', ['name', 'description', 'image'])
       ]);
-      const upcomingEvents = allEvents
-        .filter(e => e.date >= today && e.status !== 'completed')
-        .sort((a, b) => a.date.localeCompare(b.date));
-      const articles = allArticles
-        .filter(a => a.status !== 'draft' && !a.draft)
-        .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
-      function locationText(evt) {
-        return [evt.venue, evt.city, evt.country].filter(v => v && v !== 'TBA').join(', ') || 'Venue TBA';
-      }
+      const upcoming = events.filter(e => e.date >= today && e.status !== 'completed').sort((a, b) => a.date.localeCompare(b.date));
+      const news = articles.filter(a => a.status !== 'draft' && !a.draft).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      const published = fighters.filter(f => !f.draft);
 
-      // 1. Next big event + latest AI preview. Both come from the database only;
-      //    if there's nothing real to show, the section is hidden.
-      function renderFeatured() {
-        const container = document.getElementById('live-pipeline-grid');
-        const section = document.getElementById('featured-section');
-        if (!container) return;
+      // ---- Hero facts line ----
+      document.getElementById('hero-facts').textContent =
+        `${published.length.toLocaleString()} fighters · ${styles.length} disciplines · ${upcoming.length} upcoming events`;
 
-        const nextEvent = upcomingEvents.find(e => (e.fights || []).length > 0) || upcomingEvents[0];
-        const preview = articles.find(a => a.isAIPreview);
-        let html = '';
-
-        if (nextEvent) {
-          const d = parseLocalDate(nextEvent.date);
-          const fights = (nextEvent.fights || []).map(f => `<li style="padding:6px 0; border-bottom:1px solid var(--border-color);">🥊 ${escapeHtml(f)}</li>`).join('');
-          html += `
-            <div class="card" style="padding: 24px; border: 1px solid var(--border-color); background: var(--bg-card); border-top: 3px solid var(--accent);">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <span class="badge ${PROMO_BADGE[nextEvent.promotion] || 'badge-accent'}">${escapeHtml(nextEvent.promotion)}</span>
-                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}</span>
-              </div>
-              <h3 style="font-size: 1.4rem; margin-bottom: 8px;">${escapeHtml(nextEvent.name)}</h3>
-              <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">📍 ${escapeHtml(locationText(nextEvent))}</div>
-              <ul style="list-style:none; padding:0; margin:0 0 15px; font-size:0.95rem; color:var(--text-secondary);">
-                ${fights || '<li>Card to be announced</li>'}
-              </ul>
-              <a href="events.html" class="btn btn-secondary btn-sm">Full Schedule</a>
-            </div>
-          `;
-        }
-
-        if (preview) {
-          const tags = (preview.taggedFighters || []).map(f => `<span class="badge" style="background: var(--bg-tertiary); border: 1px solid var(--border-color); font-size: 0.75rem;">🥊 ${escapeHtml(f)}</span>`).join('');
-          html += `
-            <div class="card" style="padding: 24px; border: 1px solid var(--border-color); background: var(--bg-card); border-top: 3px solid #22c55e;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <span class="badge badge-success">🤖 AI FIGHT PREVIEW</span>
-                <span class="badge badge-info">${escapeHtml(preview.discipline || preview.category)}</span>
-              </div>
-              <h3 style="font-size: 1.25rem; margin-bottom: 10px; line-height: 1.3;">${escapeHtml(preview.title)}</h3>
-              <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 15px;">${escapeHtml(preview.content)}</p>
-              ${preview.prediction ? `
-                <div style="background: rgba(34, 197, 94, 0.1); border-left: 3px solid #22c55e; padding: 10px 14px; border-radius: 4px; margin-bottom: 15px; font-size: 0.88rem;">
-                  <strong>🎯 AI Prediction:</strong> ${escapeHtml(preview.prediction)}
-                </div>` : ''}
-              <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">${tags}</div>
-              ${preview.sourceUrl ? `<p style="font-size:0.8rem; color:var(--text-muted); margin-top:12px;">Source: <a href="${safeUrl(preview.sourceUrl, '#')}" target="_blank" rel="noopener">${escapeHtml(preview.sourceName || 'original article')}</a></p>` : ''}
-            </div>
-          `;
-        }
-
-        if (html) {
-          container.innerHTML = html;
-        } else if (section) {
-          section.style.display = 'none';
-        }
-      }
-
-      // 2. Latest news articles
-      function renderLatestArticles() {
-        const latestGrid = document.getElementById('latest-articles-grid');
-        if (!latestGrid || articles.length === 0) return;
-        latestGrid.innerHTML = articles.slice(0, 3).map(art => `
-          <div class="article-card">
-            <img src="${safeUrl(art.image, FALLBACK_IMG)}" alt="" loading="lazy" style="width:100%; aspect-ratio:16/9; object-fit:cover;">
-            <div class="article-body">
-              <div class="article-meta">
-                <span class="badge badge-accent">${escapeHtml(art.category)}</span>
-                <span>${escapeHtml(art.date)}</span>
-              </div>
-              <h3 class="article-title">${escapeHtml(art.title)}</h3>
-              <p class="article-excerpt">${escapeHtml(art.excerpt || (art.content || '').substring(0, 90) + '...')}</p>
-              <a href="news.html" class="btn btn-secondary btn-sm w-full">Read Article</a>
-            </div>
+      // ---- Next fight night with countdown ----
+      const next = upcoming.find(e => (e.fights || []).length) || upcoming[0];
+      if (next) {
+        document.getElementById('next-fight-section').hidden = false;
+        const d = parseLocalDate(next.date);
+        document.getElementById('next-fight').innerHTML = `
+          <div class="next-fight-main">
+            <span class="eyebrow">Next fight night · ${escapeHtml(next.promotion)}</span>
+            <h2>${escapeHtml(next.name)}</h2>
+            <p class="next-fight-meta">${d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })} · ${escapeHtml(locationText(next))}</p>
+            <div class="countdown" id="countdown"></div>
+            <a href="events.html" class="btn btn-secondary">Full fight calendar</a>
           </div>
-        `).join('');
+          <ol class="next-fight-card">
+            ${(next.fights || []).map((f, i) => `<li><span>${i === 0 ? 'Main event' : i === 1 ? 'Co-main' : 'Bout'}</span>${escapeHtml(f)}</li>`).join('') || '<li><span>Card</span>To be announced</li>'}
+          </ol>`;
+        const renderCountdown = () => {
+          const ms = d.getTime() - Date.now();
+          const el = document.getElementById('countdown');
+          if (ms <= 0) { el.innerHTML = '<div><b>Fight</b><small>night</small></div>'; return; }
+          const days = Math.floor(ms / 86400000), hours = Math.floor(ms / 3600000) % 24, mins = Math.floor(ms / 60000) % 60;
+          el.innerHTML = [[days, 'days'], [hours, 'hours'], [mins, 'mins']].map(([n, l]) => `<div><b>${n}</b><small>${l}</small></div>`).join('');
+        };
+        renderCountdown();
+        setInterval(renderCountdown, 30000);
       }
 
-      // 3. Upcoming events strip
-      function renderUpcomingEvents() {
-        const timeline = document.getElementById('events-timeline');
-        if (!timeline || upcomingEvents.length === 0) return;
-        timeline.innerHTML = upcomingEvents.slice(0, 4).map(evt => {
-          const d = parseLocalDate(evt.date);
-          return `
-            <div class="event-card" style="min-width: 320px;">
-              <div class="event-date-box">
-                <div class="event-month">${MONTHS[d.getMonth()]}</div>
-                <div class="event-day">${d.getDate()}</div>
-              </div>
-              <div class="event-info">
-                <span class="badge ${PROMO_BADGE[evt.promotion] || 'badge-accent'}">${escapeHtml(evt.promotion)}</span>
-                <h3>${escapeHtml(evt.name)}</h3>
-                <div class="event-location">📍 ${escapeHtml(locationText(evt))}</div>
-              </div>
+      // ---- News: lead story + headlines ----
+      const newsEl = document.getElementById('news-editorial');
+      if (news.length) {
+        const [lead, ...rest] = news;
+        newsEl.innerHTML = `
+          <a class="news-lead" href="news.html" style="background-image: linear-gradient(to top, rgba(8,8,11,0.95) 8%, rgba(8,8,11,0.2) 60%), url('${articleImage(lead)}');">
+            <span class="badge badge-accent">${escapeHtml(lead.category || 'News')}</span>
+            <h3>${escapeHtml(lead.title)}</h3>
+            <p>${escapeHtml(lead.excerpt || (lead.content || '').slice(0, 160))}</p>
+            <small>${escapeHtml(formatDate(lead.date))}${lead.sourceName ? ` · via ${escapeHtml(lead.sourceName)}` : ''}</small>
+          </a>
+          <ul class="news-list glass">
+            ${rest.slice(0, 5).map(a => `
+              <li><a href="news.html">
+                <small>${escapeHtml(a.category || 'News')} · ${escapeHtml(formatDate(a.date))}</small>
+                <strong>${escapeHtml(a.title)}</strong>
+              </a></li>`).join('')}
+          </ul>`;
+      }
+
+      // ---- Fighter strip: rankings first, then Hall of Famers with photos ----
+      const byId = new Map(published.map(f => [f.id, f]));
+      const rankedIds = [];
+      [...rankings].sort((a, b) => (a.sport === 'All' ? -1 : b.sport === 'All' ? 1 : 0))
+        .forEach(r => (r.rankings || []).forEach(id => { if (!rankedIds.includes(id)) rankedIds.push(id); }));
+      const withPhoto = f => f && f.image && !/unsplash/.test(f.image);
+      const strip = [...rankedIds.map(id => byId.get(id)).filter(withPhoto), ...published.filter(f => withPhoto(f) && !rankedIds.includes(f.id))].slice(0, 16);
+      document.getElementById('fighter-strip').innerHTML = strip.map(f => `
+        <a class="strip-fighter" href="fighters.html?q=${encodeURIComponent(f.name)}">
+          <img src="${safeUrl(f.image)}" alt="${escapeHtml(f.name)}" loading="lazy">
+          <div>
+            <small>${escapeHtml(f.sport || '')}</small>
+            <strong>${escapeHtml(f.name)}</strong>
+            ${f.wins !== null && f.wins !== undefined ? `<span>${escapeHtml(f.wins)}-${escapeHtml(f.losses ?? 0)}-${escapeHtml(f.draws ?? 0)}</span>` : ''}
+          </div>
+        </a>`).join('');
+
+      // ---- Martial arts mosaic ----
+      const featured = ['ma1', 'ma4', 'ma2', 'ma3', 'ma9'].map(id => styles.find(s => s.id === id)).filter(Boolean);
+      document.getElementById('ma-more').textContent = `All ${styles.length} disciplines →`;
+      document.getElementById('ma-mosaic').innerHTML = featured.map((s, i) => {
+        const photo = martialArtImage(s);
+        return `
+          <a class="ma-tile ${i === 0 ? 'ma-tile-lead' : ''}" href="martial-art.html?id=${encodeURIComponent(s.id)}"
+             style="background-image: linear-gradient(to top, rgba(8,8,11,0.92) 5%, rgba(8,8,11,0.1) 65%)${photo ? `, url('${safeUrl(photo.src)}')` : ''};">
+            <h3>${escapeHtml(s.name)}</h3>
+            ${i === 0 ? `<p>${escapeHtml(s.description || '')}</p>` : ''}
+          </a>`;
+      }).join('');
+
+      // ---- Upcoming events list ----
+      document.getElementById('event-list').innerHTML = upcoming.slice(0, 6).map(evt => {
+        const d = parseLocalDate(evt.date);
+        return `
+          <a class="event-row" href="events.html">
+            <div class="event-row-date"><b>${d.getDate()}</b><small>${MONTHS[d.getMonth()]}</small></div>
+            <div class="event-row-main">
+              <strong>${escapeHtml(evt.name)}</strong>
+              <small>${escapeHtml((evt.fights || [])[0] || 'Card to be announced')}</small>
             </div>
-          `;
-        }).join('');
-      }
-
-      // Featured martial arts cards use each discipline's real photo
-      document.querySelectorAll('[data-ma-photo]').forEach(async img => {
-        const photo = martialArtImage({ id: img.dataset.maPhoto, ...(await dataStore.getById('martialArts', img.dataset.maPhoto)) });
-        if (photo) img.src = photo.src;
-      });
-
-      renderFeatured();
-      renderLatestArticles();
-      renderUpcomingEvents();
+            <div class="event-row-place">${escapeHtml(locationText(evt))}</div>
+            <span class="badge">${escapeHtml(evt.promotion)}</span>
+          </a>`;
+      }).join('') || '<p style="padding: var(--space-lg); color: var(--text-muted);">No upcoming events yet.</p>';
     });
   </script>
 </body>
