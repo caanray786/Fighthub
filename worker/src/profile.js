@@ -80,7 +80,7 @@ Reply with JSON only:
   return {
     id: 'fighter-' + slugify(page.title),
     name: displayName(page.title).slice(0, 100),
-    nickname: String(json.nickname || '').replace(/^["']|["']$/g, '').slice(0, 60),
+    nickname: String(json.nickname || '').replace(/^["']|["']$/g, '').replace(/^(n\/?a|none|null|unknown|-+)$/i, '').slice(0, 60),
     nationality: flagEmoji(json.countryCode),
     country: String(json.country || '').slice(0, 60),
     sport,

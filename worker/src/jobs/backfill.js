@@ -21,6 +21,11 @@ export async function runBackfill(state) {
   const candidates = JSON.parse(await readFile(new URL('../../data/fighter-candidates.json', import.meta.url), 'utf8'));
   const progress = (await getState('fighter-backfill').catch(() => null)) || { failed: {} };
   progress.skipped = progress.skipped || {};
+  // Sept 2026: an AI outage marked the whole list as failed; start the failure counts again
+  if (progress.failedReset !== 2) {
+    progress.failed = {};
+    progress.failedReset = 2;
+  }
 
   // Re-check profiles imported before the non-athlete check existed; remove
   // promoters, referees etc. and remember them so they aren't imported again
@@ -66,6 +71,7 @@ export async function runBackfill(state) {
   };
 
   let added = 0;
+  let failedInARow = 0;
   for (let candidate = nextCandidate(); candidate; candidate = nextCandidate()) {
     if (added >= config.maxBackfillPerRun) break;
     if (Date.now() - state.startedAt > config.maxRunMinutes * 60000) {
@@ -85,12 +91,20 @@ export async function runBackfill(state) {
       state.fighters.push(fighter);
       knownTitles.add(page.title);
       added++;
+      failedInARow = 0;
       const record = fighter.wins !== null ? `${fighter.wins}-${fighter.losses}-${fighter.draws}` : 'no record';
       log(`  + ${fighter.name} (${fighter.sport}, ${record}${fighter.image ? ', photo' : ''}) [${fighter.aiModel}]`);
     } catch (err) {
-      progress.failed[candidate.title] = (progress.failed[candidate.title] || 0) + 1;
       log(`  ! ${candidate.title}: ${err.message}`);
-      if (/No model available/.test(err.message)) break; // AI busy or out of quota: stop for this run
+      // AI trouble is not the fighter's fault: stop for this run without marking them
+      if (/No model available|OpenRouter/.test(err.message)) break;
+      progress.failed[candidate.title] = (progress.failed[candidate.title] || 0) + 1;
+      // Many failures in a row means something else is wrong (e.g. Wikipedia down):
+      // stop rather than burn through the whole list
+      if (++failedInARow >= 5) {
+        log('BACKFILL: 5 failures in a row, stopping for this run');
+        break;
+      }
     }
   }
 

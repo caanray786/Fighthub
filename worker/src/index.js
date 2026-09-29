@@ -62,6 +62,7 @@ async function main() {
   }
 
   state.summary.paidAiCalls = usage.paidCalls;
+  if (usage.goneModels) state.summary.unavailableModels = usage.goneModels;
   const ok = state.summary.errors.length === 0;
   log(`Finished: ${JSON.stringify(state.summary)}`);
   await finishRun(runId, ok, state.summary, fullLog());

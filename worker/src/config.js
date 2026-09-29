@@ -15,7 +15,8 @@ export const config = {
   // Primary model first; the worker falls back through the list when one is busy.
   // Only capable models: the openrouter/free router can pick tiny models that
   // invent facts, so if all of these are busy the story waits for the next run.
-  models: (env.OPENROUTER_MODELS || 'z-ai/glm-5.2:free,google/gemma-4-31b-it:free,qwen/qwen3.8-27b:free,nvidia/nemotron-3-super-120b-a12b:free')
+  // (z-ai/glm-5.2:free was the first choice until OpenRouter made it paid-only, Sept 2026)
+  models: (env.OPENROUTER_MODELS || 'google/gemma-4-31b-it:free,qwen/qwen3.8-27b:free,nvidia/nemotron-3-super-120b-a12b:free')
     .split(',').map(s => s.trim()).filter(Boolean),
   // Used only when every free model is busy. ~$0.0008 per fighter profile at
   // 2026-09 prices. Set the repo variable OPENROUTER_PAID_MODELS to "none" to disable.

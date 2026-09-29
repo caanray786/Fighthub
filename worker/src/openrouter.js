@@ -13,6 +13,11 @@ export function aiAvailable() {
 
 class RetryableError extends Error {}
 
+// Models that no longer exist or stopped being free (OpenRouter 404) are
+// skipped for the rest of the run instead of stopping every AI call
+class ModelGoneError extends Error {}
+const goneModels = new Set();
+
 async function callModel(model, prompt, temperature) {
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -39,6 +44,9 @@ async function callModel(model, prompt, temperature) {
     if (res.status === 429 || res.status >= 500) {
       throw new RetryableError(`${model} ${res.status} (${describeLimit(detail)})`);
     }
+    if (res.status === 404 || (res.status === 400 && /not a valid model|model.*(not found|unavailable)/i.test(detail))) {
+      throw new ModelGoneError(`${model} unavailable: ${detail.slice(0, 160)}`);
+    }
     throw new Error(`OpenRouter ${res.status} (${model}): ${detail.slice(0, 200)}`);
   }
   const data = await res.json();
@@ -56,6 +64,7 @@ export async function askJson(prompt, { temperature = 0.3 } = {}) {
   const failures = [];
   const tryModels = async (models, paid) => {
     for (const model of models) {
+      if (goneModels.has(model)) continue;
       try {
         const result = await callModel(model, prompt, temperature);
         if (paid) usage.paidCalls++;
@@ -65,6 +74,13 @@ export async function askJson(prompt, { temperature = 0.3 } = {}) {
           paidDisabled = true;
           log('  (paid fallback unavailable: no OpenRouter credits; free models only)');
           return null;
+        }
+        if (err instanceof ModelGoneError) {
+          goneModels.add(model);
+          usage.goneModels = [...goneModels];
+          log(`  (skipping ${model} for this run: ${err.message.slice(0, 140)})`);
+          failures.push(err.message);
+          continue;
         }
         if (!(err instanceof RetryableError) && !(err instanceof SyntaxError)) throw err;
         failures.push(err.message);
