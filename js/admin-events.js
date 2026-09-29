@@ -118,8 +118,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         <td><span class="status-badge ${badgeClass}">${escapeHtml((evt.status || 'upcoming').toUpperCase())}</span></td>
         <td>
           <div class="table-actions">
-            <button class="table-action btn-edit" data-id="${escapeHtml(evt.id)}" title="Edit Event">✏️ Edit</button>
-            <button class="table-action delete btn-delete" data-id="${escapeHtml(evt.id)}" title="Delete Event">🗑️</button>
+            <button class="table-action btn-edit" data-id="${escapeHtml(evt.id)}" title="Edit Event">${icon('edit')} Edit</button>
+            <button class="table-action delete btn-delete" data-id="${escapeHtml(evt.id)}" title="Delete Event">${icon('trash')}</button>
           </div>
         </td>
       `;
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     div.className = 'dynamic-list-item';
     div.innerHTML = `
       <input type="text" value="${value.replace(/"/g, '&quot;')}" placeholder="e.g. Khabib Nurmagomedov vs. Conor McGregor" required>
-      <button type="button" class="remove-item">✖</button>
+      <button type="button" class="remove-item">${icon('x')}</button>
     `;
     div.querySelector('.remove-item').addEventListener('click', () => div.remove());
     fightsList.appendChild(div);

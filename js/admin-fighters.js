@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const tr = document.createElement('tr');
       
       const badgeClass = f.status === 'Active' ? 'status-active' : 'status-retired';
-      const flag = f.nationality || '🏳️';
+      const flag = countryCode(f.nationality) || '-';
       
       tr.innerHTML = `
         <td>
@@ -126,8 +126,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         <td><span class="status-badge ${badgeClass}">${escapeHtml(f.status)}</span></td>
         <td>
           <div class="table-actions">
-            <button class="table-action btn-edit" data-id="${escapeHtml(f.id)}" title="Edit Fighter">✏️ Edit</button>
-            <button class="table-action delete btn-delete" data-id="${escapeHtml(f.id)}" title="Delete Fighter">🗑️</button>
+            <button class="table-action btn-edit" data-id="${escapeHtml(f.id)}" title="Edit Fighter">${icon('edit')} Edit</button>
+            <button class="table-action delete btn-delete" data-id="${escapeHtml(f.id)}" title="Delete Fighter">${icon('trash')}</button>
           </div>
         </td>
       `;
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     div.className = 'dynamic-list-item';
     div.innerHTML = `
       <input type="text" value="${value.replace(/"/g, '&quot;')}" placeholder="Type details here..." required>
-      <button type="button" class="remove-item" title="Remove row">✖</button>
+      <button type="button" class="remove-item" title="Remove row">${icon('x')}</button>
     `;
     div.querySelector('.remove-item').addEventListener('click', () => div.remove());
     container.appendChild(div);

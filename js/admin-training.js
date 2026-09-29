@@ -79,7 +79,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       tr.innerHTML = `
         <td>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 1.5rem;">${escapeHtml(w.icon || '🏋️')}</span>
             <strong>${escapeHtml(w.title)}</strong>
           </div>
         </td>
@@ -92,8 +91,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         </td>
         <td>
           <div class="table-actions">
-            <button class="table-action btn-edit" data-id="${escapeHtml(w.id)}" title="Edit Program">✏️ Edit</button>
-            <button class="table-action delete btn-delete" data-id="${escapeHtml(w.id)}" title="Delete Program">🗑️</button>
+            <button class="table-action btn-edit" data-id="${escapeHtml(w.id)}" title="Edit Program">${icon('edit')} Edit</button>
+            <button class="table-action delete btn-delete" data-id="${escapeHtml(w.id)}" title="Delete Program">${icon('trash')}</button>
           </div>
         </td>
       `;
@@ -127,7 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     card.style = 'border: 1px solid var(--admin-border); padding: 15px; margin-bottom: 15px; border-radius: var(--radius-sm); background: rgba(255, 255, 255, 0.01); position: relative;';
     
     card.innerHTML = `
-      <button type="button" class="btn-remove-ex" style="position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: var(--admin-error); cursor: pointer; font-size: 0.85rem;" title="Remove this exercise step">✖ Remove</button>
+      <button type="button" class="btn-remove-ex" style="position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: var(--admin-error); cursor: pointer; font-size: 0.85rem;" title="Remove this exercise step">${icon('x')} Remove</button>
       <div style="display: grid; grid-template-columns: 2fr 1fr 2fr; gap: var(--space-md); margin-top: 15px;">
         <div class="form-group" style="margin-bottom:0;">
           <label style="font-size:0.75rem;">Exercise/Step Name *</label>
@@ -178,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (w) {
       formTitle.textContent = `Edit Program: ${w.title}`;
       workoutIdInput.value = w.id;
-      iconInput.value = w.icon || '🏋️';
+      iconInput.value = w.icon || '';
       titleInput.value = w.title;
       categoryInput.value = w.category;
       descriptionInput.value = w.description;
@@ -190,7 +189,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
       formTitle.textContent = 'Create Workout Program';
       workoutIdInput.value = '';
-      iconInput.value = '💪';
+      iconInput.value = '';
       imageInput.value = '';
       // Default to 1 empty exercise row
       addExerciseCard();
@@ -249,7 +248,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const data = {
-      icon: iconInput.value.trim() || '🏋️',
+      icon: iconInput.value.trim(),
       title: titleInput.value.trim(),
       category: categoryInput.value,
       description: descriptionInput.value.trim(),

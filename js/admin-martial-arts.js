@@ -89,7 +89,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       tr.innerHTML = `
         <td>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 1.5rem;">${escapeHtml(ma.icon || '🥋')}</span>
             <strong>${escapeHtml(ma.name)}</strong>
           </div>
         </td>
@@ -99,8 +98,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         <td><strong>${techCount}</strong> techniques</td>
         <td>
           <div class="table-actions">
-            <button class="table-action btn-edit" data-id="${escapeHtml(ma.id)}" title="Edit Profile">✏️ Edit</button>
-            <button class="table-action delete btn-delete" data-id="${escapeHtml(ma.id)}" title="Delete Profile">🗑️</button>
+            <button class="table-action btn-edit" data-id="${escapeHtml(ma.id)}" title="Edit Profile">${icon('edit')} Edit</button>
+            <button class="table-action delete btn-delete" data-id="${escapeHtml(ma.id)}" title="Delete Profile">${icon('trash')}</button>
           </div>
         </td>
       `;
@@ -133,7 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     div.className = 'dynamic-list-item';
     div.innerHTML = `
       <input type="text" value="${value.replace(/"/g, '&quot;')}" placeholder="Enter entry..." required>
-      <button type="button" class="remove-item">✖</button>
+      <button type="button" class="remove-item">${icon('x')}</button>
     `;
     div.querySelector('.remove-item').addEventListener('click', () => div.remove());
     container.appendChild(div);
@@ -160,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (ma) {
       formTitle.textContent = `Edit Martial Art: ${ma.name}`;
       maIdInput.value = ma.id;
-      iconInput.value = ma.icon || '🥋';
+      iconInput.value = ma.icon || '';
       nameInput.value = ma.name;
       originInput.value = ma.origin;
       fullNameInput.value = ma.fullName;
@@ -178,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
       formTitle.textContent = 'Add Martial Art';
       maIdInput.value = '';
-      iconInput.value = '🥋';
+      iconInput.value = '';
       imageInput.value = '';
       // Default to 1 empty row each
       addRow(techList);
@@ -238,7 +237,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const id = maIdInput.value;
     
     const data = {
-      icon: iconInput.value.trim() || '🥋',
+      icon: iconInput.value.trim(),
       name: nameInput.value.trim(),
       fullName: fullNameInput.value.trim(),
       origin: originInput.value.trim(),

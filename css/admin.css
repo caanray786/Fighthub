@@ -334,6 +334,29 @@
 .activity-icon.edit { background: var(--admin-accent-light); color: var(--admin-accent); }
 .activity-icon.delete { background: rgba(239, 68, 68, 0.15); color: var(--admin-error); }
 
+/* Status lights (AI runs, connection) */
+.status-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 4px;
+  background: var(--admin-text-muted, #8a8a96);
+  vertical-align: 0.05em;
+}
+
+.status-dot.status-ok { background: var(--admin-success, #22c55e); box-shadow: 0 0 8px rgba(34, 197, 94, 0.5); }
+.status-dot.status-warn { background: var(--admin-warning, #f5a524); }
+.status-dot.status-error { background: var(--admin-error, #ef4444); }
+
+.nav-icon,
+.card-icon,
+.action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .activity-text {
   font-size: 0.9rem;
   color: var(--admin-text);

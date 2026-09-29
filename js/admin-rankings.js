@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     card.setAttribute('draggable', 'true');
     card.setAttribute('data-fighter-id', fighter.id);
 
-    const flag = fighter.nationality || '🏳️';
+    const flag = countryCode(fighter.nationality) || '-';
     const allowChampion = !!(currentRanking && currentRanking.allowChampion);
 
     card.innerHTML = `
@@ -116,9 +116,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
 
       <!-- All-time lists have no champion; the toggle only appears for lists that allow one -->
-      ${allowChampion ? `<button type="button" class="champion-toggle ${isChamp ? 'active' : ''}">👑 Champion</button>` : ''}
+      ${allowChampion ? `<button type="button" class="champion-toggle ${isChamp ? 'active' : ''}">${icon('crown')} Champion</button>` : ''}
       
-      <button type="button" class="remove-ranking-btn" style="background: transparent; border: none; color: var(--admin-error); cursor: pointer; font-size: 1.1rem; margin-left: 10px;" title="Remove from Rankings">✖</button>
+      <button type="button" class="remove-ranking-btn" style="background: transparent; border: none; color: var(--admin-error); cursor: pointer; font-size: 1.1rem; margin-left: 10px;" title="Remove from Rankings">${icon('x')}</button>
     `;
 
     // Bind card drag events

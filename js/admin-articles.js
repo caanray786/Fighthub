@@ -112,13 +112,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         <td><span class="badge" style="background: rgba(59,130,246,0.1); color: var(--admin-accent); font-weight:600; font-size:0.75rem; padding: 2px 6px; border-radius: 4px;">${escapeHtml(art.category)}</span></td>
         <td>${escapeHtml(art.date)}</td>
         <td style="font-size: 0.8rem; color: var(--admin-text-muted);">
-          ❤️ ${art.likes || 0} Likes | 💬 ${art.comments || 0} Comments
+          ${icon('heart')} ${art.likes || 0} Likes | ${icon('message')} ${art.comments || 0} Comments
         </td>
         <td><span class="status-badge ${art.draft ? 'status-draft' : badgeClass}">${escapeHtml(art.draft ? 'AI DRAFT' : (art.status || 'published').toUpperCase())}</span></td>
         <td>
           <div class="table-actions">
-            <button class="table-action btn-edit" data-id="${escapeHtml(art.id)}" title="Edit Article">✏️ Edit</button>
-            <button class="table-action delete btn-delete" data-id="${escapeHtml(art.id)}" title="Delete Article">🗑️</button>
+            <button class="table-action btn-edit" data-id="${escapeHtml(art.id)}" title="Edit Article">${icon('edit')} Edit</button>
+            <button class="table-action delete btn-delete" data-id="${escapeHtml(art.id)}" title="Delete Article">${icon('trash')}</button>
           </div>
         </td>
       `;

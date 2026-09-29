@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // "Featured" tick box (sponsored / partner clubs are listed first in search results)
   const featuredLabel = document.createElement('label');
   featuredLabel.style.cssText = 'display: flex; align-items: center; gap: 8px; margin: 12px 0; font-weight: 600;';
-  featuredLabel.innerHTML = '<input type="checkbox" id="gym-featured"> ⭐ Featured club (sponsor / partner: shown first in search results)';
+  featuredLabel.innerHTML = '<input type="checkbox" id="gym-featured"> Featured club (sponsor / partner: shown first in search results)';
   descriptionInput.closest('.form-group, div').after(featuredLabel);
   const featuredInput = featuredLabel.querySelector('input');
 
@@ -96,14 +96,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     filteredGyms.forEach(gym => {
       const tr = document.createElement('tr');
       
-      const ratingStars = gym.featured ? '⭐ Featured' : escapeHtml(gym.source === 'OpenStreetMap' ? 'OpenStreetMap' : 'FightHub');
+      const ratingStars = gym.featured ? 'Featured' : escapeHtml(gym.source === 'OpenStreetMap' ? 'OpenStreetMap' : 'FightHub');
       const stylesList = (gym.styles || []).map(s => `<span class="badge badge-info" style="margin-right:2px; font-size:0.75rem;">${escapeHtml(s)}</span>`).join('');
       const websiteLink = gym.website ? `<a href="${safeUrl(gym.website, '#')}" target="_blank" style="color: var(--admin-accent); text-decoration: underline;">Visit Site</a>` : 'N/A';
 
       tr.innerHTML = `
         <td>
           <div style="display:flex; align-items:center; gap:10px;">
-            ${gym.image && !/unsplash/.test(gym.image) ? `<img src="${safeUrl(gym.image)}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">` : '<div style="width: 40px; height: 40px; border-radius: 4px; background: var(--admin-bg); display: flex; align-items: center; justify-content: center;">🥊</div>'}
+            ${gym.image && !/unsplash/.test(gym.image) ? `<img src="${safeUrl(gym.image)}" style="width: 40px; height: 40px; border-radius: 4px; object-fit: cover;">` : '<div style="width: 40px; height: 40px; border-radius: 4px; background: var(--admin-bg); display: flex; align-items: center; justify-content: center; color: var(--admin-text-muted);">' + icon('building') + '</div>'}
             <div>
               <strong style="color:var(--admin-text-primary); font-size:0.95rem;">${escapeHtml(gym.name)}</strong>
               <div style="font-size:0.8rem; color:var(--admin-text-muted);">${escapeHtml(gym.phone || 'No Phone')}</div>

@@ -202,13 +202,13 @@ async function renderRecentActivity() {
     const li = document.createElement('li');
     li.className = 'activity-item';
 
-    let iconText = '✏️';
+    let iconText = icon('edit');
     let iconClass = 'edit';
     if (log.action === 'add') {
-      iconText = '➕';
+      iconText = icon('plus');
       iconClass = 'add';
     } else if (log.action === 'delete') {
-      iconText = '❌';
+      iconText = icon('x');
       iconClass = 'delete';
     }
 
@@ -258,15 +258,15 @@ async function renderReviewQueue() {
           <td><strong>${escapeHtml(src.name(item))}</strong></td>
           <td style="white-space: normal; max-width: 360px; font-size: 0.8rem; color: var(--admin-text-muted);">
             ${src.store === 'fighters'
-              ? `${escapeHtml([item.sport, item.weightClass, item.country].filter(Boolean).join(' · '))}<br>Record: ${escapeHtml(item.wins ?? '?')}-${escapeHtml(item.losses ?? '?')}-${escapeHtml(item.draws ?? '?')}${item.image ? ' · 📷 photo' : ''}`
+              ? `${escapeHtml([item.sport, item.weightClass, item.country].filter(Boolean).join(' · '))}<br>Record: ${escapeHtml(item.wins ?? '?')}-${escapeHtml(item.losses ?? '?')}-${escapeHtml(item.draws ?? '?')}${item.image ? ' · has photo' : ''}`
               : escapeHtml(item.excerpt || '')}
           </td>
           <td>${item.sourceUrl ? `<a href="${safeUrl(item.sourceUrl, '#')}" target="_blank" rel="noopener">Open ↗</a>` : '-'}</td>
           <td>
             <div class="table-actions">
-              <button class="table-action js-approve" data-i="${i}">✅ Approve</button>
-              <a class="table-action" href="${src.page}?edit=${encodeURIComponent(item.id)}">✏️ Edit</a>
-              <button class="table-action delete js-reject" data-i="${i}">🗑️</button>
+              <button class="table-action js-approve" data-i="${i}">${icon('check')} Approve</button>
+              <a class="table-action" href="${src.page}?edit=${encodeURIComponent(item.id)}">${icon('edit')} Edit</a>
+              <button class="table-action delete js-reject" data-i="${i}">${icon('trash')}</button>
             </div>
           </td>
         </tr>`).join('')}
