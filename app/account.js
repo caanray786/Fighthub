@@ -119,9 +119,10 @@ async function onAccountChange() {
   if (!account.profile && account.profileLoaded && !account.message) {
     // New member: the profile comes first, so the coach knows who they are
     account.editing = true;
-    return go('account');
+    armHistory('account'); // sign-in and Google pages drop out of the back-button history
+    return showPage('account');
   }
-  if (state.page === 'welcome') return go('today');
+  if (state.page === 'welcome') { armHistory('today'); return showPage('today'); }
   render();
 }
 

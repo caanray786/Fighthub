@@ -20,14 +20,51 @@ function saveApp() {
 function reset() {
   const saved = loadApp();
   state = { page: saved.onboarded ? 'today' : 'welcome', goal: 'Get fitter', setting: 'Home', interest: saved.interest || 'All', mode: saved.mode || 'train', onboarded: !!saved.onboarded, done: false, moved: false, checked: false, paused: false };
+  if (state.page !== 'welcome') armHistory(state.page);
   render();
 }
-function go(page) {
+
+/* ---- Phone back button ----
+   Every screen change is a history step, so "back" returns to the previous
+   app screen. A base step underneath the first screen stops "back" leaving
+   the app for the sign-in or Google pages that came before it.
+   The sign-in screen is left alone: Clerk uses the address for its own steps. */
+let historyDepth = 0;
+const appPath = () => location.pathname + location.search;
+
+function armHistory(page) {
+  history.replaceState({ fh: 0, page }, '', appPath()); // also clears Clerk's #/sso-callback address
+  history.pushState({ fh: 1, page }, '', appPath());
+  historyDepth = 1;
+}
+
+function showPage(page) {
   state.page = page;
   render();
   screen.scrollTop = 0;
   screen.querySelector('h2')?.focus({ preventScroll: true });
 }
+
+function go(page) {
+  if (page !== 'welcome') {
+    if (historyDepth === 0) armHistory(page);
+    else history.pushState({ fh: ++historyDepth, page }, '', appPath());
+  }
+  showPage(page);
+}
+
+window.addEventListener('popstate', e => {
+  if (typeof needsSignIn === 'function' && needsSignIn()) return; // Clerk's own sign-in steps
+  const s = e.state;
+  if (!s || !s.fh) {
+    // Back past the first app screen: stay in the app
+    history.pushState({ fh: 1, page: state.page }, '', appPath());
+    historyDepth = 1;
+    return;
+  }
+  historyDepth = s.fh;
+  showPage(s.page);
+});
 const button = (text, action, cls = '') => `<button class="${cls}" data-action="${action}">${text}</button>`;
 const title = (eyebrow, heading) => `<div class="eyebrow">${eyebrow}</div><h2 tabindex="-1">${heading}</h2>`;
 function week() {
