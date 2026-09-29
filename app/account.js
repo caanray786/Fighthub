@@ -62,6 +62,9 @@ async function startAccounts() {
     }
     await clerk().load({
       ui: { ClerkUI: window.__internal_ClerkUICtor },
+      // Sign-in and sign-up both happen inside the app (not on Clerk's own pages)
+      signInUrl: appUrl(),
+      signUpUrl: appUrl(),
       signInForceRedirectUrl: appUrl(),
       signUpForceRedirectUrl: appUrl(),
       signInFallbackRedirectUrl: appUrl(),
