@@ -623,3 +623,8 @@ body[data-page=welcome] .premium-pill {
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* The welcome screen is the sign-in page: no account button or tabs yet */
+body[data-page=welcome] .account-button {
+  display: none;
+}

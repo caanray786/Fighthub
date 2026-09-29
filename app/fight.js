@@ -196,7 +196,7 @@ function drillMarkup(id, full = true) {
 const artImage = a => `assets/arts/${a.image}.webp`;
 const lockBadge = unlocked => `<span class="badge">${unlocked ? 'FREE' : 'PREMIUM'}</span>`;
 
-function sessionCard(s) {
+function fightSessionCard(s) {
   const unlocked = sessionUnlocked(s);
   return `<article class="fight-session-card">
     <div class="row"><span class="eyebrow">${esc(s.level)} · ${minutesOf(FightData.sessionSeconds(s))} min</span>${lockBadge(s.free)}</div>
@@ -234,7 +234,7 @@ function artMarkup(a) {
     <p>${esc(a.about)}</p>
     <div class="card feature"><span class="eyebrow">Your training week</span><p class="small">${esc(a.week)}</p></div>
     <h3 class="feed-heading">Sessions</h3>
-    ${list.map(sessionCard).join('')}
+    ${list.map(fightSessionCard).join('')}
     ${fbtn(`${esc(a.name)} drills`, 'drills', a.id, 'full')}
     ${fbtn('All disciplines', 'page', 'fight', 'full')}`;
 }
