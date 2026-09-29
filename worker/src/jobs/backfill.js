@@ -57,7 +57,8 @@ export async function runBackfill(state) {
   todo.forEach(c => queues.get(sportFromDescription(c.description)).push(c));
   const counts = new Map(Object.keys(SPORT_SHARE).map(s => [s, state.fighters.filter(f => f.sport === s && !f.draft).length]));
   const nextCandidate = () => {
-    const open = [...queues.keys()].filter(s => queues.get(s).length);
+    const cap = s => s === 'Martial Arts' ? Math.round(config.maxFightersPerSport / 3) : config.maxFightersPerSport;
+    const open = [...queues.keys()].filter(s => queues.get(s).length && counts.get(s) < cap(s));
     if (!open.length) return null;
     const sport = open.sort((a, b) => counts.get(a) / SPORT_SHARE[a] - counts.get(b) / SPORT_SHARE[b])[0];
     counts.set(sport, counts.get(sport) + 1);

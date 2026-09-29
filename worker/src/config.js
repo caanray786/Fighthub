@@ -31,6 +31,11 @@ export const config = {
   maxStylesPerRun: parseInt(env.MAX_STYLES_PER_RUN || '6', 10),
   // Fighter import from Wikipedia champion / Hall of Fame lists (~1 AI call each)
   maxBackfillPerRun: parseInt(env.MAX_BACKFILL_PER_RUN || '20', 10),
+  // The import stops adding a sport once it has this many published fighters
+  // ("Martial Arts", the catch-all for other styles, is capped at a third of it)
+  maxFightersPerSport: parseInt(env.MAX_FIGHTERS_PER_SPORT || '300', 10),
+  // Full fight record tables read from Wikipedia per run (no AI used)
+  maxFightHistoryPerRun: parseInt(env.MAX_FIGHT_HISTORY_PER_RUN || '60', 10),
   // Imported profiles have records read straight from Wikipedia, so they publish
   // directly; set BACKFILL_AS_DRAFTS=true to review each one first
   backfillAsDrafts: env.BACKFILL_AS_DRAFTS === 'true',

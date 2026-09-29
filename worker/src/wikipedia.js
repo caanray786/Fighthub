@@ -123,6 +123,83 @@ export function recordFromInfobox(fields, sport) {
   return null;
 }
 
+// ---- Full fight record tables ------------------------------------------------
+// Fighter articles usually end with a complete record table ("Professional
+// boxing record", "Mixed martial arts record", "Kickboxing record"...). It is read
+// from the rendered HTML and columns are matched by their headings, because
+// the column order differs between sports.
+
+const RECORD_SECTIONS = {
+  MMA: [/mixed martial arts record/i],
+  Boxing: [/professional boxing record/i, /boxing record/i],
+  'Muay Thai': [/(kickboxing|muay thai|professional) record/i, /fight record/i],
+  Grappling: [/(submission grappling|grappling|mixed martial arts) record/i],
+  'Martial Arts': [/(professional|mixed martial arts|kickboxing|boxing) record/i]
+};
+
+const COLUMN_NAMES = [
+  ['result', /^(res\.?|result)$/i],
+  ['record', /^record$/i],
+  ['opponent', /^opponent/i],
+  ['method', /^(method|type)$/i],
+  ['event', /^event/i],
+  ['date', /^date/i],
+  ['round', /^(round|rd\.?|round,? time|round\/time)$/i],
+  ['time', /^time$/i],
+  ['location', /^location/i],
+  ['notes', /^notes?$/i]
+];
+
+function cellText(html) {
+  return html
+    .replace(/<sup[^>]*>.*?<\/sup>/gs, '')        // footnote markers [1]
+    .replace(/<span[^>]*display:\s*none[^>]*>.*?<\/span>/gs, '') // hidden sort keys
+    .replace(/<br\s*\/?>/g, ' ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;|&#160;/g, ' ').replace(/&amp;/g, '&').replace(/&#39;|&#8217;/g, "'").replace(/&quot;/g, '"').replace(/&ndash;|&#8211;/g, '–')
+    .replace(/\s+/g, ' ').trim();
+}
+
+export async function fightRecord(title, sport) {
+  const sectionsData = await getJson(`https://en.wikipedia.org/w/api.php?action=parse&format=json&prop=sections&redirects=1&page=${encodeURIComponent(title)}`);
+  const sections = (sectionsData?.parse?.sections || []).filter(s => !/amateur|exhibition/i.test(s.line));
+  const patterns = RECORD_SECTIONS[sport] || RECORD_SECTIONS['Martial Arts'];
+  const section = patterns.map(rx => sections.find(s => rx.test(s.line))).find(Boolean)
+    || sections.find(s => /\brecord\b/i.test(s.line));
+  if (!section) return null;
+
+  const htmlData = await getJson(`https://en.wikipedia.org/w/api.php?action=parse&format=json&prop=text&redirects=1&section=${section.index}&page=${encodeURIComponent(title)}`);
+  const html = htmlData?.parse?.text?.['*'] || '';
+
+  // The record is the table with the most rows (the summary box above it is small)
+  const tables = html.match(/<table[^>]*wikitable[^>]*>.*?<\/table>/gs) || [];
+  const table = tables.sort((a, b) => (b.match(/<tr/g) || []).length - (a.match(/<tr/g) || []).length)[0];
+  if (!table) return null;
+
+  const rows = (table.match(/<tr[^>]*>.*?<\/tr>/gs) || []).map(tr => [...tr.matchAll(/<t([hd])([^>]*)>(.*?)<\/t\1>/gs)].map(m => ({ th: m[1] === 'h', text: cellText(m[3]) })));
+  const headerRow = rows.find(r => r.length >= 4 && r.every(c => c.th));
+  if (!headerRow) return null;
+  const columns = headerRow.map(c => (COLUMN_NAMES.find(([, rx]) => rx.test(c.text)) || [null])[0]);
+  if (!columns.includes('result') || !columns.includes('opponent')) return null;
+
+  const fights = [];
+  for (const row of rows) {
+    if (row === headerRow || row.length < columns.filter(Boolean).length - 1) continue;
+    const fight = {};
+    row.forEach((cell, i) => { if (columns[i]) fight[columns[i]] = cell.text.slice(0, 200); });
+    if (!/^(win|loss|draw|nc|no contest|ko|tko)/i.test(fight.result || '')) continue;
+    fights.push(fight);
+    if (fights.length >= 250) break;
+  }
+  if (!fights.length) return null;
+
+  return {
+    fights,
+    section: section.line,
+    url: `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, '_'))}#${encodeURIComponent(section.anchor || section.line.replace(/ /g, '_'))}`
+  };
+}
+
 // The page's lead image, only if it is hosted on Commons (i.e. freely licensed).
 // Returns { image, imageCredit, imageSourceUrl } or null.
 export async function commonsPhoto(pageSummary) {

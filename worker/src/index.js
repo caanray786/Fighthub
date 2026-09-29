@@ -12,6 +12,7 @@ import { runPhotos } from './jobs/photos.js';
 import { runBackfill } from './jobs/backfill.js';
 import { runMartialArts } from './jobs/martialArts.js';
 import { runClubs } from './jobs/clubs.js';
+import { runFightHistory } from './jobs/fightHistory.js';
 import { runEventHousekeeping } from './jobs/events.js';
 
 async function main() {
@@ -46,6 +47,7 @@ async function main() {
     ['martialArts', runMartialArts],
     ['backfill', runBackfill],
     ['photos', runPhotos],
+    ['fightHistory', runFightHistory],
     ['events', runEventHousekeeping],
     ['clubs', runClubs]
   ];

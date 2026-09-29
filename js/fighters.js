@@ -355,6 +355,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     timelineHtml += '</div>';
 
+    // Complete fight record from Wikipedia replaces the short timeline when available
+    if (Array.isArray(f.fightHistory) && f.fightHistory.length) {
+      const resultColor = r => /^win/i.test(r) ? '#2ec4b6' : /^loss/i.test(r) ? '#e63946' : '#f4a261';
+      const rows = f.fightHistory.map(fight => `
+        <tr>
+          <td><span style="color:${resultColor(fight.result || '')}; font-weight:700;">${escapeHtml(fight.result)}</span></td>
+          <td><strong>${escapeHtml(fight.opponent)}</strong>${fight.notes ? `<div class="fight-notes">${escapeHtml(fight.notes)}</div>` : ''}</td>
+          <td>${escapeHtml(fight.method)}</td>
+          <td>${escapeHtml([fight.round, fight.time].filter(Boolean).join(' · '))}</td>
+          <td>${escapeHtml(fight.date)}</td>
+          <td>${escapeHtml(fight.event || fight.location)}</td>
+        </tr>`).join('');
+      const tally = r => f.fightHistory.filter(x => new RegExp(`^${r}`, 'i').test(x.result || '')).length;
+      timelineHtml = `
+        <p style="font-size:0.85rem; color:var(--text-muted); margin: 8px 0 12px;">
+          ${f.fightHistory.length} fights · ${tally('win')} wins · ${tally('loss')} losses${tally('draw') ? ` · ${tally('draw')} draws` : ''}.
+          Newest first. Source: <a href="${safeUrl(f.fightHistoryUrl, '#')}" target="_blank" rel="noopener">Wikipedia, ${escapeHtml(f.fightHistorySection || 'fight record')}</a> (CC BY-SA).
+        </p>
+        <div class="fight-record-wrap">
+          <table class="fight-record">
+            <thead><tr><th>Result</th><th>Opponent</th><th>Method</th><th>Rd / Time</th><th>Date</th><th>Event</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    }
+
     const modalBody = document.getElementById('modal-fighter-body');
     modalBody.innerHTML = `
       <div style="display: grid; grid-template-columns: 1fr 2fr; gap: var(--space-xl);">
@@ -394,7 +420,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <div style="display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 5px;">
             <button class="tab-btn" onclick="switchFighterTab('bio')" style="background:none; border:none; color:var(--text-primary); font-family:var(--font-heading); font-size:1.2rem; padding:10px 15px; border-bottom:3px solid var(--accent); cursor:pointer;">Bio-Data</button>
             <button class="tab-btn" onclick="switchFighterTab('highlights')" style="background:none; border:none; color:var(--text-muted); font-family:var(--font-heading); font-size:1.2rem; padding:10px 15px; border-bottom:3px solid transparent; cursor:pointer;">Highlights</button>
-            <button class="tab-btn" onclick="switchFighterTab('timeline')" style="background:none; border:none; color:var(--text-muted); font-family:var(--font-heading); font-size:1.2rem; padding:10px 15px; border-bottom:3px solid transparent; cursor:pointer;">Fight Timeline</button>
+            <button class="tab-btn" onclick="switchFighterTab('timeline')" style="background:none; border:none; color:var(--text-muted); font-family:var(--font-heading); font-size:1.2rem; padding:10px 15px; border-bottom:3px solid transparent; cursor:pointer;">Fight Record</button>
           </div>
 
           <!-- Tab Contents -->
@@ -439,7 +465,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
 
           <!-- Tab 3: Timeline -->
-          <div id="tab-timeline" class="fighter-tab-content" style="display: none; max-height: 300px; overflow-y: auto; padding-right: 5px;">
+          <div id="tab-timeline" class="fighter-tab-content" style="display: none; max-height: 420px; overflow-y: auto; padding-right: 5px;">
             ${timelineHtml}
           </div>
         </div>
