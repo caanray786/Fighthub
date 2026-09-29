@@ -6,16 +6,21 @@ const journalKey = 'fight-hub-journal-v1';
 const JOURNAL_TYPES = ['Solo training', 'Gym session', 'Class', 'Pads / bag', 'Sparring', 'Run / roadwork', 'Strength', 'Flexibility', 'Rest / recovery', 'Other'];
 const ENERGY = ['', 'Drained', 'Low', 'OK', 'Good', 'Great'];
 const RPE = ['', 'Very easy', 'Easy', 'Easy', 'Moderate', 'Moderate', 'Hard', 'Hard', 'Very hard', 'Very hard', 'Maximal'];
-const journal = { entries: [], editing: null, message: '' };
+// tombstones: ids deleted on this device, still to be removed from the member's account
+const journal = { entries: [], tombstones: [], editing: null, message: '' };
 
 try {
   const saved = JSON.parse(localStorage.getItem(journalKey) || 'null');
-  if (saved?.version === 1 && Array.isArray(saved.entries)) journal.entries = saved.entries;
+  if (saved?.version === 1 && Array.isArray(saved.entries)) {
+    journal.entries = saved.entries;
+    journal.tombstones = Array.isArray(saved.tombstones) ? saved.tombstones : [];
+  }
 } catch { journal.message = 'Your journal could not be loaded on this device.'; }
 
-function saveJournal() {
-  try { localStorage.setItem(journalKey, JSON.stringify({ version: 1, entries: journal.entries })); }
+function saveJournal({ skipSync = false } = {}) {
+  try { localStorage.setItem(journalKey, JSON.stringify({ version: 1, entries: journal.entries, tombstones: journal.tombstones })); }
   catch { journal.message = 'Changes could not be saved on this device.'; }
+  if (!skipSync) window.syncJournal?.();
 }
 
 const isoDay = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -73,7 +78,9 @@ function journalMarkup() {
           ${e.notes ? `<span class="journal-note">${esc(e.notes)}</span>` : ''}
         </button>`).join('') : `<div class="card"><h3>Your first entry</h3><p class="small">Log every session: at the gym, in class, on the pads, sparring or out running. Note what you worked on and what to fix next time. It is the best way to stay accountable and see your progress.</p></div>`}
       ${training.history.length ? `<button class="full" data-go="progress">App session history (${training.history.length})</button>` : ''}
-      <p class="small">Saved on this device. Accounts will keep your journal safe across phones.</p>`;
+      ${typeof signedIn === 'function' && signedIn()
+        ? `<p class="small">Saved to your account${account.sync.error ? `: ${esc(account.sync.error)}` : ''}.</p>`
+        : `<p class="small">Saved on this phone. <button class="link-button" data-go="account">Sign in</button> to keep it safe on every phone.</p>`}`;
 }
 
 function entryMarkup() {
@@ -134,6 +141,7 @@ document.addEventListener('submit', e => {
     did: String(f.get('did') || '').trim(),
     notes: String(f.get('notes') || '').trim()
   };
+  entry.updated = Date.now(); // newest change wins when syncing between phones
   if (!entry.id) { entry.id = Date.now() + '-' + Math.random().toString(36).slice(2, 7); entry.created = Date.now(); journal.entries.push(entry); }
   else journal.entries = journal.entries.map(x => x.id === entry.id ? entry : x);
   journal.editing = null;
@@ -152,6 +160,7 @@ document.addEventListener('click', e => {
   if (a === 'delete') {
     if (b.dataset.confirm !== 'yes') { b.dataset.confirm = 'yes'; b.textContent = 'Tap again to delete'; return; }
     journal.entries = journal.entries.filter(x => x.id !== id);
+    journal.tombstones = [...new Set([...journal.tombstones, id])];
     journal.editing = null;
     saveJournal();
     return go('journal');

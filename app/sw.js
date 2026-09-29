@@ -3,14 +3,14 @@
    fetched fresh when online and falls back to the last copy offline.
    Bump VERSION whenever app files change so phones pick up the update. */
 
-const VERSION = 'fight-hub-v4';
+const VERSION = 'fight-hub-v5';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest',
-  'base.css?v=4', 'glass.css?v=4', 'training.css?v=4', 'app.css?v=4',
-  'config.js', 'icons.js?v=4', 'core.js?v=4', 'training-data.js?v=4', 'exercise-content.js?v=4', 'exercise-media.js?v=4',
-  'training.js?v=4', 'interval-model.js?v=4', 'conditioning-model.js?v=4', 'hiit.js?v=4', 'guided-model.js?v=4', 'guided.js?v=4',
-  'exercise-experience.js?v=4', 'mobility.js?v=4', 'membership-model.js?v=4', 'membership.js?v=4', 'routine-model.js?v=4',
-  'routine.js?v=4', 'exercise-navigation.js?v=4', 'fight-data.js?v=4', 'fight.js?v=4', 'journal.js?v=4', 'shell.js?v=4',
+  'base.css?v=5', 'glass.css?v=5', 'training.css?v=5', 'app.css?v=5',
+  'config.js', 'icons.js?v=5', 'core.js?v=5', 'training-data.js?v=5', 'exercise-content.js?v=5', 'exercise-media.js?v=5',
+  'training.js?v=5', 'interval-model.js?v=5', 'conditioning-model.js?v=5', 'hiit.js?v=5', 'guided-model.js?v=5', 'guided.js?v=5',
+  'exercise-experience.js?v=5', 'mobility.js?v=5', 'membership-model.js?v=5', 'membership.js?v=5', 'routine-model.js?v=5',
+  'routine.js?v=5', 'exercise-navigation.js?v=5', 'fight-data.js?v=5', 'fight.js?v=5', 'journal.js?v=5', 'account.js?v=5', 'shell.js?v=5',
   'assets/fight-hub-logo.png', 'icons/icon-192.png', 'icons/apple-touch-icon.png'
 ];
 
@@ -30,6 +30,9 @@ self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
+
+  // Signed-in (private) requests are never cached: they belong to one member
+  if (request.headers.has('Authorization')) return;
 
   // Live news and events: network first, last copy when offline
   if (url.hostname.endsWith('.supabase.co') && url.pathname.startsWith('/rest/v1/')) {
