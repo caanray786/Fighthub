@@ -116,8 +116,9 @@ async function onAccountChange() {
   saveApp();
   await loadProfile();
   syncJournal();
-  if (!account.profile && account.profileLoaded && !account.message) {
-    // New member: the profile comes first, so the coach knows who they are
+  if (!account.profile && account.profileLoaded) {
+    // New member (or the profile could not be reached): the profile page comes first,
+    // so the coach knows who they are and any problem is shown, not hidden
     account.editing = true;
     armHistory('account'); // sign-in and Google pages drop out of the back-button history
     return showPage('account');
@@ -263,7 +264,10 @@ function accountMarkup() {
     return title('Your account', 'Back online<br>soon.')
       + '<p>You can keep training: everything you do is saved on this phone and syncs to your account when you are back online.</p><button class="full" data-account="retry">Try again</button>';
   }
-  if (account.editing || (account.profileLoaded && !account.profile && !account.message)) return profileForm();
+  if (account.editing || (account.profileLoaded && !account.profile)) {
+    const problem = account.message ? `<p class="status" role="status">${esc(account.message)}</p><button class="full" data-account="reload">Try again</button>` : '';
+    return problem + profileForm();
+  }
   const u = clerk().user, p = account.profile || {};
   const art = FightData.arts.find(a => a.id === p.discipline);
   return title('Your account', esc(p.display_name || u.firstName || 'Welcome back'))
@@ -353,6 +357,7 @@ document.addEventListener('click', async e => {
   if (!b) return;
   const a = b.dataset.account;
   if (a === 'retry') { account.status = 'idle'; render(); return startAccounts(); }
+  if (a === 'reload') { b.textContent = 'Checking…'; await loadProfile(); account.editing = !account.profile; return render(); }
   if (a === 'edit') { account.editing = true; return render(); }
   if (a === 'cancel') { account.editing = false; return render(); }
   if (a === 'sync') { b.textContent = 'Syncing…'; return syncJournal(); }
