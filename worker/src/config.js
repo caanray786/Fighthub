@@ -48,7 +48,7 @@ export const config = {
   // New fighter profiles wait in the admin review queue; news publishes directly.
   publishArticlesDirectly: env.PUBLISH_ARTICLES_DIRECTLY !== 'false',
 
-  userAgent: 'FightHubBot/1.0 (+https://fighthub-swart.vercel.app)',
+  userAgent: 'FightHubBot/1.0 (+https://www.fighthub.world)',
 
   // Checked 2026-09-24. Stories are rotated across feeds so no single source dominates.
   feeds: [

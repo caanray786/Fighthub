@@ -24,7 +24,7 @@ async function callModel(model, prompt, temperature) {
     headers: {
       Authorization: `Bearer ${config.openRouterKey}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://fighthub-swart.vercel.app',
+      'HTTP-Referer': 'https://www.fighthub.world',
       'X-Title': 'FightHub Worker'
     },
     body: JSON.stringify({
