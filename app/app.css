@@ -257,3 +257,323 @@ body[data-page=welcome] .premium-pill {
 .brand span {
   color: #f5f5f7;
 }
+
+/* ---- Fight training ---- */
+.fight-arts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.fight-art {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 118px;
+  padding: 12px 14px !important;
+  border-radius: 18px !important;
+  background-size: cover !important;
+  background-position: center !important;
+  text-align: left;
+  color: #fff;
+}
+
+.fight-art:first-child {
+  grid-column: span 2;
+  min-height: 150px;
+}
+
+.fight-art strong {
+  font-size: 18px;
+  letter-spacing: -0.3px;
+}
+
+.fight-art span {
+  font-size: 12px;
+  color: #d8d8e0;
+}
+
+.fight-hero {
+  margin: -20px -18px 16px;
+  padding: 110px 18px 18px;
+  background-size: cover;
+  background-position: center;
+}
+
+.fight-hero h2 {
+  margin: 4px 0 0;
+}
+
+.fight-session-card {
+  padding: 18px;
+  margin: 12px 0;
+  border-radius: 22px;
+  border: 1px solid #ffffff26;
+  background: linear-gradient(135deg, #ffffff14, #ffffff06);
+}
+
+.fight-session-card h3 {
+  margin: 8px 0 6px;
+}
+
+.fight-rounds {
+  padding-left: 22px;
+}
+
+.fight-rounds li {
+  padding: 10px 0;
+  border-bottom: 1px solid #ffffff1c;
+}
+
+.fight-rounds strong,
+.fight-rounds .small {
+  display: block;
+}
+
+.fight-howto {
+  min-height: 34px !important;
+  margin-top: 8px;
+  padding: 5px 12px !important;
+  font-size: 12px;
+}
+
+.fight-options {
+  margin: 12px 0 4px;
+}
+
+.fight-options .check {
+  margin: 8px 0;
+}
+
+.fight-weeks {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.fight-weeks button {
+  white-space: nowrap;
+}
+
+.fight-drill-row {
+  display: flex !important;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  margin: 0;
+  padding: 12px 2px !important;
+  border: 0 !important;
+  border-bottom: 1px solid #ffffff1c !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-align: left;
+}
+
+.fight-cue {
+  padding: 10px 12px;
+  border-left: 3px solid #f14b55;
+  background: #ffffff08;
+}
+
+.fight-safety {
+  color: #ffb4bb;
+  font-size: 14px;
+}
+
+/* Round timer */
+.fight-runner {
+  margin: 12px 0 16px;
+  padding: 22px 18px;
+  border-radius: 28px;
+  border: 1px solid #ffffff2a;
+  background: linear-gradient(160deg, #ffffff12, #ffffff04);
+  text-align: center;
+}
+
+.fight-phase h3 {
+  margin: 6px 0 4px;
+  font-size: 22px;
+}
+
+.fight-kind {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: #ffffff1a;
+}
+
+.fight-phase[data-kind=Round] .fight-kind,
+.fight-phase[data-kind=Sprint] .fight-kind,
+.fight-phase[data-kind=Run] .fight-kind,
+.fight-phase[data-kind=Contract] .fight-kind {
+  background: #c52a3b;
+  color: #fff;
+}
+
+.fight-phase[data-kind=Rest] .fight-kind,
+.fight-phase[data-kind=Recover] .fight-kind,
+.fight-phase[data-kind=Walk] .fight-kind {
+  background: #2d5d8a;
+  color: #fff;
+}
+
+.fight-focus {
+  margin: 6px 0 0;
+  color: #e4e4ea;
+}
+
+.fight-clock {
+  margin: 14px 0 10px;
+  font-size: 84px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.fight-bar {
+  height: 8px;
+  border-radius: 8px;
+  background: #ffffff1c;
+  overflow: hidden;
+}
+
+.fight-bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: #f14b55;
+  transition: width 0.25s linear;
+}
+
+.fight-controls {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+/* ---- Journal ---- */
+.journal-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.journal-stats div {
+  padding: 14px 10px;
+  border-radius: 18px;
+  border: 1px solid #ffffff22;
+  background: #ffffff0b;
+  text-align: center;
+}
+
+.journal-stats b {
+  display: block;
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.journal-stats span {
+  font-size: 11px;
+  color: #bdbdc8;
+}
+
+.journal-chart {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  align-items: end;
+  gap: 6px;
+  height: 110px;
+  margin: 6px 0 18px;
+}
+
+.journal-bar {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%;
+  gap: 4px;
+}
+
+.journal-bar span {
+  display: block;
+  width: 100%;
+  min-height: 3px;
+  border-radius: 6px 6px 2px 2px;
+  background: linear-gradient(to top, #9a1026, #f14b55);
+}
+
+.journal-bar small {
+  font-size: 10px;
+  color: #9d9daa;
+}
+
+.journal-entry {
+  display: flex !important;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  margin: 10px 0;
+  padding: 14px 16px !important;
+  border-radius: 18px !important;
+  text-align: left;
+}
+
+.journal-entry .eyebrow {
+  color: #f14b55;
+}
+
+.journal-note {
+  font-size: 13px;
+  color: #cfcfd8;
+  font-style: italic;
+}
+
+.journal-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 7px;
+  padding: 12px;
+  border: 1px solid #ffffff38;
+  border-radius: 14px;
+  background: #ffffff10;
+  color: #f5f5f7;
+  font: inherit;
+  resize: vertical;
+}
+
+.journal-form input[type=number] {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 7px;
+  padding: 12px;
+  border: 1px solid #ffffff38;
+  border-radius: 14px;
+  background: #ffffff10;
+  color: #f5f5f7;
+  font: inherit;
+}
+
+.journal-form input[type=range] {
+  width: 100%;
+  margin-top: 10px;
+  accent-color: #f14b55;
+}
+
+.journal-form output {
+  float: right;
+  color: #f14b55;
+  font-weight: 700;
+}

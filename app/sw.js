@@ -3,14 +3,14 @@
    fetched fresh when online and falls back to the last copy offline.
    Bump VERSION whenever app files change so phones pick up the update. */
 
-const VERSION = 'fight-hub-v2';
+const VERSION = 'fight-hub-v3';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest',
-  'base.css?v=2', 'glass.css?v=2', 'training.css?v=2', 'app.css?v=2',
-  'config.js', 'icons.js?v=2', 'core.js?v=2', 'training-data.js?v=2', 'exercise-content.js?v=2', 'exercise-media.js?v=2',
-  'training.js?v=2', 'interval-model.js?v=2', 'conditioning-model.js?v=2', 'hiit.js?v=2', 'guided-model.js?v=2', 'guided.js?v=2',
-  'exercise-experience.js?v=2', 'mobility.js?v=2', 'membership-model.js?v=2', 'membership.js?v=2', 'routine-model.js?v=2',
-  'routine.js?v=2', 'exercise-navigation.js?v=2', 'shell.js?v=2',
+  'base.css?v=3', 'glass.css?v=3', 'training.css?v=3', 'app.css?v=3',
+  'config.js', 'icons.js?v=3', 'core.js?v=3', 'training-data.js?v=3', 'exercise-content.js?v=3', 'exercise-media.js?v=3',
+  'training.js?v=3', 'interval-model.js?v=3', 'conditioning-model.js?v=3', 'hiit.js?v=3', 'guided-model.js?v=3', 'guided.js?v=3',
+  'exercise-experience.js?v=3', 'mobility.js?v=3', 'membership-model.js?v=3', 'membership.js?v=3', 'routine-model.js?v=3',
+  'routine.js?v=3', 'exercise-navigation.js?v=3', 'fight-data.js?v=3', 'fight.js?v=3', 'journal.js?v=3', 'shell.js?v=3',
   'assets/fight-hub-logo.png', 'icons/icon-192.png', 'icons/apple-touch-icon.png'
 ];
 
