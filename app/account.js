@@ -15,6 +15,8 @@ const memberKey = 'fight-hub-member-v1';
 const ageKey = 'fight-hub-age-ok';
 
 const clerk = () => window.Clerk;
+// Where Clerk returns members after Google/Apple sign-in, sign-up and sign-out: this app
+const appUrl = () => location.origin + location.pathname.replace(/[^/]*$/, '');
 const signedIn = () => !!(clerk() && clerk().isSignedIn && clerk().user);
 
 const stored = key => { try { return localStorage.getItem(key); } catch { return null; } };
@@ -60,6 +62,11 @@ async function startAccounts() {
     }
     await clerk().load({
       ui: { ClerkUI: window.__internal_ClerkUICtor },
+      signInForceRedirectUrl: appUrl(),
+      signUpForceRedirectUrl: appUrl(),
+      signInFallbackRedirectUrl: appUrl(),
+      signUpFallbackRedirectUrl: appUrl(),
+      afterSignOutUrl: appUrl(),
       appearance: {
         variables: {
           colorPrimary: '#c52a3b',
@@ -277,8 +284,7 @@ function accountMarkup() {
 function mountSignIn() {
   const el = document.getElementById('clerk-sign-in');
   if (!el || account.status !== 'ready' || !clerk() || signedIn()) return;
-  const here = location.href.split('#')[0];
-  clerk().mountSignIn(el, { fallbackRedirectUrl: here, signUpFallbackRedirectUrl: here, withSignUp: true });
+  clerk().mountSignIn(el, { forceRedirectUrl: appUrl(), signUpForceRedirectUrl: appUrl(), withSignUp: true });
   account.mounted = el;
 }
 
