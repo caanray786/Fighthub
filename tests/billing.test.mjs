@@ -95,3 +95,17 @@ test('Premium checks: expired passes end access; renewal opens in the last 30 da
   assert.equal(passRenewable({ pass: true, expires: inDays(100) }), false);
   assert.equal(passRenewable({ pass: true, expires: inDays(20) }), true);
 });
+
+// ---- Voice coach sessions ----
+import { POST as coachSession } from '../api/coach-session.mjs';
+
+test('coach sessions: refused until set up, and for anyone not signed in', async () => {
+  delete process.env.ELEVENLABS_API_KEY;
+  let res = await coachSession(new Request('https://x/api/coach-session', { method: 'POST', body: '{}' }));
+  assert.equal(res.status, 503);
+  process.env.ELEVENLABS_API_KEY = 'test';
+  process.env.ELEVENLABS_AGENT_ID = 'agent_test';
+  res = await coachSession(new Request('https://x/api/coach-session', { method: 'POST', body: '{}' }));
+  assert.equal(res.status, 401);
+  delete process.env.ELEVENLABS_API_KEY;
+});
