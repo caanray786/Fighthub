@@ -137,7 +137,7 @@ async function stopCoach() {
    The round button shows the coach, matching the member's coach voice.
    Portraits are assets/coach/coach-<voice>.webp; a voice without one yet
    shows the microphone. Add a voice here once its file is in place. */
-const COACH_PORTRAITS = ['male'];
+const COACH_PORTRAITS = ['male', 'female'];
 const coachVoice = () => (account.profile?.coach_voice === 'female' ? 'female' : 'male');
 const coachPortrait = () => (COACH_PORTRAITS.includes(coachVoice()) ? `assets/coach/coach-${coachVoice()}.webp` : '');
 
