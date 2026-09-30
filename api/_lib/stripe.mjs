@@ -25,7 +25,13 @@ export async function stripe(path, params, method = params ? 'POST' : 'GET') {
     body: params ? formFields(params) : undefined
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(`Stripe ${res.status}: ${data.error?.message || 'error'}`);
+  if (!res.ok) {
+    // Stripe explains what it refused; the member sees it, so problems can be reported and fixed
+    const err = new Error(`Payment system: ${data.error?.message || `error ${res.status}`}`);
+    err.status = 502;
+    err.stripeStatus = res.status;
+    throw err;
+  }
   return data;
 }
 
