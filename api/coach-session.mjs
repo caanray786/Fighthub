@@ -2,8 +2,11 @@
 // Starts a private voice-coach conversation (ElevenLabs) for a signed-in
 // Premium member. The ElevenLabs key stays here; the app only gets a
 // single-use signed address, valid for 15 minutes.
-// Monthly allowance: COACH_SESSIONS_PER_MONTH (default 20), counted on the
-// member's Clerk account, so ElevenLabs minutes stay under control.
+// Usage limits keep ElevenLabs and OpenRouter costs under control:
+// - COACH_SESSIONS_PER_MONTH (default 12), counted on the member's Clerk account
+// - COACH_MINUTES per session (default 10); the app ends the conversation then.
+//   Also set the agent's "Max conversation duration" in ElevenLabs to match,
+//   which enforces it on ElevenLabs' side.
 import { json, handle, httpError, hasPremium } from './_lib/http.mjs';
 import { memberFromRequest, getClerkUser, updateClerkMetadata } from './_lib/clerk.mjs';
 
@@ -41,7 +44,9 @@ export async function voiceOverrideAllowed(key, agent, { fresh = false } = {}) {
   return voiceOverride;
 }
 
-const allowance = () => Math.max(1, parseInt(process.env.COACH_SESSIONS_PER_MONTH || '20', 10) || 20);
+const setting = (name, fallback) => Math.max(1, parseInt(process.env[name] || '', 10) || fallback);
+const allowance = () => setting('COACH_SESSIONS_PER_MONTH', 12);
+const sessionMinutes = () => setting('COACH_MINUTES', 10);
 
 export async function POST(request) {
   return handle(async () => {
@@ -68,6 +73,6 @@ export async function POST(request) {
 
     const usage = { month, sessions: used + 1, limit };
     await updateClerkMetadata(member.id, { private_metadata: { coach: usage }, public_metadata: { coachUsage: usage } });
-    return json({ signedUrl, voiceId, remaining: limit - usage.sessions, limit });
+    return json({ signedUrl, voiceId, remaining: limit - usage.sessions, limit, maxMinutes: sessionMinutes() });
   });
 }
