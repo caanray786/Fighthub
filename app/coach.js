@@ -5,7 +5,7 @@
    The coach is told who the member is, their week, recent journal entries
    and this month's challenge, so it can motivate and keep them accountable. */
 
-const coach = { state: 'idle', conversation: null, transcript: [], message: '', remaining: null, limit: null, loading: null };
+const coach = { state: 'idle', conversation: null, transcript: [], message: '', remaining: null, limit: null, loading: null, maxMinutes: 10, endsAt: 0, clock: null, warned: false };
 const COACH_SDK = 'https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.26.0/dist/lib.iife.js';
 
 // The voice library is large (about 1 MB), so it loads only when needed
@@ -53,6 +53,40 @@ function coachContext() {
   };
 }
 
+/* ---- Time limit ----
+   Each conversation lasts up to maxMinutes (set by the website). In the last
+   minute the coach is asked to wrap up; at zero the conversation ends, so
+   minutes (and costs) never run on. */
+const clockText = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} left`; };
+
+function startClock() {
+  if (coach.clock) return;
+  coach.endsAt = Date.now() + coach.maxMinutes * 60000;
+  coach.warned = false;
+  coach.clock = setInterval(tickCoach, 1000);
+  tickCoach();
+}
+
+function stopClock() {
+  clearInterval(coach.clock);
+  coach.clock = null;
+  coach.endsAt = 0;
+}
+
+function tickCoach() {
+  const left = coach.endsAt - Date.now();
+  const el = document.getElementById('coach-time');
+  if (el) { el.textContent = clockText(left); el.classList.toggle('ending', left < 60000); }
+  if (left < 60000 && !coach.warned) {
+    coach.warned = true;
+    try { coach.conversation?.sendContextualUpdate?.('About one minute of this session is left. Start wrapping up: agree one clear next step and remind them to log their session.'); } catch { /* optional */ }
+  }
+  if (left <= 0) {
+    coach.message = `That was your ${coach.maxMinutes} minutes for this chat. Start another whenever you are ready.`;
+    stopCoach().then(render);
+  }
+}
+
 /* ---- Start and stop ---- */
 async function startCoach() {
   if (coach.state !== 'idle') return;
@@ -70,17 +104,19 @@ async function startCoach() {
     ]);
     coach.remaining = session.remaining;
     coach.limit = session.limit;
+    coach.maxMinutes = session.maxMinutes || 10;
     coach.conversation = await sdk.Conversation.startSession({
       signedUrl: session.signedUrl,
       dynamicVariables: coachContext(),
       ...(session.voiceId ? { overrides: { tts: { voiceId: session.voiceId } } } : {}),
-      onConnect: () => { coach.state = 'listening'; paintCoach(); },
+      onConnect: () => { coach.state = 'listening'; startClock(); paintCoach(); },
       onModeChange: ({ mode }) => { coach.state = mode === 'speaking' ? 'speaking' : 'listening'; paintCoach(); },
       onMessage: ({ message, source }) => { if (message) { coach.transcript.push({ who: source === 'ai' ? 'coach' : 'you', text: message }); paintCoach(); } },
-      onDisconnect: () => { coach.conversation = null; coach.state = 'idle'; render(); },
+      onDisconnect: () => { stopClock(); coach.conversation = null; coach.state = 'idle'; render(); },
       onError: msg => { coach.message = typeof msg === 'string' ? msg : 'The coach had a problem. Please try again.'; paintCoach(); }
     });
   } catch (err) {
+    stopClock();
     coach.conversation = null;
     coach.state = 'idle';
     coach.message = err?.name === 'NotAllowedError'
@@ -91,6 +127,7 @@ async function startCoach() {
 }
 
 async function stopCoach() {
+  stopClock();
   try { await coach.conversation?.endSession(); } catch { /* already ended */ }
   coach.conversation = null;
   coach.state = 'idle';
@@ -117,11 +154,12 @@ function coachMarkup() {
     + `<div class="coach-stage" data-state="${coach.state}">
         <button class="coach-orb" data-coach="${active ? 'stop' : 'start'}" aria-label="${active ? 'End the conversation' : 'Talk to your coach'}">${icon(active ? 'x' : 'mic')}</button>
         <p class="coach-status" id="coach-status" role="status">${COACH_STATUS[coach.state]}</p>
+        ${active ? `<p class="coach-time" id="coach-time">${coach.endsAt ? clockText(coach.endsAt - Date.now()) : ''}</p>` : ''}
         ${active ? '<button class="full" data-coach="stop">End conversation</button>' : ''}
       </div>
       ${coach.message ? `<p class="status" role="status">${esc(coach.message)}</p>` : ''}
       <div class="coach-transcript" id="coach-transcript">${transcriptMarkup()}</div>
-      <p class="small">${remaining !== null && remaining !== undefined ? `${remaining} of ${limit} coach sessions left this month · ` : ''}up to 10 minutes each · ${voice} voice (change it in your profile).</p>
+      <p class="small">${remaining !== null && remaining !== undefined ? `${remaining} of ${limit} coach sessions left this month · ` : ''}up to ${coach.maxMinutes} minutes each · ${voice} voice (change it in your profile).</p>
       <details><summary>What can I ask?</summary><ul>
         <li>“What should I train today?”</li><li>“How do I throw a better switch kick?”</li>
         <li>“I missed two sessions this week. Help me get back on track.”</li><li>“How do I recover after hard sparring?”</li></ul></details>

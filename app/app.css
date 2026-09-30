@@ -870,6 +870,18 @@ body[data-page=welcome] .account-button {
   color: #e4e4ea;
 }
 
+.coach-time {
+  margin: -6px 0 0;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: #a9a9b6;
+}
+
+.coach-time.ending {
+  color: #e0b44c;
+  font-weight: 600;
+}
+
 .coach-transcript {
   display: flex;
   flex-direction: column;
