@@ -44,6 +44,22 @@ export async function voiceOverrideAllowed(key, agent, { fresh = false } = {}) {
   return voiceOverride;
 }
 
+// A private conversation address from ElevenLabs (valid 15 minutes). If
+// ElevenLabs refuses, its reason is passed on so the problem can be fixed.
+export async function getSignedUrl(key, agent) {
+  const res = await fetch(`https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${encodeURIComponent(agent)}`, {
+    headers: { 'xi-api-key': key }
+  });
+  const text = await res.text();
+  let data = {};
+  try { data = JSON.parse(text); } catch { /* not JSON */ }
+  if (!res.ok || !data.signed_url) {
+    const reason = data.detail?.message || (typeof data.detail === 'string' ? data.detail : '') || data.message || text.slice(0, 200) || `error ${res.status}`;
+    throw httpError(502, `Voice service: ${reason}`);
+  }
+  return data.signed_url;
+}
+
 const setting = (name, fallback) => Math.max(1, parseInt(process.env[name] || '', 10) || fallback);
 const allowance = () => setting('COACH_SESSIONS_PER_MONTH', 12);
 const sessionMinutes = () => setting('COACH_MINUTES', 10);
@@ -65,11 +81,7 @@ export async function POST(request) {
     const chosen = (voice === 'female' ? process.env.ELEVENLABS_VOICE_FEMALE : process.env.ELEVENLABS_VOICE_MALE) || '';
     const voiceId = chosen && (await voiceOverrideAllowed(key, agent)) ? chosen : '';
 
-    const res = await fetch(`https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${encodeURIComponent(agent)}`, {
-      headers: { 'xi-api-key': key }
-    });
-    if (!res.ok) throw new Error(`ElevenLabs ${res.status}: ${(await res.text()).slice(0, 200)}`);
-    const { signed_url: signedUrl } = await res.json();
+    const signedUrl = await getSignedUrl(key, agent);
 
     const usage = { month, sessions: used + 1, limit };
     await updateClerkMetadata(member.id, { private_metadata: { coach: usage }, public_metadata: { coachUsage: usage } });

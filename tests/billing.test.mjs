@@ -222,3 +222,14 @@ test('checkout retries with Managed Payments off when Stripe asks for product ta
   globalThis.fetch = realFetch;
   delete process.env.STRIPE_SECRET_KEY;
 });
+
+// ---- Voice coach: ElevenLabs refusals are explained ----
+import { getSignedUrl } from '../api/coach-session.mjs';
+
+test('coach: a refused conversation passes on ElevenLabs\' reason', async () => {
+  globalThis.fetch = async () => new Response(JSON.stringify({ detail: { status: 'invalid_api_key', message: 'Invalid API key' } }), { status: 401 });
+  await assert.rejects(getSignedUrl('k', 'agent_x'), err => err.status === 502 && err.message === 'Voice service: Invalid API key');
+  globalThis.fetch = async () => new Response(JSON.stringify({ signed_url: 'wss://example/conv' }));
+  assert.equal(await getSignedUrl('k', 'agent_x'), 'wss://example/conv');
+  globalThis.fetch = realFetch;
+});
