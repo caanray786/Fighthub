@@ -279,6 +279,11 @@ function accountMarkup() {
         <button class="full" data-account="edit">Edit profile</button>
       </div>
       <div class="card">
+        <h3>Exercise pictures</h3>
+        <label class="field">Show pictures of<select id="picture-choice">${opt(PICTURE_CHOICES, pictureChoice())}</select></label>
+        ${[...ExerciseMedia, ...FightData.media].some(id => !FemaleMedia.movements.has(id)) ? '<p class="small">Pictures of women are being added in batches. Until one is ready, you’ll see the original picture.</p>' : ''}
+      </div>
+      <div class="card">
         <h3>Training journal</h3>
         <p class="small">${account.sync.error ? esc(account.sync.error) : account.sync.last ? `Saved to your account · ${account.sync.last.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}` : 'Saving to your account…'}</p>
         <button class="full" data-account="sync">Sync now</button>
@@ -374,3 +379,6 @@ document.addEventListener('click', async e => {
 
 window.addEventListener('online', () => { if (['offline', 'error'].includes(account.status)) startAccounts(); else syncJournal(); });
 startAccounts();
+
+// Exercise pictures: saved on this device
+document.addEventListener('change', e => { if (e.target.id === 'picture-choice') setPictureChoice(e.target.value); });

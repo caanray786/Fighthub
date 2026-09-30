@@ -94,6 +94,26 @@ const FightTraining = (() => {
     ['butterfly-stretch','Seated butterfly stretch','Mobility','Bodyweight','Foundation','Stretch','Sit with soles together and allow the knees to relax without pressing them down.'],
     ['half-split','Half-split hamstring preparation','Mobility','Bodyweight','Intermediate','Stretch','From kneeling, lengthen one leg forward with a soft knee and gently hinge at the hips. This is preparation, not a full split.']
   );
+  // Glutes and legs (the "Glutes and legs" weekly routine)
+  rows.push(
+    ['single-leg-bridge','Single-leg glute bridge','Glutes','Bodyweight','Intermediate','Bridge','A glute bridge driven through one foot while the other leg stays lifted.'],
+    ['frog-pump','Frog pump','Glutes','Bodyweight','Foundation','Bridge','A short-range bridge with the soles of the feet together and the knees open.'],
+    ['band-walk','Banded side walk','Glutes','Resistance band','Foundation','Control','Small side steps in a half-squat with a light loop band just above the knees.'],
+    ['fire-hydrant','Fire hydrant','Glutes','Bodyweight','Foundation','Raise','On hands and knees, lift one bent knee out to the side and lower it.'],
+    ['donkey-kick','Donkey kick','Glutes','Bodyweight','Foundation','Extend','On hands and knees, press one bent leg up behind you with the sole towards the ceiling.'],
+    ['curtsy-lunge','Curtsy lunge','Glutes','Bodyweight','Intermediate','Lunge','Step one foot back and across behind the other, then return to standing.'],
+    ['sumo-squat','Dumbbell sumo squat','Glutes','Dumbbells','Intermediate','Squat','A wide-stance squat holding one dumbbell between the legs.'],
+    ['step-up','Step-up','Quads','Bench','Intermediate','Lunge','Step up onto a stable box or bench of knee height or lower, then step back down.'],
+    ['single-leg-rdl','Single-leg Romanian deadlift','Hamstrings','Dumbbells','Intermediate','Hinge','A hip hinge on one leg while the other leg reaches back for balance.'],
+    ['bulgarian-split','Bulgarian split squat','Glutes','Dumbbells + bench','Intermediate','Lunge','A split squat with the rear foot resting on a stable bench behind you.'],
+    ['b-stance-thrust','B-stance hip thrust','Glutes','Bench','Intermediate','Bridge','A bench hip thrust with most of the work on one leg and the other foot as a kickstand.'],
+    ['kb-swing','Kettlebell swing','Glutes','Kettlebell','Intermediate','Hinge','A powerful hip hinge that swings a kettlebell up to chest height.'],
+    ['cable-kickback','Cable glute kickback','Glutes','Cable machine','Intermediate','Extend','Kick one leg straight back against a low cable with an ankle strap.'],
+    ['pull-through','Cable pull-through','Glutes','Cable machine','Intermediate','Hinge','Facing away from a low cable, drive the hips forward to stand tall.'],
+    ['back-extension','Glute-focused back extension','Glutes','Gym machine','Intermediate','Hinge','A 45-degree back extension moved from the hips, finishing with a strong glute squeeze.'],
+    ['hip-abduction','Seated hip abduction','Glutes','Gym machine','Foundation','Control','A seated machine movement pushing the knees outward against the pads.'],
+    ['walking-lunge','Walking lunge','Quads','Bodyweight','Intermediate','Lunge','Alternating forward lunges travelling along a clear, level route.']
+  );
   const alternatives={'burpee':'step-burpee','star-jacks':'step-jacks','high-knees':'march','tuck-jump':'march','squat-jump':'squat','butt-kicks':'standing-curl','squat-thrust':'step-burpee'};
   const exercises = rows.map(([id,name,body,equipment,level,pattern,description]) => ({id,name,body,equipment,level,pattern,description,status:'Editorial draft',home:['Bodyweight','None','Chair','Wall','Backpack','Water bottles','Resistance band'].includes(equipment),impact:pattern==='Jump'?'Jumping':'No jumping',alternative:alternatives[id]||null}));
   const templates = [
