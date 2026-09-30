@@ -4,7 +4,7 @@
 // pass (no automatic renewal), so the owner chooses the model in Stripe.
 import { json, handle, httpError, billingReady, priceIds, trialDays, returnOrigin, hasPremium, passRenewable } from './_lib/http.mjs';
 import { memberFromRequest, getClerkUser, primaryEmail } from './_lib/clerk.mjs';
-import { stripe } from './_lib/stripe.mjs';
+import { stripe, createCheckoutSession } from './_lib/stripe.mjs';
 
 export async function POST(request) {
   return handle(async () => {
@@ -27,7 +27,7 @@ export async function POST(request) {
     const trial = trialDays();
     const hadTrial = !!user.private_metadata?.stripe_subscription_id || !!user.private_metadata?.had_pass; // one free trial per member
 
-    const session = await stripe('/checkout/sessions', {
+    const session = await createCheckoutSession({
       mode: oneOff ? 'payment' : 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${origin}/app/?checkout=success`,

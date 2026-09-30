@@ -22,7 +22,7 @@ export async function handle(fn) {
   try {
     return await fn();
   } catch (err) {
-    if (!err.status || err.status >= 500) console.error(err);
+    if (!err.status || err.status === 502) console.error(err); // unexpected, or refused by Stripe
     return json({ error: err.status ? err.message : 'Something went wrong. Please try again.' }, err.status || 500);
   }
 }

@@ -199,3 +199,26 @@ test('a refunded year pass takes that year off, ending Premium if nothing is lef
   assert.equal(patches.length, 0);
   globalThis.fetch = realFetch;
 });
+
+// ---- Checkout on accounts with Stripe Managed Payments on by default ----
+import { createCheckoutSession } from '../api/_lib/stripe.mjs';
+
+test('checkout retries with Managed Payments off when Stripe asks for product tax codes', async () => {
+  process.env.STRIPE_SECRET_KEY = 'sk_test_x';
+  const bodies = [];
+  globalThis.fetch = async (url, init = {}) => {
+    bodies.push(String(init.body));
+    return bodies.length === 1
+      ? new Response(JSON.stringify({ error: { message: "Invalid line_items[0]: The product's tax code is missing. Product tax code is required for managed payments, which is enabled by default on your account." } }), { status: 400 })
+      : new Response(JSON.stringify({ url: 'https://checkout.stripe.com/c/pay/cs_test' }));
+  };
+  const session = await createCheckoutSession({ mode: 'subscription', line_items: [{ price: 'price_1', quantity: 1 }] });
+  assert.equal(session.url, 'https://checkout.stripe.com/c/pay/cs_test');
+  assert.ok(!bodies[0].includes('managed_payments'));
+  assert.ok(decodeURIComponent(bodies[1]).includes('managed_payments[enabled]=false'));
+  // Any other refusal is passed on unchanged
+  globalThis.fetch = async () => new Response(JSON.stringify({ error: { message: 'No such price' } }), { status: 400 });
+  await assert.rejects(createCheckoutSession({ mode: 'payment' }), /No such price/);
+  globalThis.fetch = realFetch;
+  delete process.env.STRIPE_SECRET_KEY;
+});

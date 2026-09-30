@@ -35,6 +35,19 @@ export async function stripe(path, params, method = params ? 'POST' : 'GET') {
   return data;
 }
 
+// Opens a Stripe Checkout page. Some Stripe accounts have "Managed Payments"
+// (Stripe as the seller, needing product tax codes) switched on by default;
+// FightHub takes its own payments, so it is switched off for this checkout.
+// Accounts without the feature never see the extra setting.
+export async function createCheckoutSession(params) {
+  try {
+    return await stripe('/checkout/sessions', params);
+  } catch (err) {
+    if (!/managed.payments/i.test(err.message)) throw err;
+    return stripe('/checkout/sessions', { ...params, managed_payments: { enabled: 'false' } });
+  }
+}
+
 // Stripe-Signature: t=timestamp,v1=signature — HMAC-SHA256 of "timestamp.body"
 export function verifyStripeSignature(rawBody, header, secret, toleranceSeconds = 300) {
   if (!header || !secret) return false;
