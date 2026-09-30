@@ -628,3 +628,164 @@ body[data-page=welcome] .premium-pill {
 body[data-page=welcome] .account-button {
   display: none;
 }
+
+/* ---- Your week, challenge, technique of the day ---- */
+.week-card .row {
+  align-items: center;
+}
+
+.week-card h3 {
+  margin: 6px 0 12px;
+}
+
+.week-dots {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.week-dots span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid #ffffff26;
+  background: #ffffff08;
+  font-size: 12px;
+  color: #b8b8c4;
+}
+
+.week-dots span.on {
+  background: linear-gradient(155deg, #c52a3b, #9a1026);
+  border-color: transparent;
+  color: #fff;
+}
+
+.week-dots span.today {
+  box-shadow: 0 0 0 2px #f14b55;
+}
+
+.challenge-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.technique-card h3 {
+  margin: 6px 0;
+}
+
+/* ---- Achievements ---- */
+.badge-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 12px 0 18px;
+}
+
+.achievement {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid #ffffff1c;
+  background: #ffffff06;
+  opacity: 0.55;
+}
+
+.achievement.unlocked {
+  opacity: 1;
+  border-color: #e0b44c66;
+  background: linear-gradient(150deg, #e0b44c1f, #ffffff06);
+}
+
+.achievement-icon {
+  display: flex;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #ffffff10;
+  font-size: 20px;
+  color: #9d9daa;
+}
+
+.achievement.unlocked .achievement-icon {
+  background: #e0b44c;
+  color: #1c1c24;
+}
+
+.app-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 86px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 90vw;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: #e0b44c;
+  color: #1c1c24;
+  font-weight: 700;
+  box-shadow: 0 12px 30px #0008;
+  transform: translate(-50%, 30px);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.app-toast.show {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+/* ---- Premium plans ---- */
+.plan-options {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.plan-option {
+  display: flex !important;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 16px 18px !important;
+  border-radius: 20px !important;
+  text-align: left;
+}
+
+.plan-option[aria-pressed=true] {
+  border: 2px solid #f14b55 !important;
+  background: linear-gradient(150deg, #c52a3b33, #ffffff08) !important;
+}
+
+.plan-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.plan-option strong {
+  font-size: 26px;
+  letter-spacing: -0.5px;
+}
+
+.plan-option strong small {
+  font-size: 14px;
+  font-weight: 500;
+  color: #b8b8c4;
+}
+
+.premium-pill.is-member {
+  background: linear-gradient(155deg, #e0b44c, #b8862a) !important;
+  color: #1c1c24;
+}

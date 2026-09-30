@@ -112,11 +112,6 @@ render = function () {
   if (state.page === 'journal') screen.innerHTML = journalMarkup();
   if (state.page === 'journal-entry') screen.innerHTML = journal.editing ? entryMarkup() : journalMarkup();
   if (state.page.startsWith('journal')) document.querySelector('#nav [data-go="journal"]')?.setAttribute('aria-current', 'page');
-  // Today: quick accountability summary
-  if (state.page === 'today' && state.mode !== 'fan' && !screen.querySelector('.journal-today')) {
-    const s = journalStats();
-    screen.insertAdjacentHTML('beforeend', `<div class="card journal-today"><span class="eyebrow">Training journal</span><h3>${s.sessions} ${s.sessions === 1 ? 'session' : 'sessions'} this week${s.streak > 1 ? ` · ${s.streak}-day streak` : ''}</h3><p class="small">Log gym sessions, classes, pads, sparring and runs to keep yourself accountable.</p><button class="full" data-journal="new">${icon('plus')} Log a session</button></div>`);
-  }
 };
 
 document.addEventListener('input', e => {
