@@ -33,7 +33,7 @@ render=function(){
   if(a.phase==='main')screen.querySelectorAll('[data-log="sets"]').forEach((input,i)=>input.closest('.card').querySelector('h3').insertAdjacentHTML('afterend',`<p class="workload">${ExerciseContent.target(ex(a.entries[i].id),workloadLevel)}</p>`));
  }
  // Keep the member navigation stable; specialist tools live under Library.
- document.querySelector('#nav').innerHTML=[['today','Today','home'],['training','Train','dumbbell'],['fight','Fight','target'],['journal','Journal','notebook'],['explore','Explore','newspaper']].map(([key,name,ic])=>`<button data-go="${key}" ${page===key?'aria-current="page"':''}>${icon(ic)}<span>${name}</span></button>`).join('');
+ document.querySelector('#nav').innerHTML=[['today','Today','home'],['training','Train','dumbbell'],['fight','Fight','target'],['coach','Coach','mic'],['journal','Journal','notebook']].map(([key,name,ic])=>`<button data-go="${key}" ${page===key?'aria-current="page"':''}>${icon(ic)}<span>${name}</span></button>`).join('');
  const steps=document.querySelector('#steps');if(steps){steps.innerHTML=[['today','Dashboard'],['setup','Set up routine'],['plan','My week'],['training','Library'],['progress','Progress'],['premium','Premium']].map(([key,name])=>`<button data-go="${key}" aria-pressed="${page===key}">${name}</button>`).join('');if(resetPreviewButton)steps.append(resetPreviewButton);}
  if(page==='premium'&&routine.plan)screen.insertAdjacentHTML('beforeend',rbtn('Return to my weekly routine','week'));
  if(page==='training'){screen.querySelector('[data-guide="setup"]')?.remove();screen.insertAdjacentHTML('afterbegin',rbtn('Back to my weekly routine','week','','primary full'));}

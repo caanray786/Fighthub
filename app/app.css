@@ -811,3 +811,89 @@ body[data-page=welcome] .account-button {
   flex-direction: column;
   gap: 2px;
 }
+
+/* ---- Voice coach ---- */
+.coach-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin: 18px 0;
+  padding: 26px 18px;
+  border-radius: 28px;
+  border: 1px solid #ffffff22;
+  background: radial-gradient(circle at 50% 35%, #c52a3b33, transparent 65%), #ffffff06;
+}
+
+.coach-orb {
+  width: 132px;
+  height: 132px;
+  min-height: 132px !important;
+  border-radius: 50% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 46px;
+  color: #fff;
+  background: linear-gradient(155deg, #c52a3b, #8a0f22) !important;
+  border: 1px solid #ffffff40 !important;
+  box-shadow: 0 16px 40px #c52a3b55 !important;
+  transition: transform 0.3s ease;
+}
+
+.coach-stage[data-state=connecting] .coach-orb {
+  opacity: 0.7;
+}
+
+.coach-stage[data-state=listening] .coach-orb {
+  animation: coach-pulse 1.8s ease-in-out infinite;
+}
+
+.coach-stage[data-state=speaking] .coach-orb {
+  animation: coach-pulse 0.7s ease-in-out infinite;
+  background: linear-gradient(155deg, #e0b44c, #b8862a) !important;
+  color: #1c1c24;
+}
+
+@keyframes coach-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 16px 40px #c52a3b55, 0 0 0 0 #f14b5555; }
+  50% { transform: scale(1.05); box-shadow: 0 16px 40px #c52a3b55, 0 0 0 18px #f14b5500; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coach-stage .coach-orb { animation: none !important; }
+}
+
+.coach-status {
+  margin: 0;
+  font-weight: 600;
+  color: #e4e4ea;
+}
+
+.coach-transcript {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.coach-line {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: #ffffff0a;
+  font-size: 15px;
+}
+
+.coach-line strong {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #f14b55;
+}
+
+.coach-line.you {
+  align-self: flex-end;
+  background: #c52a3b26;
+}
