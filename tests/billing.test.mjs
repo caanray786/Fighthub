@@ -109,3 +109,37 @@ test('coach sessions: refused until set up, and for anyone not signed in', async
   assert.equal(res.status, 401);
   delete process.env.ELEVENLABS_API_KEY;
 });
+
+import { voiceOverrideAllowed } from '../api/coach-session.mjs';
+
+// Fakes the ElevenLabs agent settings: GET returns them, PATCH applies them
+function fakeAgent(settings, { patchStatus = 200 } = {}) {
+  const calls = [];
+  globalThis.fetch = async (url, init = {}) => {
+    const method = init.method || 'GET';
+    calls.push({ method, body: init.body && JSON.parse(init.body) });
+    if (method === 'PATCH' && patchStatus === 200) settings = JSON.parse(init.body).platform_settings;
+    return method === 'PATCH' ? new Response('{}', { status: patchStatus }) : new Response(JSON.stringify({ platform_settings: settings }));
+  };
+  return calls;
+}
+
+test('coach voice: switched on when off, keeping every other agent setting', async () => {
+  const calls = fakeAgent({ auth: { enable_auth: true }, overrides: { conversation_config_override: { agent: { first_message: false } } } });
+  assert.equal(await voiceOverrideAllowed('k', 'a', { fresh: true }), true);
+  const sent = calls.find(c => c.method === 'PATCH').body.platform_settings;
+  assert.deepEqual(sent.auth, { enable_auth: true });
+  assert.deepEqual(sent.overrides.conversation_config_override, { agent: { first_message: false }, tts: { voice_id: true } });
+  globalThis.fetch = realFetch;
+});
+
+test('coach voice: already on means nothing is changed; if it cannot be switched on, the default voice is used', async () => {
+  let calls = fakeAgent({ overrides: { conversation_config_override: { tts: { voice_id: true } } } });
+  assert.equal(await voiceOverrideAllowed('k', 'a', { fresh: true }), true);
+  assert.ok(!calls.some(c => c.method === 'PATCH'));
+  calls = fakeAgent({}, { patchStatus: 403 });
+  assert.equal(await voiceOverrideAllowed('k', 'a', { fresh: true }), false);
+  globalThis.fetch = async () => { throw new Error('offline'); };
+  assert.equal(await voiceOverrideAllowed('k', 'a', { fresh: true }), false);
+  globalThis.fetch = realFetch;
+});
