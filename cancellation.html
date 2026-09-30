@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="images/favicon-48.png">
   <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
-  <title>Fighter Rankings — FightHub</title>
-  <meta name="description" content="View up-to-date pound-for-pound rankings and weight class divisions for professional combat sports.">
+  <title>Cancellations and refunds — FightHub</title>
+  <meta name="description" content="How to cancel Fight Hub Premium, and how refunds work, including your 14 days to change your mind.">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/pages.css">
@@ -27,7 +27,7 @@
         <a href="fighters.html">Fighters</a>
         <a href="news.html">News</a>
         <a href="events.html">Events</a>
-        <a href="rankings.html" class="active">Rankings</a>
+        <a href="rankings.html">Rankings</a>
         <a href="training.html">Training</a>
         <a href="gyms.html">Clubs</a>
         <a href="admin/login.html" class="btn btn-secondary btn-sm" style="margin-left: 10px;">Admin Portal</a>
@@ -43,63 +43,69 @@
     </div>
   </nav>
 
-  <!-- Page Hero -->
   <header class="page-hero">
     <div class="container">
       <div class="breadcrumb">
         <a href="index.html">Home</a>
         <span class="separator">/</span>
-        <span>Rankings</span>
+        <span>Cancellations and refunds</span>
       </div>
-      <h1>Fighter <span class="text-accent">Rankings</span></h1>
-      <p>Official FightHub pound-for-pound (P4P) standings and active championship divisional rankings.</p>
+      <span class="eyebrow">Fight Hub Premium</span>
+      <h1>Cancellations and <span class="text-accent">refunds</span></h1>
+      <p>How to cancel Premium, and how refunds work, including your 14 days to change your mind.</p>
     </div>
   </header>
 
-  <!-- Rankings View Section -->
-  <section class="section">
+  <main class="section">
     <div class="container">
-      
-      <!-- Selection Bar -->
-      <div class="filter-bar animate-on-scroll" style="justify-content: space-between; align-items: center;">
-        <div>
-          <label for="rankings-select" style="font-size:0.85rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:8px;">Choose List</label>
-          <select id="rankings-select" aria-label="Select ranking list"></select>
+      <article class="legal">
+        <p class="legal-updated">Last updated: 30 September 2026</p>
+        <h2>Monthly Premium (£19.99 a month)</h2>
+        <ul>
+          <li>Cancel at any time in the app: open <strong>Premium</strong>, choose <strong>Manage subscription</strong>, then <strong>Cancel</strong>. You won’t be charged again, and Premium stays on until the end of the month you’ve already paid for.</li>
+          <li>We don’t refund part-months, except in your first 14 days (below) or where the law says otherwise.</li>
+        </ul>
+
+        <h2>12 months of Premium (£203, paid once)</h2>
+        <ul>
+          <li>There is nothing to cancel: it doesn’t renew automatically.</li>
+          <li>We’ll remind you in the last 30 days. If you renew, the new 12 months are added to the end of your current ones.</li>
+        </ul>
+
+        <h2>Changed your mind? 14 days for a full refund</h2>
+        <p>You can cancel within 14 days of starting a monthly subscription, or of buying or renewing a 12-month pass, and we’ll refund that payment in full. Your Premium ends when the refund is made. Later monthly renewals of the same subscription are not covered, but you can still cancel them at any time as described above.</p>
+        <p><strong>How to ask:</strong> email <a href="mailto:support@fighthub.world">support@fighthub.world</a> from the email address on your account, saying you want to cancel and have a refund. You don’t have to give a reason. You can use the form below if you like, but you don’t have to.</p>
+        <p>We’ll refund you within 14 days of your request, to the card you paid with. There is no fee.</p>
+
+        <h2>If something is wrong</h2>
+        <p>If Premium or the app doesn’t work as described, tell us and we’ll put it right. Under the Consumer Rights Act 2015 you’re entitled to have faulty digital content or services repaired or replaced, or, if we can’t fix them, some or all of your money back.</p>
+
+        <h2>Deleting your account</h2>
+        <p>Deleting your account cancels a monthly subscription straight away, and any Premium time left is lost. If you want a refund you’re entitled to, please email us before you delete your account, so we can find your payment quickly.</p>
+
+        <h2>Price changes</h2>
+        <p>If we change the monthly price, we’ll tell you at least 30 days before it applies to you, so you can cancel first if you prefer. A price change never affects a 12-month pass you’ve already paid for.</p>
+
+        <h2>Cancellation form (optional)</h2>
+        <div class="legal-form">
+          <p>To: FightHub (Pinnqle Ltd), Office 1751, 3 Fitzroy Place, 1/1 Sauchiehall Street, Glasgow, G3 7RH, United Kingdom. Email: support@fighthub.world</p>
+          <p>I hereby give notice that I cancel my contract for the supply of the following service: Fight Hub Premium (monthly / 12 months).</p>
+          <p>Ordered on: ____________</p>
+          <p>Name: ____________</p>
+          <p>Email address used for Fight Hub: ____________</p>
+          <p>Date: ____________</p>
         </div>
-        <div style="text-align: right;" id="last-updated-container">
-          <span style="font-size: 0.85rem; color: var(--text-muted);">Last Updated: <strong id="rankings-date">July 1, 2026</strong></span>
-        </div>
-      </div>
 
-      <!-- Champion Banner Spotlight (Only shown if division has champion) -->
-      <div id="champion-spotlight-container" class="animate-on-scroll" style="margin-bottom: var(--space-2xl);">
-        <!-- Loaded dynamically -->
-      </div>
-
-      <!-- Rankings Table Container -->
-      <div class="animate-on-scroll" style="overflow-x: auto; background: var(--bg-glass); border: 1px solid var(--bg-glass-border); border-radius: var(--radius-lg); padding: var(--space-md);">
-        <table class="rankings-table">
-          <thead>
-            <tr>
-              <th style="width: 80px;">Rank</th>
-              <th>Fighter</th>
-              <th>Record (W-L-D)</th>
-              <th>Fighting Style</th>
-              <th>Country</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="rankings-table-body">
-            <!-- Loaded dynamically -->
-            <tr>
-              <td colspan="6" class="text-center" style="padding: 40px 0;">Loading rankings table...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
+        <h2>Who we are</h2>
+        <p>FightHub is a trading name of Pinnqle Ltd, a company registered in Scotland (company number SC898926). Registered office: Office 1751, 3 Fitzroy Place, 1/1 Sauchiehall Street, Glasgow, G3 7RH, United Kingdom.</p>
+        <nav class="legal-nav" aria-label="Policies">
+          <a href="terms.html">Terms of use</a>
+          <a href="privacy.html">Privacy policy</a>
+          <a href="cancellation.html">Cancellations and refunds</a>
+        </nav>
+      </article>
     </div>
-  </section>
+  </main>
 
   <!-- Footer -->
   <footer class="footer">
@@ -157,6 +163,5 @@
   <script src="js/data-defaults.js"></script>
   <script src="js/datastore.js"></script>
   <script src="js/app.js"></script>
-  <script src="js/rankings.js"></script>
 </body>
 </html>

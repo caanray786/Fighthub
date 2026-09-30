@@ -202,7 +202,10 @@ async function syncJournal() {
 window.syncJournal = syncJournal;
 
 async function deleteAccount() {
-  // Member data first (while the sign-in is still valid), then the sign-in itself
+  // Any subscription is cancelled first, so a deleted member is never charged again
+  try { await billingCall('/api/account-close'); }
+  catch { throw new Error('We couldn’t check your subscription, so nothing was deleted. Check your connection and try again.'); }
+  // Member data next (while the sign-in is still valid), then the sign-in itself
   await memberApi('journal_entries?user_id=not.is.null', { method: 'DELETE', prefer: 'return=minimal' });
   await memberApi('member_profiles?user_id=not.is.null', { method: 'DELETE', prefer: 'return=minimal' });
   await clerk().user.delete();
@@ -235,8 +238,13 @@ function welcomeMarkup() {
     + (ageOk
       ? '<div id="clerk-sign-in" class="clerk-mount"></div>'
       : '<p class="small">Fight Hub is for adults. Confirm you are 18 or over to sign in or create your account.</p>')
-    + '<p class="small">Check each exercise is suitable for you before starting, and stop if you feel pain or unwell.</p>';
+    + '<p class="small">Check each exercise is suitable for you before starting, and stop if you feel pain or unwell.</p>'
+    + `<p class="small">By creating an account you agree to our ${legalLink('terms', 'Terms')} and ${legalLink('privacy', 'Privacy policy')}.</p>`;
 }
+
+// Terms, privacy and cancellation pages live on the website
+const legalLink = (page, label) => `<a href="${SITE_URL}/${page}.html" target="_blank" rel="noopener">${label}</a>`;
+const legalLinks = () => [legalLink('terms', 'Terms'), legalLink('privacy', 'Privacy'), legalLink('cancellation', 'Cancellations and refunds')].join(' · ');
 
 const opt = (values, selected) => values.map(([v, label]) => `<option value="${esc(v)}" ${v === selected ? 'selected' : ''}>${esc(label)}</option>`).join('');
 
@@ -291,7 +299,8 @@ function accountMarkup() {
       <button class="full" data-account="manage">Sign-in and security</button>
       <button class="full" data-account="signout">Sign out</button>
       <button class="full account-danger" data-account="delete">Delete my account</button>
-      <p class="small">Deleting removes your profile, your journal in your account and your sign-in. It cannot be undone.</p>`;
+      <p class="small">Deleting cancels any monthly subscription straight away and removes your profile, your journal in your account and your sign-in. Any Premium time left is lost, and it cannot be undone.</p>
+      <p class="small legal-links">${legalLinks()}</p>`;
 }
 
 function mountSignIn() {
@@ -373,7 +382,7 @@ document.addEventListener('click', async e => {
     b.disabled = true;
     b.textContent = 'Deleting…';
     try { await deleteAccount(); }
-    catch { b.disabled = false; b.textContent = 'Could not delete. Try again.'; }
+    catch (err) { account.message = err.message; render(); }
   }
 });
 

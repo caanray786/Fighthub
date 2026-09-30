@@ -143,3 +143,59 @@ test('coach voice: already on means nothing is changed; if it cannot be switched
   assert.equal(await voiceOverrideAllowed('k', 'a', { fresh: true }), false);
   globalThis.fetch = realFetch;
 });
+
+// ---- Deleting an account ----
+import { cancelSubscriptions } from '../api/_lib/stripe.mjs';
+import { POST as accountClose } from '../api/account-close.mjs';
+
+test('closing an account cancels every running subscription and nothing else', async () => {
+  const calls = [];
+  globalThis.fetch = async (url, init = {}) => {
+    calls.push(`${init.method || 'GET'} ${url.replace('https://api.stripe.com/v1', '')}`);
+    if ((init.method || 'GET') === 'GET') return new Response(JSON.stringify({ data: [
+      { id: 'sub_live', status: 'active' }, { id: 'sub_late', status: 'past_due' }, { id: 'sub_old', status: 'canceled' }
+    ] }));
+    return new Response('{}');
+  };
+  assert.equal(await cancelSubscriptions('cus_1'), 2);
+  assert.deepEqual(calls.slice(1), ['DELETE /subscriptions/sub_live', 'DELETE /subscriptions/sub_late']);
+  globalThis.fetch = realFetch;
+});
+
+test('closing an account needs the member to be signed in', async () => {
+  const res = await accountClose(new Request('https://x/api/account-close', { method: 'POST', body: '{}' }));
+  assert.equal(res.status, 401);
+});
+
+test('webhook: a deleted member does not make Stripe retry forever', async () => {
+  process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
+  globalThis.fetch = async () => new Response('{"errors":[{"code":"resource_not_found"}]}', { status: 404 });
+  const body = JSON.stringify({ type: 'customer.subscription.deleted', data: { object: { id: 'sub_1', status: 'canceled', customer: 'cus_1', metadata: { clerk_user_id: 'user_gone' } } } });
+  const res = await webhook(new Request('https://x/api/stripe-webhook', { method: 'POST', body, headers: { 'stripe-signature': stripeHeader(body, 'whsec_test') } }));
+  assert.equal(res.status, 200);
+  globalThis.fetch = realFetch;
+});
+
+// ---- Refunds ----
+import { refundYearPass } from '../api/_lib/stripe.mjs';
+
+test('a refunded year pass takes that year off, ending Premium if nothing is left, once only', async () => {
+  const inDays = n => new Date(Date.now() + n * 86400000).toISOString();
+  let patches = fakeClerk({ public_metadata: { premium: { status: 'active', pass: true, expires: inDays(360) } }, private_metadata: {} });
+  await refundYearPass('user_1', 'cs_9');
+  let p = patches[0].public_metadata.premium;
+  assert.equal(p.status, 'canceled');
+  assert.ok(new Date(p.expires) < new Date());
+  assert.deepEqual(patches[0].private_metadata.refunded_passes, ['cs_9']);
+  // Renewed early (two years stacked): refunding the renewal leaves the first year
+  patches = fakeClerk({ public_metadata: { premium: { status: 'active', pass: true, expires: inDays(380) } }, private_metadata: {} });
+  await refundYearPass('user_1', 'cs_10');
+  p = patches[0].public_metadata.premium;
+  assert.equal(p.status, 'active');
+  assert.ok(new Date(p.expires) > new Date());
+  // Stripe resending the same refund changes nothing
+  patches = fakeClerk({ public_metadata: { premium: p }, private_metadata: { refunded_passes: ['cs_10'] } });
+  await refundYearPass('user_1', 'cs_10');
+  assert.equal(patches.length, 0);
+  globalThis.fetch = realFetch;
+});

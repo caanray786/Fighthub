@@ -47,7 +47,11 @@ async function clerkApi(path, { method = 'GET', body } = {}) {
     headers: { Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`, 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined
   });
-  if (!res.ok) throw new Error(`Clerk ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  if (!res.ok) {
+    const err = new Error(`Clerk ${res.status}: ${(await res.text()).slice(0, 300)}`);
+    err.status = res.status; // 404: the member has deleted their account
+    throw err;
+  }
   return res.json();
 }
 

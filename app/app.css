@@ -909,3 +909,16 @@ body[data-page=welcome] .account-button {
   align-self: flex-end;
   background: #c52a3b26;
 }
+
+/* ---- Links to the Terms, Privacy and Cancellations pages ---- */
+.small a {
+  color: #f0f0f4;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: #f14b5599;
+}
+
+.small a:hover,
+.small a:focus-visible {
+  color: #f14b55;
+}

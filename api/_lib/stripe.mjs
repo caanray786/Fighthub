@@ -15,9 +15,9 @@ function formFields(value, prefix = '', out = new URLSearchParams()) {
   return out;
 }
 
-export async function stripe(path, params) {
+export async function stripe(path, params, method = params ? 'POST' : 'GET') {
   const res = await fetch(`https://api.stripe.com/v1${path}`, {
-    method: params ? 'POST' : 'GET',
+    method,
     headers: {
       Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`,
       ...(params ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {})
@@ -97,4 +97,30 @@ export async function saveYearPass(clerkUserId, session) {
       last_pass_session: session.id
     }
   });
+}
+
+// A refunded year pass: that year comes off again (a pass renewed early
+// keeps the rest). Premium ends if nothing is left. Safe if Stripe resends.
+export async function refundYearPass(clerkUserId, sessionId) {
+  const user = await getClerkUser(clerkUserId);
+  const done = user.private_metadata?.refunded_passes || [];
+  const current = user.public_metadata?.premium;
+  if (done.includes(sessionId) || !current?.pass || !current.expires) return;
+  const expires = new Date(current.expires);
+  expires.setFullYear(expires.getFullYear() - 1);
+  const ended = expires <= new Date();
+  await updateClerkMetadata(clerkUserId, {
+    public_metadata: { premium: { ...current, status: ended ? 'canceled' : current.status, expires: expires.toISOString(), updated: new Date().toISOString() } },
+    private_metadata: { refunded_passes: [...done, sessionId].slice(-20) }
+  });
+}
+
+// Closing an account: end every running subscription straight away, so a
+// member who deletes their account is never charged again. Returns how many.
+const RUNNING = ['active', 'trialing', 'past_due', 'unpaid', 'incomplete'];
+export async function cancelSubscriptions(customerId) {
+  const { data = [] } = await stripe(`/subscriptions?customer=${encodeURIComponent(customerId)}&status=all&limit=100`);
+  const running = data.filter(s => RUNNING.includes(s.status));
+  for (const s of running) await stripe(`/subscriptions/${s.id}`, null, 'DELETE');
+  return running.length;
 }

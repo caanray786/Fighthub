@@ -134,6 +134,7 @@ function premiumMarkup() {
       + `<div class="plan-options">${billing.plans.map(planCard).join('')}</div>
         <button class="primary full" data-premium="checkout" ${billing.busy ? 'disabled' : ''}>${billing.busy ? 'Opening secure checkout…' : sel?.oneOff ? 'Get 12 months of Premium' : trial ? `Start ${trial}-day free trial` : 'Subscribe'}</button>
         <p class="small">${sel?.oneOff ? `One payment of ${money(sel.amount, sel.currency)} for 12 months of Premium. It does not renew automatically; we’ll remind you before it ends.` : `${trial ? `Free for ${trial} days, then ${after}. Cancel before the trial ends and you won’t be charged.` : `${after}.`} Renews automatically; cancel any time in your account.`} Payments are handled securely by Stripe.</p>
+        <p class="small">By continuing you agree to our ${legalLink('terms', 'Terms')}. Changed your mind? Cancel within 14 days of your first payment for a full refund: see ${legalLink('cancellation', 'Cancellations and refunds')}.</p>
         <h3>Premium includes</h3>${list(INCLUDED)}
         <details><summary>What’s free</summary>${list(FREE)}</details>`;
   }
