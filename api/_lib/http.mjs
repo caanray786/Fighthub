@@ -39,3 +39,9 @@ export const billingReady = () => !!(process.env.STRIPE_SECRET_KEY && process.en
 
 // Statuses that give Premium access (past_due keeps access while Stripe retries the card)
 export const PREMIUM_STATUSES = ['active', 'trialing', 'past_due'];
+
+// Premium right now? Year passes (one-off payments) also need an unexpired end date
+export const hasPremium = p => !!p && PREMIUM_STATUSES.includes(p.status) && (!p.expires || new Date(p.expires) > new Date());
+
+// A year pass can be renewed in its last 30 days (the new year is added on to the end)
+export const passRenewable = p => !!p?.pass && (!p.expires || new Date(p.expires) - Date.now() < 30 * 86400000);

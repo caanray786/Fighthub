@@ -2,7 +2,7 @@
 // renews, changes or ends. Each change is copied to the member's Clerk
 // account, which switches Premium on or off in the app.
 import { json } from './_lib/http.mjs';
-import { stripe, verifyStripeSignature, saveSubscription } from './_lib/stripe.mjs';
+import { stripe, verifyStripeSignature, saveSubscription, saveYearPass } from './_lib/stripe.mjs';
 
 export async function POST(request) {
   const raw = await request.text();
@@ -12,7 +12,10 @@ export async function POST(request) {
   const event = JSON.parse(raw);
   const obj = event.data?.object || {};
   try {
-    if (event.type === 'checkout.session.completed' && obj.mode === 'subscription' && obj.subscription) {
+    if (event.type === 'checkout.session.completed' && obj.mode === 'payment' && obj.metadata?.pass === 'year') {
+      const member = obj.client_reference_id || obj.metadata?.clerk_user_id;
+      if (member && obj.payment_status === 'paid') await saveYearPass(member, obj);
+    } else if (event.type === 'checkout.session.completed' && obj.mode === 'subscription' && obj.subscription) {
       const member = obj.client_reference_id || obj.metadata?.clerk_user_id;
       if (member) await saveSubscription(member, await stripe(`/subscriptions/${obj.subscription}`));
     } else if (event.type.startsWith('customer.subscription.')) {

@@ -12,7 +12,8 @@ export async function GET() {
       if (!priceId) continue;
       const price = await stripe(`/prices/${encodeURIComponent(priceId)}`);
       if (!price.active) continue;
-      plans.push({ id, amount: price.unit_amount, currency: price.currency, interval: price.recurring?.interval || (id === 'yearly' ? 'year' : 'month') });
+      // oneOff: a single payment for 12 months (no automatic renewal)
+      plans.push({ id, amount: price.unit_amount, currency: price.currency, interval: price.recurring?.interval || (id === 'yearly' ? 'year' : 'month'), oneOff: price.type === 'one_time' });
     }
     return json({ live: plans.length > 0, trialDays: trialDays(), plans }, 200, { 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=3600' });
   });

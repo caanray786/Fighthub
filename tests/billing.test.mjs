@@ -48,3 +48,50 @@ test('with no Stripe keys, plans report not live and checkout is refused', async
   const out = await checkout(new Request('https://x/api/billing-checkout', { method: 'POST', body: '{"plan":"monthly"}' }));
   assert.equal(out.status, 503);
 });
+
+// ---- Year pass (one-off yearly payment) ----
+import { saveYearPass } from '../api/_lib/stripe.mjs';
+import { hasPremium, passRenewable } from '../api/_lib/http.mjs';
+
+// Fakes Clerk's API: returns `user` for GET, records PATCH bodies
+function fakeClerk(user) {
+  const patches = [];
+  globalThis.fetch = async (url, init = {}) => {
+    if ((init.method || 'GET') === 'PATCH') { patches.push(JSON.parse(init.body)); return new Response('{}'); }
+    return new Response(JSON.stringify(user));
+  };
+  return patches;
+}
+const realFetch = globalThis.fetch;
+const yearsFromNow = (d, years) => { const x = new Date(d); x.setFullYear(x.getFullYear() + years); return x; };
+
+test('a new year pass gives 12 months of Premium', async () => {
+  const patches = fakeClerk({ public_metadata: {}, private_metadata: {} });
+  await saveYearPass('user_1', { id: 'cs_1', customer: 'cus_1' });
+  const p = patches[0].public_metadata.premium;
+  assert.equal(p.pass, true);
+  assert.ok(Math.abs(new Date(p.expires) - yearsFromNow(Date.now(), 1)) < 60000);
+  assert.equal(patches[0].private_metadata.last_pass_session, 'cs_1');
+  globalThis.fetch = realFetch;
+});
+
+test('renewing early adds the new year onto the end, and a resent payment is ignored', async () => {
+  const ends = new Date(Date.now() + 10 * 86400000).toISOString();
+  let patches = fakeClerk({ public_metadata: { premium: { status: 'active', pass: true, expires: ends } }, private_metadata: { last_pass_session: 'cs_1' } });
+  await saveYearPass('user_1', { id: 'cs_2', customer: 'cus_1' });
+  assert.ok(Math.abs(new Date(patches[0].public_metadata.premium.expires) - yearsFromNow(ends, 1)) < 1000);
+  patches = fakeClerk({ public_metadata: { premium: { status: 'active', pass: true, expires: ends } }, private_metadata: { last_pass_session: 'cs_2' } });
+  await saveYearPass('user_1', { id: 'cs_2', customer: 'cus_1' });
+  assert.equal(patches.length, 0);
+  globalThis.fetch = realFetch;
+});
+
+test('Premium checks: expired passes end access; renewal opens in the last 30 days', () => {
+  const inDays = n => new Date(Date.now() + n * 86400000).toISOString();
+  assert.equal(hasPremium({ status: 'active', pass: true, expires: inDays(100) }), true);
+  assert.equal(hasPremium({ status: 'active', pass: true, expires: inDays(-1) }), false);
+  assert.equal(hasPremium({ status: 'trialing' }), true);
+  assert.equal(hasPremium({ status: 'canceled' }), false);
+  assert.equal(passRenewable({ pass: true, expires: inDays(100) }), false);
+  assert.equal(passRenewable({ pass: true, expires: inDays(20) }), true);
+});
