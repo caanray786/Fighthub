@@ -13,7 +13,8 @@ const apiUrl = path => (location.protocol.startsWith('http') ? '' : SITE_URL) + 
 
 function memberPremium() {
   const p = window.Clerk?.user?.publicMetadata?.premium;
-  return p && PREMIUM_STATUSES.includes(p.status) ? p : null;
+  // Year passes (one-off payments) also need an unexpired end date
+  return p && PREMIUM_STATUSES.includes(p.status) && (!p.expires || new Date(p.expires) > new Date()) ? p : null;
 }
 
 // With Stripe live, Premium is whatever the member's subscription says
@@ -38,6 +39,7 @@ async function loadPlans() {
 }
 
 const money = (amount, currency) => new Intl.NumberFormat(undefined, { style: 'currency', currency: currency.toUpperCase(), minimumFractionDigits: amount % 100 ? 2 : 0 }).format(amount / 100);
+const daysUntil = iso => Math.ceil((new Date(iso) - Date.now()) / 86400000);
 const longDate = iso => iso ? new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) : '';
 
 async function billingCall(path, body) {
@@ -92,9 +94,9 @@ function planCard(p) {
   const perMonth = p.interval === 'year' ? Math.round(p.amount / 12) : p.amount;
   const saving = p.interval === 'year' && monthly ? Math.round((1 - p.amount / (monthly.amount * 12)) * 100) : 0;
   return `<button type="button" class="plan-option" data-premium="select" data-id="${p.id}" aria-pressed="${billing.selected === p.id}">
-    <span class="plan-name">${p.interval === 'year' ? 'Yearly' : 'Monthly'}${saving > 0 ? `<span class="badge">SAVE ${saving}%</span>` : ''}</span>
-    <strong>${money(p.amount, p.currency)}<small>/${p.interval === 'year' ? 'year' : 'month'}</small></strong>
-    ${p.interval === 'year' ? `<span class="small">${money(perMonth, p.currency)} a month, billed yearly</span>` : '<span class="small">Billed monthly</span>'}
+    <span class="plan-name">${p.oneOff ? '12 months' : p.interval === 'year' ? 'Yearly' : 'Monthly'}${saving > 0 ? `<span class="badge">SAVE ${saving}%</span>` : ''}</span>
+    <strong>${money(p.amount, p.currency)}<small>${p.oneOff ? ' one payment' : `/${p.interval === 'year' ? 'year' : 'month'}`}</small></strong>
+    ${p.oneOff ? `<span class="small">${money(perMonth, p.currency)} a month · no automatic renewal</span>` : p.interval === 'year' ? `<span class="small">${money(perMonth, p.currency)} a month, billed yearly</span>` : '<span class="small">Billed monthly · cancel any time</span>'}
   </button>`;
 }
 
@@ -102,6 +104,17 @@ function premiumMarkup() {
   const note = billing.message ? `<p class="status" role="status">${esc(billing.message)}</p>` : '';
   const mine = memberPremium();
   if (billing.live && mine) {
+    if (mine.pass) {
+      const left = daysUntil(mine.expires);
+      return title('Fight Hub Premium', 'You’re<br>Premium.') + note
+        + `<div class="card feature"><span class="badge">YEAR PASS</span>
+            <h3>Premium until ${esc(longDate(mine.expires))}</h3>
+            <p class="small">${left <= 30 ? `Ends in ${left} ${left === 1 ? 'day' : 'days'}. Renew now and the new year is added on to the end.` : 'One payment, no automatic renewal. We’ll remind you before it ends.'}</p>
+            ${left <= 30 ? `<button class="primary full" data-premium="renew" ${billing.busy ? 'disabled' : ''}>Renew for another year</button>` : ''}
+            <button class="full" data-premium="portal">Payments and receipts</button></div>
+          <h3>Everything included</h3>${list(INCLUDED)}
+          <button class="full" data-fight="page" data-id="fight">Go to fight training</button>`;
+    }
     const status = mine.status === 'trialing' ? `Free trial until ${longDate(mine.trialEnds)}`
       : mine.status === 'past_due' ? 'Payment problem: please update your card'
       : mine.cancelAtPeriodEnd ? `Ends on ${longDate(mine.renews)}` : `Renews on ${longDate(mine.renews)}`;
@@ -119,8 +132,8 @@ function premiumMarkup() {
     const after = sel ? `${money(sel.amount, sel.currency)} a ${sel.interval === 'year' ? 'year' : 'month'}` : '';
     return title('Fight Hub Premium', 'Train like a fighter.<br>Every day.') + note
       + `<div class="plan-options">${billing.plans.map(planCard).join('')}</div>
-        <button class="primary full" data-premium="checkout" ${billing.busy ? 'disabled' : ''}>${billing.busy ? 'Opening secure checkout…' : trial ? `Start ${trial}-day free trial` : 'Subscribe'}</button>
-        <p class="small">${trial ? `Free for ${trial} days, then ${after}. Cancel before the trial ends and you won’t be charged.` : `${after}.`} Renews automatically; cancel any time in your account. Payments are handled securely by Stripe.</p>
+        <button class="primary full" data-premium="checkout" ${billing.busy ? 'disabled' : ''}>${billing.busy ? 'Opening secure checkout…' : sel?.oneOff ? 'Get 12 months of Premium' : trial ? `Start ${trial}-day free trial` : 'Subscribe'}</button>
+        <p class="small">${sel?.oneOff ? `One payment of ${money(sel.amount, sel.currency)} for 12 months of Premium. It does not renew automatically; we’ll remind you before it ends.` : `${trial ? `Free for ${trial} days, then ${after}. Cancel before the trial ends and you won’t be charged.` : `${after}.`} Renews automatically; cancel any time in your account.`} Payments are handled securely by Stripe.</p>
         <h3>Premium includes</h3>${list(INCLUDED)}
         <details><summary>What’s free</summary>${list(FREE)}</details>`;
   }
@@ -143,6 +156,12 @@ render = function () {
   const pill = document.querySelector('.premium-pill');
   if (pill) { const on = billing.live ? !!memberPremium() : training.premium; pill.textContent = on ? 'Premium' : 'Go Premium'; pill.classList.toggle('is-member', on); }
   if (signedIn() && billing.live !== null) handleCheckoutReturn();
+  // Reminder on Today in the last 30 days of a year pass
+  const pass = billing.live && memberPremium();
+  if (state.page === 'today' && pass?.pass && daysUntil(pass.expires) <= 30 && !screen.querySelector('.renew-card')) {
+    const left = daysUntil(pass.expires);
+    screen.querySelector('h2')?.insertAdjacentHTML('afterend', `<div class="card renew-card"><span class="eyebrow">Your Premium year</span><h3>Ends in ${left} ${left === 1 ? 'day' : 'days'}</h3><p class="small">Renew to keep every programme, your goals and your streaks going. The new year is added on to the end.</p><button class="primary full" data-go="premium">Renew Premium</button></div>`);
+  }
 };
 
 document.addEventListener('click', async e => {
@@ -150,12 +169,14 @@ document.addEventListener('click', async e => {
   if (!b) return;
   const a = b.dataset.premium;
   if (a === 'select') { billing.selected = b.dataset.id; return render(); }
-  if (a === 'checkout' || a === 'portal') {
+  if (a === 'renew') billing.selected = 'yearly';
+  if (a === 'checkout' || a === 'portal' || a === 'renew') {
     billing.busy = true;
     billing.message = '';
     render();
     try {
-      const { url } = await billingCall(a === 'checkout' ? '/api/billing-checkout' : '/api/billing-portal', a === 'checkout' ? { plan: billing.selected } : {});
+      const pay = a === 'checkout' || a === 'renew';
+      const { url } = await billingCall(pay ? '/api/billing-checkout' : '/api/billing-portal', pay ? { plan: billing.selected } : {});
       location.href = url;
     } catch (err) {
       billing.busy = false;

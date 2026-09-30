@@ -93,6 +93,13 @@ const FightData = (() => {
     'run': { n: 'Run', arts: ['all'], t: 'Running', eq: 'Trainers', lv: 'Foundation', s: ['Run at a gentle pace you could keep going with.', 'Short steps, relaxed shoulders.', 'It is fine to go slowly.'], c: 'Slow is fine: finishing the interval is the goal.', e: 'Walk briskly instead.' }
   };
 
+  // Drills with a demonstration picture (assets/movements/<id>-realistic.webp),
+  // added as the owner's generated images arrive (see image-requests/)
+  const media = new Set([
+    'stance-footwork', 'pivot', 'jab', 'cross', 'lead-hook', 'uppercut', 'body-shots',
+    'slip', 'roll', 'parry', 'punch-out', 'bag-work', 'mt-stance'
+  ]);
+
   // ---- Disciplines ----
   const arts = [
     { id: 'boxing', name: 'Boxing', image: 'boxing', about: 'Footwork, the jab, combinations and defence, with the conditioning to last the rounds. Three-minute rounds with one minute of rest match the professional format.', week: 'A good week: 3 boxing sessions (shadow, bag, defence), 2–3 roadwork runs, 2 strength sessions from the Library, and at least 1 full rest day.' },
@@ -100,10 +107,10 @@ const FightData = (() => {
     { id: 'kickboxing', name: 'Kickboxing', image: 'kickboxing', about: 'Boxing combinations finished with kicks, with fast footwork and checks against low kicks.', week: 'A good week: 3 kickboxing sessions, 2 runs, 2 strength sessions and 2 flexibility sessions.' },
     { id: 'mma', name: 'MMA', image: 'mma', about: 'Striking, wrestling and ground work in one sport. Five-minute rounds need a strong aerobic base plus repeated explosive efforts: sprawls, shots and scrambles.', week: 'A good week: 2 striking sessions, 2 wrestling or grappling sessions, 1 MMA conditioning session, 2 runs and 2 strength sessions, spread so hard days are followed by easier ones.' },
     { id: 'bjj', name: 'BJJ & grappling', image: 'bjj', about: 'Solo movement drills are the building blocks of every escape and transition: shrimping, bridging, stand-ups and rolls.', week: 'A good week: 2–3 classes or rolling sessions, 2 solo movement sessions, 2 strength sessions and 1 flexibility session.' },
-    { id: 'wrestling', name: 'Wrestling', image: 'mma', about: 'Stance, motion, level changes, shots and sprawls: the solo homework of every wrestling room, and relentless conditioning.', week: 'A good week: 3 wrestling sessions, 2 strength sessions, 2 runs including hill sprints, and 1 rest day.' },
+    { id: 'wrestling', name: 'Wrestling', image: 'wrestling', about: 'Stance, motion, level changes, shots and sprawls: the solo homework of every wrestling room, and relentless conditioning.', week: 'A good week: 3 wrestling sessions, 2 strength sessions, 2 runs including hill sprints, and 1 rest day.' },
     { id: 'karate', name: 'Karate', image: 'karate', about: 'Kihon, the basics: stances, punches, blocks and kicks, drilled with precision and speed.', week: 'A good week: 3 kihon sessions, 2 flexibility sessions for kicks, 2 strength or conditioning sessions.' },
-    { id: 'taekwondo', name: 'Taekwondo', image: 'kickboxing', about: 'Fast, high, precise kicking. Chamber control, speed and flexibility come first.', week: 'A good week: 3 kicking sessions, 3 flexibility sessions (splits programme), 2 strength sessions for the legs and core.' },
-    { id: 'kungfu', name: 'Kung Fu & Sanda', image: 'karate', about: 'Stance strength from traditional kung fu, and the kicks and punches of Sanda, China’s full-contact sport.', week: 'A good week: 2 stance-strength sessions, 2 Sanda sessions, 2 flexibility sessions and 2 runs.' }
+    { id: 'taekwondo', name: 'Taekwondo', image: 'taekwondo', about: 'Fast, high, precise kicking. Chamber control, speed and flexibility come first.', week: 'A good week: 3 kicking sessions, 3 flexibility sessions (splits programme), 2 strength sessions for the legs and core.' },
+    { id: 'kungfu', name: 'Kung Fu & Sanda', image: 'kung-fu', about: 'Stance strength from traditional kung fu, and the kicks and punches of Sanda, China’s full-contact sport.', week: 'A good week: 2 stance-strength sessions, 2 Sanda sessions, 2 flexibility sessions and 2 runs.' }
   ];
 
   // ---- Warm-ups and cool-downs (id, seconds) ----
@@ -362,6 +369,6 @@ const FightData = (() => {
     return phases;
   }
 
-  return { drills, arts, sessions, programmes, warmups, cooldowns, getDrill, sessionSeconds, buildSession };
+  return { drills, media, arts, sessions, programmes, warmups, cooldowns, getDrill, sessionSeconds, buildSession };
 })();
 if (typeof module !== 'undefined') module.exports = FightData;

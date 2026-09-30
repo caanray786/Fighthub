@@ -18,7 +18,7 @@ const programmeById = id => FightData.programmes.find(p => p.id === id);
 function drillInfo(id) {
   if (id === 'rest') return { name: 'Rest', steps: ['Breathe and recover.'], cue: '', easy: '', media: false };
   const d = FightData.getDrill(id);
-  if (d) return { name: d.n, type: d.t, eq: d.eq, level: d.lv, steps: d.s, cue: d.c, easy: d.e, hard: d.h, safety: d.w, media: false };
+  if (d) return { name: d.n, type: d.t, eq: d.eq, level: d.lv, steps: d.s, cue: d.c, easy: d.e, hard: d.h, safety: d.w, media: FightData.media.has(id), fightMedia: true };
   const e = ex(id), c = e && ExerciseContent.get(id);
   if (e) return { name: e.name, type: e.body, eq: e.equipment, level: e.level, steps: c?.steps || [e.description], cue: c?.cue || '', easy: c?.easy || '', media: ExerciseMedia.has(id) };
   return { name: id, steps: [], cue: '', easy: '', media: false };
@@ -181,9 +181,14 @@ function finishRun(completed) {
 setInterval(() => { if (state.page === 'fight-run') paintRun(); }, 250);
 
 /* ---- Markup ---- */
+// Demonstration picture for a fight drill; tap to see it full size
+function fightPicture(id, name) {
+  return `<button class="movement-image" data-fight="enlarge" data-id="${esc(id)}" aria-label="Enlarge the ${esc(name)} picture"><img src="assets/movements/${esc(id)}-realistic.webp" alt="${esc(name)}: the start and finish positions" width="1200" height="800" loading="lazy"><span>Tap to enlarge · illustration</span></button>`;
+}
+
 function drillMarkup(id, full = true) {
   const d = drillInfo(id);
-  return `${d.media ? movementMedia(id) : ''}<div class="card">
+  return `${d.media ? (d.fightMedia ? fightPicture(id, d.name) : movementMedia(id)) : ''}<div class="card">
     ${full ? '' : `<h3>How to do it</h3>`}
     <ol>${d.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
     ${d.cue ? `<p class="fight-cue">${esc(d.cue)}</p>` : ''}
@@ -291,7 +296,7 @@ function drillsMarkup() {
   return title('Drill library', 'Every technique,<br>step by step.')
     + `<div class="chips">${[['all', 'All'], ...FightData.arts.map(a => [a.id, a.name])].map(([id, name]) => `<button data-fight="filter" data-id="${id}" aria-pressed="${filter === id}">${esc(name)}</button>`).join('')}</div>`
     + types.map(t => `<h3 class="feed-heading">${esc(t)}</h3>${entries.filter(([, d]) => d.t === t).map(([id, d]) => `
-      <button class="fight-drill-row" data-fight="drill" data-id="${id}"><strong>${esc(d.n)}</strong><span class="small">${esc(d.lv)} · ${esc(d.eq)}</span></button>`).join('')}`).join('')
+      <button class="fight-drill-row" data-fight="drill" data-id="${id}">${FightData.media.has(id) ? `<img class="drill-thumb" src="assets/movements/${id}-realistic.webp" alt="" loading="lazy" width="96" height="64">` : ''}<span class="drill-row-text"><strong>${esc(d.n)}</strong><span class="small">${esc(d.lv)} · ${esc(d.eq)}</span></span></button>`).join('')}`).join('')
     + fbtn('Back', 'page', fight.art ? 'fight-art' : 'fight', 'full');
 }
 
@@ -374,6 +379,14 @@ document.addEventListener('click', e => {
   if (a === 'filter') { fight.artFilter = id; return render(); }
   if (a === 'drill') { fight.drill = id; fight.back = state.page; return go('fight-drill'); }
   if (a === 'back') return go(fight.back || 'fight');
+  if (a === 'enlarge') {
+    const dialog = document.createElement('dialog');
+    dialog.className = 'movement-dialog';
+    dialog.innerHTML = `<h2>${esc(drillInfo(id).name)}</h2><img src="assets/movements/${esc(id)}-realistic.webp" alt="${esc(drillInfo(id).name)}: the start and finish positions" width="1200" height="800"><form method="dialog"><button class="primary full">Close</button></form>`;
+    dialog.addEventListener('close', () => dialog.remove());
+    document.body.appendChild(dialog);
+    return dialog.showModal();
+  }
   if (a === 'locked') return lockTo('This session is part of Fight Hub Premium.');
   if (a === 'locked-programme') return lockTo('The full programme is part of Fight Hub Premium.');
   if (a === 'start') {

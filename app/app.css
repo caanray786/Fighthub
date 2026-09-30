@@ -789,3 +789,25 @@ body[data-page=welcome] .account-button {
   background: linear-gradient(155deg, #e0b44c, #b8862a) !important;
   color: #1c1c24;
 }
+
+/* Drill library rows with a picture */
+.fight-drill-row {
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px;
+}
+
+.drill-thumb {
+  width: 96px;
+  height: 64px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #ffffff1c;
+}
+
+.drill-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
