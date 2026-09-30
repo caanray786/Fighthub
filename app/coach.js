@@ -111,7 +111,7 @@ async function startCoach() {
       ...(session.voiceId ? { overrides: { tts: { voiceId: session.voiceId } } } : {}),
       onConnect: () => { coach.state = 'listening'; startClock(); paintCoach(); },
       onModeChange: ({ mode }) => { coach.state = mode === 'speaking' ? 'speaking' : 'listening'; paintCoach(); },
-      onMessage: ({ message, source }) => { if (message) { coach.transcript.push({ who: source === 'ai' ? 'coach' : 'you', text: message }); paintCoach(); } },
+      onMessage: ({ message, source }) => { if (message) { coach.transcript.push({ who: source === 'ai' ? 'coach' : 'you', text: message }); if (coach.transcript.length > 300) coach.transcript.shift(); paintCoach(); } },
       onDisconnect: () => { stopClock(); coach.conversation = null; coach.state = 'idle'; render(); },
       onError: msg => { coach.message = typeof msg === 'string' ? msg : 'The coach had a problem. Please try again.'; paintCoach(); }
     });
@@ -133,6 +133,42 @@ async function stopCoach() {
   coach.state = 'idle';
 }
 
+/* ---- Coach portrait ----
+   The round button shows the coach, matching the member's coach voice.
+   Portraits are assets/coach/coach-<voice>.webp; a voice without one yet
+   shows the microphone. Add a voice here once its file is in place. */
+const COACH_PORTRAITS = ['male'];
+const coachVoice = () => (account.profile?.coach_voice === 'female' ? 'female' : 'male');
+const coachPortrait = () => (COACH_PORTRAITS.includes(coachVoice()) ? `assets/coach/coach-${coachVoice()}.webp` : '');
+
+function orbMarkup(active) {
+  const pic = coachPortrait();
+  const attrs = `data-coach="${active ? 'stop' : 'start'}" aria-label="${active ? 'End the conversation' : 'Talk to your coach'}"`;
+  return pic
+    ? `<button class="coach-orb has-portrait" ${attrs}><img src="${pic}" alt="" width="132" height="132"><span class="coach-orb-badge">${icon(active ? 'x' : 'mic')}</span></button>`
+    : `<button class="coach-orb" ${attrs}>${icon(active ? 'x' : 'mic')}</button>`;
+}
+
+/* ---- Saved conversations: kept on this phone only ---- */
+const CHATS_KEY = 'fight-hub-coach-chats-v1';
+function savedChats() {
+  try { const list = JSON.parse(localStorage.getItem(CHATS_KEY) || '[]'); return Array.isArray(list) ? list : []; } catch { return []; }
+}
+function storeChats(list) {
+  try { localStorage.setItem(CHATS_KEY, JSON.stringify(list.slice(0, 30))); return true; } catch { return false; }
+}
+const chatWhen = at => new Date(at).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+function savedChatsMarkup() {
+  const chats = savedChats();
+  if (!chats.length) return '';
+  return `<h3 class="coach-saved-title">Saved conversations</h3>
+    ${chats.map(ch => `<details class="coach-chat"><summary><span>${esc(chatWhen(ch.at))}</span><span class="small">${ch.lines.length} ${ch.lines.length === 1 ? 'message' : 'messages'}</span></summary>
+      <div class="coach-transcript">${transcriptMarkup(ch.lines)}</div>
+      <button class="full" data-coach="delete-chat" data-id="${esc(ch.id)}">${icon('trash')} Delete this conversation</button></details>`).join('')}
+    <p class="small">Saved conversations stay on this phone only.</p>`;
+}
+
 /* ---- Screen ---- */
 const COACH_STATUS = { idle: 'Tap to talk to your coach', connecting: 'Connecting…', listening: 'Listening: go ahead and talk', speaking: 'Your coach is speaking' };
 
@@ -152,22 +188,24 @@ function coachMarkup() {
   const active = coach.state !== 'idle';
   return title('Your coach', 'Talk it<br>through.')
     + `<div class="coach-stage" data-state="${coach.state}">
-        <button class="coach-orb" data-coach="${active ? 'stop' : 'start'}" aria-label="${active ? 'End the conversation' : 'Talk to your coach'}">${icon(active ? 'x' : 'mic')}</button>
+        ${orbMarkup(active)}
         <p class="coach-status" id="coach-status" role="status">${COACH_STATUS[coach.state]}</p>
         ${active ? `<p class="coach-time" id="coach-time">${coach.endsAt ? clockText(coach.endsAt - Date.now()) : ''}</p>` : ''}
         ${active ? '<button class="full" data-coach="stop">End conversation</button>' : ''}
       </div>
       ${coach.message ? `<p class="status" role="status">${esc(coach.message)}</p>` : ''}
       <div class="coach-transcript" id="coach-transcript">${transcriptMarkup()}</div>
+      ${!active && coach.transcript.length ? `<div class="coach-chat-actions"><button class="primary" data-coach="save">${icon('save')} Save conversation</button><button data-coach="clear">${icon('trash')} Clear</button></div>` : ''}
       <p class="small">${remaining !== null && remaining !== undefined ? `${remaining} of ${limit} coach sessions left this month · ` : ''}up to ${coach.maxMinutes} minutes each · ${voice} voice (change it in your profile).</p>
       <details><summary>What can I ask?</summary><ul>
         <li>“What should I train today?”</li><li>“How do I throw a better switch kick?”</li>
         <li>“I missed two sessions this week. Help me get back on track.”</li><li>“How do I recover after hard sparring?”</li></ul></details>
+      ${savedChatsMarkup()}
       <p class="draft-note">Your coach is an AI. It gives general training guidance, not medical advice. Your name, goal and recent journal are shared with the coach during the conversation.</p>`;
 }
 
-function transcriptMarkup() {
-  return coach.transcript.slice(-12).map(m => `<p class="coach-line ${m.who}"><strong>${m.who === 'coach' ? 'Coach' : 'You'}</strong>${esc(m.text)}</p>`).join('');
+function transcriptMarkup(lines = coach.transcript) {
+  return lines.map(m => `<p class="coach-line ${m.who}"><strong>${m.who === 'coach' ? 'Coach' : 'You'}</strong>${esc(m.text)}</p>`).join('');
 }
 
 // Update just the live parts while talking (no full redraw)
@@ -178,7 +216,7 @@ function paintCoach() {
   const status = document.getElementById('coach-status');
   if (status) status.textContent = COACH_STATUS[coach.state];
   const t = document.getElementById('coach-transcript');
-  if (t) { t.innerHTML = transcriptMarkup(); t.lastElementChild?.scrollIntoView({ block: 'nearest' }); }
+  if (t) { t.innerHTML = transcriptMarkup(); t.scrollTop = t.scrollHeight; }
   if (coach.message && !stage.nextElementSibling?.classList?.contains('status')) stage.insertAdjacentHTML('afterend', `<p class="status" role="status">${esc(coach.message)}</p>`);
 }
 
@@ -191,7 +229,7 @@ render = function () {
   // Today: coach prompt and fight news (Explore now lives here)
   if (state.page === 'today' && state.mode !== 'fan' && !screen.querySelector('.coach-today')) {
     const next = feed.events?.[0];
-    screen.querySelector('.week-card')?.insertAdjacentHTML('afterend', `<div class="card coach-today"><span class="eyebrow">Your coach</span><h3>Talk through today’s training</h3><button class="full" data-go="coach">${icon('mic')} Talk to your coach</button></div>`);
+    screen.querySelector('.week-card')?.insertAdjacentHTML('afterend', `<div class="card coach-today">${coachPortrait() ? `<img class="coach-avatar" src="${coachPortrait()}" alt="" width="56" height="56">` : ''}<span class="eyebrow">Your coach</span><h3>Talk through today’s training</h3><button class="full" data-go="coach">${icon('mic')} Talk to your coach</button></div>`);
     screen.insertAdjacentHTML('beforeend', `<div class="card news-today"><span class="eyebrow">Fight news</span><h3>${next ? esc(next.name) : 'The latest from the fight world'}</h3><p class="small">${next ? `Next fight night · ${esc(niceDate(next.date))}` : 'News, fighters and the next fight night.'}</p><button class="full" data-go="explore">Open fight news</button></div>`);
     loadFeed();
   }
@@ -202,4 +240,16 @@ document.addEventListener('click', e => {
   if (!b) return;
   if (b.dataset.coach === 'start') startCoach();
   if (b.dataset.coach === 'stop') stopCoach().then(render);
+  if (b.dataset.coach === 'save') {
+    const ok = storeChats([{ id: Date.now().toString(36), at: new Date().toISOString(), voice: coachVoice(), lines: coach.transcript }, ...savedChats()]);
+    coach.message = ok ? 'Saved on this phone. You’ll find it under Saved conversations.' : 'This phone has no room to save it. Delete an older conversation and try again.';
+    if (ok) coach.transcript = [];
+    render();
+  }
+  if (b.dataset.coach === 'clear') { coach.transcript = []; coach.message = ''; render(); }
+  if (b.dataset.coach === 'delete-chat') {
+    if (b.dataset.confirm !== 'yes') { b.dataset.confirm = 'yes'; b.textContent = 'Tap again to delete'; return; }
+    storeChats(savedChats().filter(ch => ch.id !== b.dataset.id));
+    render();
+  }
 });
