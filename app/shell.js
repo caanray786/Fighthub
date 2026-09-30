@@ -23,6 +23,7 @@
   const ua = navigator.userAgent;
   const isIos = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isIosSafari = isIos && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+  const isAndroid = /Android/.test(ua);
   let deferredPrompt = null;
 
   function showSteps() {
@@ -30,8 +31,10 @@
       steps.innerHTML = '<p>On iPhone and iPad, apps can be added to the home screen from Safari.</p><ol><li>Open this page in <strong>Safari</strong>.</li><li>Tap the <strong>Share</strong> button ' + icon('share') + '.</li><li>Choose <strong>Add to Home Screen</strong>, then <strong>Add</strong>.</li></ol>';
     } else if (isIos) {
       steps.innerHTML = '<ol><li>Tap the <strong>Share</strong> button ' + icon('share') + ' in Safari’s toolbar.</li><li>Scroll down and choose <strong>Add to Home Screen</strong>.</li><li>Tap <strong>Add</strong>. Fight Hub opens full screen from its icon, like any app.</li></ol>';
+    } else if (isAndroid) {
+      steps.innerHTML = '<ol><li>Open your browser menu (the three dots or three lines).</li><li>Choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li><li>Confirm. Fight Hub then opens from its own icon.</li></ol><p class="small">Already installed? Open Fight Hub from its icon on your home screen.</p>';
     } else {
-      steps.innerHTML = '<ol><li>Open your browser menu (the three dots).</li><li>Choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li><li>Confirm. Fight Hub then opens from its own icon.</li></ol>';
+      steps.innerHTML = '<p>Fight Hub is made for your phone: scan the QR code on the Training page of fighthub.world, or open www.fighthub.world/app on your phone.</p><p>To add it to this computer too:</p><ol><li><strong>Chrome or Edge:</strong> click the install icon at the right of the address bar, or open the menu and choose <strong>Install Fight Hub</strong>.</li><li><strong>Safari on a Mac:</strong> choose <strong>File</strong>, then <strong>Add to Dock</strong>.</li></ol>';
     }
     dialog.showModal();
   }
@@ -43,8 +46,9 @@
       deferredPrompt = e;
       installButton.hidden = false;
     });
-    // iPhone has no prompt, so the button explains the two taps instead
-    if (isIos) installButton.hidden = false;
+    // Always offered outside the installed app; where the browser has no
+    // install prompt (iPhone, some Android browsers, computers) it shows the steps
+    installButton.hidden = false;
 
     installButton.addEventListener('click', async () => {
       if (deferredPrompt) {
