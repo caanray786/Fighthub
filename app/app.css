@@ -1081,3 +1081,10 @@ body[data-page=welcome] .account-button {
   font-size: 14px;
   color: #d8d8e0;
 }
+
+.week-reminder {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+}

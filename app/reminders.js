@@ -93,7 +93,7 @@ function reminderCardMarkup() {
   const hour = on ? s.hour : 18;
   const note = reminders.message ? `<p class="status" role="status">${esc(reminders.message)}</p>` : '';
   if (!pushSupported()) {
-    return `<div class="card reminder-card"><h3>Training reminders</h3><p class="small">This browser can’t show notifications. ${onIphone() ? 'On iPhone, add Fight Hub to your home screen (iOS 16.4 or later) and open it from there.' : 'Try Chrome, Edge, Firefox or Safari.'}</p></div>`;
+    return `<div class="card reminder-card" id="reminder-card"><h3>Training reminders</h3><p class="small">Notifications aren’t available here. ${onIphone() ? 'On iPhone, add Fight Hub to your home screen (iOS 16.4 or later) and open it from there.' : 'If this is a private or incognito window, open Fight Hub in a normal window or from your home screen. Otherwise, try Chrome, Edge, Firefox or Safari.'}</p></div>`;
   }
   return `<div class="card reminder-card" id="reminder-card"><h3>Training reminders</h3>
     <p class="small">${on ? `On: ${esc(days.map(d => REMINDER_DAYS.find(x => x[1] === d)[0]).join(', '))} at ${reminderClock(hour)}.` : 'A nudge on your training days, so you never miss a session.'}</p>
@@ -131,6 +131,13 @@ render = function () {
     screen.querySelector('.week-card')?.insertAdjacentHTML('beforebegin', `<div class="card reminder-today"><span class="eyebrow">Reminders</span><p class="small">${esc(reminders.flash)}</p></div>`);
     reminders.flash = '';
   }
+  // Always findable: a reminders link at the foot of the week card on Today
+  const week = state.page === 'today' && screen.querySelector('.week-card');
+  if (week && signedIn() && !week.querySelector('.week-reminder')) {
+    const s = reminderSettings();
+    const label = s?.on ? `Reminders: ${s.days.map(d => REMINDER_DAYS.find(x => x[1] === d)[0]).join(', ')} at ${reminderClock(s.hour)}` : 'Set training reminders';
+    week.insertAdjacentHTML('beforeend', `<button class="link-button week-reminder" data-reminder="open">${icon('clock')} ${esc(label)}</button>`);
+  }
   if (state.page === 'today') syncReminderProgress();
 };
 
@@ -140,6 +147,11 @@ document.addEventListener('click', async e => {
   const b = e.target.closest('[data-reminder]');
   if (!b) return;
   const a = b.dataset.reminder;
+  if (a === 'open') {
+    go('account');
+    setTimeout(() => document.getElementById('reminder-card')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 80);
+    return;
+  }
   if (a === 'dismiss') { try { localStorage.setItem('fight-hub-reminder-prompt', 'no'); } catch { /* ignore */ } return render(); }
   const days = a === 'quick' ? defaultReminderDays() : chosenReminderDays();
   const hour = a === 'quick' ? 18 : chosenReminderHour();
