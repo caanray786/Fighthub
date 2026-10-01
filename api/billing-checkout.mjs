@@ -5,12 +5,13 @@
 import { json, handle, httpError, billingReady, priceIds, trialDays, returnOrigin, hasPremium, passRenewable } from './_lib/http.mjs';
 import { memberFromRequest, getClerkUser, primaryEmail } from './_lib/clerk.mjs';
 import { stripe, createCheckoutSession } from './_lib/stripe.mjs';
+import { validReferrer, ensureFriendCoupon } from './_lib/referrals.mjs';
 
 export async function POST(request) {
   return handle(async () => {
     if (!billingReady()) throw httpError(503, 'Subscriptions are not switched on yet.');
     const member = await memberFromRequest(request);
-    const { plan } = await request.json().catch(() => ({}));
+    const { plan, ref } = await request.json().catch(() => ({}));
     const priceId = priceIds()[plan];
     if (!priceId) throw httpError(400, 'Choose a plan.');
 
@@ -27,6 +28,9 @@ export async function POST(request) {
     const origin = returnOrigin(request);
     const trial = trialDays();
     const hadTrial = !!user.private_metadata?.stripe_subscription_id || !!user.private_metadata?.had_pass; // one free trial per member
+    // Invited by a friend: the first month free on the monthly plan (new members only)
+    const referrer = !oneOff ? await validReferrer(ref, member, user) : null;
+    const coupon = referrer ? await ensureFriendCoupon() : null;
 
     const session = await createCheckoutSession({
       mode: oneOff ? 'payment' : 'subscription',
@@ -37,10 +41,11 @@ export async function POST(request) {
       metadata: { clerk_user_id: member.id, plan, ...(oneOff ? { pass: 'year' } : {}) },
       ...(oneOff
         ? { invoice_creation: { enabled: 'true' }, ...(customer ? {} : { customer_creation: 'always' }) } // receipt + a customer record for invoices
-        : { subscription_data: { metadata: { clerk_user_id: member.id }, ...(trial && !hadTrial ? { trial_period_days: trial } : {}) } }),
-      allow_promotion_codes: 'true',
+        : { subscription_data: { metadata: { clerk_user_id: member.id, ...(referrer ? { referrer } : {}) }, ...(trial && !hadTrial ? { trial_period_days: trial } : {}) } }),
+      // Stripe allows either an applied discount or a promotion-code box, not both
+      ...(coupon ? { discounts: [{ coupon }] } : { allow_promotion_codes: 'true' }),
       ...(customer ? { customer } : { customer_email: primaryEmail(user) || undefined })
     });
-    return json({ url: session.url });
+    return json({ url: session.url, friendOffer: !!coupon });
   });
 }

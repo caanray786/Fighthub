@@ -382,3 +382,75 @@ test('coach memory endpoint needs sign-in', async () => {
   const res = await POST(new Request('https://x/api/coach-memory', { method: 'POST', body: '{"conversationId":"conv_abcdefgh"}' }));
   assert.equal(res.status, 401);
 });
+
+// ---- Refer a friend ----
+import { validReferrer, rewardReferrer, ensureFriendCoupon } from '../api/_lib/referrals.mjs';
+
+test('referrals: invites work for new members only, never your own', async () => {
+  process.env.CLERK_SECRET_KEY = 'sk_test_c';
+  globalThis.fetch = async url => url.includes('user_ghost000000') ? new Response('{}', { status: 404 }) : new Response(JSON.stringify({ id: 'user_x' }));
+  const member = { id: 'user_friend00001' };
+  const newUser = { private_metadata: {} };
+  assert.equal(await validReferrer('inviter000001', member, newUser), 'user_inviter000001');
+  assert.equal(await validReferrer('friend00001', member, newUser), null);            // own link
+  assert.equal(await validReferrer('ghost000000', member, newUser), null);            // unknown member
+  assert.equal(await validReferrer('bad id!', member, newUser), null);
+  assert.equal(await validReferrer('inviter000001', member, { private_metadata: { stripe_subscription_id: 'sub_old' } }), null); // not new
+  globalThis.fetch = realFetch;
+});
+
+function fakeStripeAndClerk({ invoice, referrer }) {
+  const log = [];
+  globalThis.fetch = async (url, init = {}) => {
+    const method = init.method || 'GET';
+    log.push(`${method} ${url.replace(/^https:\/\/api\.(stripe|clerk)\.com\/v1/, '')}${init.body && method !== 'GET' ? ' ' + init.body : ''}`);
+    if (url.includes('/invoices/')) return new Response(JSON.stringify(invoice));
+    if (url.includes('api.clerk.com') && method === 'GET') return new Response(JSON.stringify(referrer));
+    if (url.endsWith('/customers') && method === 'POST') return new Response(JSON.stringify({ id: 'cus_new' }));
+    return new Response('{}');
+  };
+  return log;
+}
+
+test('referrals: a free month only after the friend\'s first paid month, and only once', async () => {
+  process.env.STRIPE_SECRET_KEY = 'sk_test_x'; process.env.CLERK_SECRET_KEY = 'sk_test_c';
+  const sub = { id: 'sub_f', status: 'active', latest_invoice: 'in_1', metadata: { referrer: 'user_inviter' } };
+  // First month was free: nothing yet
+  let log = fakeStripeAndClerk({ invoice: { status: 'paid', amount_paid: 0 }, referrer: {} });
+  assert.equal(await rewardReferrer(sub), 'not-yet');
+  // Paid month: a month's credit for a monthly member
+  log = fakeStripeAndClerk({ invoice: { status: 'paid', amount_paid: 1999 }, referrer: { public_metadata: { premium: { status: 'active' } }, private_metadata: { stripe_customer_id: 'cus_inv' } } });
+  assert.equal(await rewardReferrer(sub), 'credited');
+  assert.ok(log.some(l => l.startsWith('POST /subscriptions/sub_f') && l.includes('referral_rewarded')));
+  assert.ok(log.some(l => l.startsWith('POST /customers/cus_inv/balance_transactions') && l.includes('amount=-1999')));
+  // Already rewarded: never twice
+  assert.equal(await rewardReferrer({ ...sub, metadata: { ...sub.metadata, referral_rewarded: '1' } }), 'skip');
+  globalThis.fetch = realFetch;
+});
+
+test('referrals: a year pass gets one more month instead', async () => {
+  process.env.STRIPE_SECRET_KEY = 'sk_test_x'; process.env.CLERK_SECRET_KEY = 'sk_test_c';
+  const expires = new Date(Date.now() + 100 * 86400000);
+  const log = fakeStripeAndClerk({ invoice: { status: 'paid', amount_paid: 1999 }, referrer: { public_metadata: { premium: { status: 'active', pass: true, expires: expires.toISOString() } }, private_metadata: {} } });
+  assert.equal(await rewardReferrer({ id: 'sub_f', status: 'active', latest_invoice: 'in_2', metadata: { referrer: 'user_inviter' } }), 'pass-extended');
+  const patch = JSON.parse(log.find(l => l.startsWith('PATCH')).replace(/^PATCH \S+ /, ''));
+  const added = new Date(patch.public_metadata.premium.expires) - expires;
+  assert.ok(added > 27 * 86400000 && added < 32 * 86400000);
+  assert.equal(patch.public_metadata.referrals.earned, 1);
+  globalThis.fetch = realFetch;
+});
+
+test('referrals: the first-month-free coupon is created when missing', async () => {
+  process.env.STRIPE_SECRET_KEY = 'sk_test_x';
+  const calls = [];
+  globalThis.fetch = async (url, init = {}) => {
+    calls.push(`${init.method || 'GET'} ${url.replace('https://api.stripe.com/v1', '')}`);
+    return (init.method || 'GET') === 'GET'
+      ? new Response(JSON.stringify({ error: { message: "No such coupon: 'fighthub-friend-month'" } }), { status: 404 })
+      : new Response('{}');
+  };
+  assert.equal(await ensureFriendCoupon(), 'fighthub-friend-month');
+  assert.deepEqual(calls, ['GET /coupons/fighthub-friend-month', 'POST /coupons']);
+  globalThis.fetch = realFetch;
+  delete process.env.STRIPE_SECRET_KEY; delete process.env.CLERK_SECRET_KEY;
+});
