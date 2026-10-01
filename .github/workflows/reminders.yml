@@ -1,0 +1,19 @@
+# Sends training reminders (phone notifications) every hour.
+# The website works out who is due (their chosen days and time, in their own
+# time zone) and makes sure nobody gets more than one reminder a day.
+name: Training reminders
+
+on:
+  schedule:
+    - cron: '2 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Send due reminders
+        run: curl -fsS --max-time 120 -X POST https://www.fighthub.world/api/reminders-run

@@ -57,6 +57,9 @@ async function clerkApi(path, { method = 'GET', body } = {}) {
 
 export const getClerkUser = id => clerkApi(`/users/${encodeURIComponent(id)}`);
 
+// One page of members, newest first (for scheduled jobs such as reminders)
+export const listClerkUsers = (offset = 0, limit = 100) => clerkApi(`/users?limit=${limit}&offset=${offset}&order_by=-created_at`);
+
 // Merges into the member's Clerk metadata (public: readable by the app; private: server only)
 export const updateClerkMetadata = (id, metadata) =>
   clerkApi(`/users/${encodeURIComponent(id)}/metadata`, { method: 'PATCH', body: metadata });

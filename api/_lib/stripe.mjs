@@ -77,10 +77,15 @@ export async function saveSubscription(clerkUserId, sub) {
   const priceId = item?.price?.id;
   const periodEnd = sub.current_period_end || item?.current_period_end; // newer Stripe versions keep it on the item
   const iso = s => (s ? new Date(s * 1000).toISOString() : null);
+  // Paused (no charges until resumes_at): Premium runs to the end of the month paid for
+  const paused = subActive && sub.pause_collection;
+  const paidUntil = paused ? (sub.metadata?.paid_until ? iso(Number(sub.metadata.paid_until)) : current?.paidUntil || iso(periodEnd)) : null;
   await updateClerkMetadata(clerkUserId, {
     public_metadata: {
       premium: {
-        status: sub.status,
+        status: paused ? 'paused' : sub.status,
+        paidUntil,
+        resumes: paused ? iso(sub.pause_collection.resumes_at) : null,
         plan: priceId && priceId === priceIds().yearly ? 'yearly' : 'monthly',
         renews: iso(periodEnd),
         trialEnds: iso(sub.trial_end),
@@ -142,4 +147,23 @@ export async function cancelSubscriptions(customerId) {
   const running = data.filter(s => RUNNING.includes(s.status));
   for (const s of running) await stripe(`/subscriptions/${s.id}`, null, 'DELETE');
   return running.length;
+}
+
+// ---- Pause instead of cancel ----
+// Adds whole months to a Stripe time (seconds), keeping to the end of shorter months
+export function addMonths(seconds, months) {
+  const d = new Date(seconds * 1000);
+  const day = d.getUTCDate();
+  d.setUTCDate(1);
+  d.setUTCMonth(d.getUTCMonth() + months);
+  const last = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+  d.setUTCDate(Math.min(day, last));
+  return Math.floor(d.getTime() / 1000);
+}
+
+// The pause starts when the paid month ends. Collection resumes an hour before the
+// renewal that ends the pause, so that renewal is charged as normal.
+export function pausePlan(sub, months) {
+  const periodEnd = sub.current_period_end || sub.items?.data?.[0]?.current_period_end;
+  return { paidUntil: periodEnd, resumesAt: addMonths(periodEnd, months) - 3600 };
 }

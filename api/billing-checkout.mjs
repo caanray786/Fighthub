@@ -16,6 +16,7 @@ export async function POST(request) {
 
     const user = await getClerkUser(member.id);
     const current = user.public_metadata?.premium;
+    if (current?.status === 'paused') throw httpError(409, 'Your subscription is paused. Resume it on the Premium page.');
     if (hasPremium(current) && !passRenewable(current)) {
       throw httpError(409, current.pass ? 'Your year pass is active. You can renew it in its last 30 days.' : 'You already have Premium. Use Manage subscription to change your plan.');
     }

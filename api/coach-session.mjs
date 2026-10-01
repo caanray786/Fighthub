@@ -9,6 +9,7 @@
 //   which enforces it on ElevenLabs' side.
 import { json, handle, httpError, hasPremium } from './_lib/http.mjs';
 import { memberFromRequest, getClerkUser, updateClerkMetadata } from './_lib/clerk.mjs';
+import { resolveMemory, memoryText } from './_lib/coach-memory.mjs';
 
 // ---- Male/female coach voice ----
 // The app asks for the member's chosen voice, which needs the agent's "voice
@@ -83,8 +84,15 @@ export async function POST(request) {
 
     const signedUrl = await getSignedUrl(key, agent);
 
+    // Coach memory: collect summaries of earlier chats that have finished processing
+    let memory = user.private_metadata?.coachMemory || { items: [], pending: [] };
+    if (memory.pending?.length) memory = await resolveMemory(key, agent, memory);
+
     const usage = { month, sessions: used + 1, limit };
-    await updateClerkMetadata(member.id, { private_metadata: { coach: usage }, public_metadata: { coachUsage: usage } });
-    return json({ signedUrl, voiceId, remaining: limit - usage.sessions, limit, maxMinutes: sessionMinutes() });
+    await updateClerkMetadata(member.id, {
+      private_metadata: { coach: usage, coachMemory: memory },
+      public_metadata: { coachUsage: usage, coachMemoryCount: memory.items.length }
+    });
+    return json({ signedUrl, voiceId, remaining: limit - usage.sessions, limit, maxMinutes: sessionMinutes(), memory: memoryText(memory.items) });
   });
 }
