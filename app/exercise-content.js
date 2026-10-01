@@ -106,7 +106,9 @@ const ExerciseContent = (() => {
  'walking-lunge':['Stand tall at one end of a clear, level route.','Step forward into a lunge, lower to a comfortable depth, then bring the back foot through into the next step.','Keep your front knee following its toes and your torso upright.','Use reverse lunges on the spot.']
  };
  function get(id){const r=rows[id];return r?{steps:r.slice(0,2),cue:r[2],easy:r[3]}:null;}
- function target(e,level='Starter'){
+ function target(e,level='Starter',style=''){
+  // Build muscle: more sets in the 8-12 range, finishing close to (not at) failure
+  if(style==='muscle'&&!['Stretch','Mobility','Hold','Steady','Carry','Jump'].includes(e.pattern))return level==='Starter'?'Muscle-building start: 2–3 sets of 8–12 controlled reps, stopping with 2–3 good reps left; rest about 90 seconds.':'3–4 sets of 8–12 reps, the last reps hard but clean (1–2 left in the tank); rest 90–120 seconds. When you reach 12 reps on every set, add a little weight.';
   if(e.pattern==='Stretch')return 'Hold gently for 15–20 seconds per side; relax before repeating. Never bounce.';
   if(e.pattern==='Mobility')return '5–8 slow movements each direction; stay within a comfortable range.';
   if(e.pattern==='Hold')return level==='Starter'?'2 holds of 10–15 seconds; rest 45–60 seconds.':'2–3 holds of 20–30 seconds; rest 60 seconds.';

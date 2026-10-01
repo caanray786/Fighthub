@@ -362,7 +362,69 @@ const FightData = (() => {
     return [{ day: 'Day 1', ...s }, { day: 'Day 3', ...s }, { day: 'Day 5', ...s }];
   }
 
+  // Fight Fit fat loss: fight conditioning, a strength circuit that protects muscle,
+  // and skipping plus core. Work rises and rest falls over the eight weeks.
+  function fatLossWeek(week) {
+    const i = week - 1;
+    const warm = [{ id: 'jog-in-place', kind: 'Warm-up', seconds: 120 }, { id: 'arm-circles', kind: 'Warm-up', seconds: 45 }, { id: 'hip-openers', kind: 'Warm-up', seconds: 60 }, { id: 'shadow-bounce', kind: 'Warm-up', seconds: 75 }];
+    const cool = [{ id: 'walk', kind: 'Cool-down', seconds: 120 }, { id: 'hamstring-stretch', kind: 'Cool-down', seconds: 60 }, { id: 'quad-stretch', kind: 'Cool-down', seconds: 60 }, { id: 'chest-stretch', kind: 'Cool-down', seconds: 45 }];
+    const steps = [6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500][i];
+    const mm = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+    // Day 1: shadowboxing rounds and a short finisher
+    const roundSecs = [120, 120, 150, 150, 180, 180, 180, 180][i];
+    const roundRest = [60, 60, 60, 45, 60, 45, 45, 45][i];
+    const rounds = [4, 4, 5, 5, 5, 6, 6, 6][i];
+    const plan = [['stance-footwork', 'Move and jab: stay light on your feet all round.'], ['punch-out', 'Fast straight punches, as many as you can with good form.'], ['body-shots', 'Bend the knees, punch to the body, come back up.'], ['roundhouse', 'Kicks: alternate legs at a steady pace.'], ['sprawl', 'Shadowbox and sprawl on every tenth punch.'], ['shadow-bounce', 'Free round: keep moving and keep punching.']];
+    const fight = [...warm];
+    for (let r = 0; r < rounds; r++) {
+      const [id, focus] = plan[r % plan.length];
+      fight.push({ id, kind: 'Round', seconds: roundSecs, round: r + 1, of: rounds, focus });
+      if (r < rounds - 1) fight.push({ id: plan[(r + 1) % plan.length][0], kind: 'Rest', seconds: roundRest, focus: 'Walk around and breathe.' });
+    }
+    const fin = [20, 20, 25, 25, 30, 30, 30, 30][i];
+    ['mountain-climber', 'squat', 'mountain-climber', 'squat'].forEach((id, n, all) => {
+      fight.push({ id, kind: 'Finisher', seconds: fin, focus: 'Fast but controlled.' });
+      if (n < all.length - 1) fight.push({ id: 'rest', kind: 'Rest', seconds: 15 });
+    });
+
+    // Day 3: full-body strength circuit
+    const moves = [['goblet', 'Goblet squat, or a bodyweight squat.'], ['push-up', 'Press-ups, knees down if you need to.'], ['band-row', 'Rows: squeeze your shoulder blades together.'], ['rdl', 'Romanian deadlift: long back, push your hips back.'], ['plank', 'Forearm plank: brace and keep breathing.']];
+    const work = [40, 40, 40, 45, 45, 45, 50, 50][i], rest = [20, 20, 20, 20, 15, 15, 15, 15][i], circuits = [2, 2, 3, 3, 3, 3, 4, 4][i];
+    const strength = [...warm];
+    for (let c = 0; c < circuits; c++) {
+      moves.forEach(([id, focus], m) => {
+        strength.push({ id, kind: 'Work', seconds: work, round: c * moves.length + m + 1, focus: `Circuit ${c + 1} of ${circuits}: ${focus}` });
+        const last = m === moves.length - 1;
+        if (!(last && c === circuits - 1)) strength.push({ id: last ? 'rest' : moves[m + 1][0], kind: 'Rest', seconds: last ? 60 : rest, focus: last ? 'Rest before the next circuit.' : `Next: ${moves[m + 1][1]}` });
+      });
+    }
+
+    // Day 5: skipping intervals, then a core finisher
+    const skipSecs = [60, 60, 75, 75, 90, 90, 90, 90][i], skipRounds = [5, 6, 6, 7, 7, 8, 8, 8][i];
+    const skip = [...warm.slice(0, 3)];
+    for (let r = 0; r < skipRounds; r++) {
+      skip.push({ id: 'skip-rope', kind: 'Round', seconds: skipSecs, round: r + 1, of: skipRounds, focus: 'Light, quick skips. No rope? Mime it.' });
+      skip.push({ id: 'walk', kind: 'Rest', seconds: 30, focus: 'Walk and breathe.' });
+    }
+    [['dead-bug', 45], ['side-plank', 30], ['bird-dog', 45], ['plank', 40]].forEach(([id, s], n) => {
+      skip.push({ id, kind: 'Work', seconds: s, focus: 'Core: slow and controlled.' });
+      if (n < 3) skip.push({ id: 'rest', kind: 'Rest', seconds: 15 });
+    });
+
+    return [
+      { day: 'Day 1', name: 'Fight conditioning', focus: `${rounds} × ${mm(roundSecs)} shadowboxing rounds and a finisher. Daily steps this week: ${steps.toLocaleString('en-GB')}.`, phases: [...fight, ...cool] },
+      { day: 'Day 3', name: 'Strength circuit', focus: `${circuits} circuits of 5 moves, ${work} seconds on and ${rest} off. Strength keeps your muscle while you lose fat.`, phases: [...strength, ...cool] },
+      { day: 'Day 5', name: 'Skip and core', focus: `${skipRounds} × ${mm(skipSecs)} skipping rounds, then a core finisher.`, phases: [...skip, ...cool] }
+    ];
+  }
+
   const programmes = [
+    { id: 'fat-loss', name: 'Fight Fit fat loss', weeks: 8, perWeek: 3, image: 'burpee', freeWeeks: [1],
+      about: 'Lose fat the fighter’s way: shadowboxing rounds, a full-body strength circuit that protects your muscle, and skipping plus core, building over eight weeks.',
+      how: 'Three sessions a week with a day between, for example Monday, Wednesday and Friday. Add a daily step target: about 6,000 steps in week 1, rising by 500 a week to 9,500 in week 8. Aim to lose about 0.5 to 1 kg a week, weigh yourself once a week, and see Eat to train for the food side. No crash diets and no sweating weight off.',
+      note: 'Work at your own level and stop if you feel pain, dizziness or unwell. If you have a medical condition, check with your GP before starting.',
+      build: fatLossWeek },
     { id: 'splits', name: 'Splits and high kicks', weeks: 8, perWeek: 4, image: 'half-split', freeWeeks: [1],
       about: 'A proper flexibility programme for kicks: long holds, contract-relax stretching and active strength at the end of your range, building every two weeks.',
       how: 'Four sessions a week (front split days and middle split days). Holds build from 30 to 60 seconds and sets from 2 to 3. Stretch to strong but comfortable tension, never pain. Do these after training or as a separate session, not right before sparring or explosive work.',

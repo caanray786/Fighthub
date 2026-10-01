@@ -286,7 +286,8 @@ function programmeMarkup(p) {
       </article>`;
     }).join('')}
     ${timerOptions()}
-    <p class="draft-note">${p.id === 'splits' ? 'Stretch to strong but comfortable tension, never sharp pain. Progress is gradual: weeks to months.' : 'Run on safe routes, carry water and adjust the effort to how you feel on the day.'}</p>
+    ${p.id === 'fat-loss' ? `<div class="row-buttons"><button data-go="nutrition">${icon('heart')} Eat to train</button><button data-go="body">${icon('chart')} Track your weight</button></div>` : ''}
+    <p class="draft-note">${p.note || (p.id === 'splits' ? 'Stretch to strong but comfortable tension, never sharp pain. Progress is gradual: weeks to months.' : 'Run on safe routes, carry water and adjust the effort to how you feel on the day.')}</p>
     ${fbtn('All fight training', 'page', 'fight', 'full')}`;
 }
 

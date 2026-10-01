@@ -1088,3 +1088,54 @@ body[data-page=welcome] .account-button {
   gap: 6px;
   margin-top: 12px;
 }
+
+/* ---- Weight and waist, Eat to train, plan cards ---- */
+.body-chart {
+  width: 100%;
+  height: auto;
+  margin-top: 10px;
+}
+
+.body-chart-label {
+  font-size: 11px;
+  fill: #a9a9b6;
+}
+
+.body-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.body-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: #ffffff08;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.plain-list {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.plain-list li {
+  margin-bottom: 8px;
+  color: #d8d8e0;
+}
+
+.plain-list a {
+  color: #f0f0f4;
+  text-decoration: underline;
+  text-decoration-color: #f14b5599;
+}

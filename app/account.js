@@ -9,7 +9,7 @@
 
 const account = { status: 'idle', profile: null, profileLoaded: false, editing: false, message: '', sync: { last: null, error: '', busy: false }, mounted: null };
 
-const GOALS = ['Get fitter', 'Build strength and muscle', 'Improve conditioning', 'Prepare to compete', 'Learn self-defence', 'Flexibility and kicks'];
+const GOALS = ['Get fitter', 'Lose weight', 'Build strength and muscle', 'Improve conditioning', 'Prepare to compete', 'Learn self-defence', 'Flexibility and kicks'];
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
 const memberKey = 'fight-hub-member-v1';
 const ageKey = 'fight-hub-age-ok';
