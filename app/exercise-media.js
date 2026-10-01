@@ -3,5 +3,5 @@ const ExerciseMedia=new Set(["chair-rise","wall-press","calf","side-leg","bottle
 ['hip-flexor-stretch','butterfly-stretch','half-split'].forEach(id=>ExerciseMedia.add(id));
 ExerciseMedia.add('leg-curl');
 // Glutes and legs exercises (checked and approved 30 Sep 2026)
-['band-walk', 'bulgarian-split', 'cable-kickback', 'curtsy-lunge', 'donkey-kick', 'fire-hydrant', 'hip-abduction', 'kb-swing', 'single-leg-bridge', 'single-leg-rdl', 'step-up', 'sumo-squat', 'walking-lunge', 'back-extension'].forEach(id=>ExerciseMedia.add(id));
+['band-walk', 'bulgarian-split', 'cable-kickback', 'curtsy-lunge', 'donkey-kick', 'fire-hydrant', 'hip-abduction', 'kb-swing', 'single-leg-bridge', 'single-leg-rdl', 'step-up', 'sumo-squat', 'walking-lunge', 'back-extension', 'b-stance-thrust', 'pull-through'].forEach(id=>ExerciseMedia.add(id));
 if(typeof module!=='undefined')module.exports=ExerciseMedia;

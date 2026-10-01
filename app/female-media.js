@@ -6,8 +6,22 @@
    add each id below once its file is in place (a test checks the files). */
 const FemaleMedia = {
   movements: new Set([
-    'band-walk', 'bulgarian-split', 'cable-kickback', 'curtsy-lunge', 'donkey-kick', 'hip-abduction', 'kb-swing', 'single-leg-bridge', 'single-leg-rdl', 'step-up', 'sumo-squat', 'walking-lunge',
-    'bridge', 'chair-rise', 'goblet', 'hip-thrust', 'lateral-lunge', 'reverse-lunge', 'side-leg', 'split-squat', 'squat', 'squat-jump'
+    'ankle', 'arm-circles', 'assisted-pull', 'b-stance-thrust', 'backpack-hinge', 'backpack-row', 'backpack-squat', 'bag-work',
+    'band-curl', 'band-row', 'band-walk', 'bear-crawl', 'bench-press', 'biceps-curl', 'bike', 'bird-dog',
+    'body-shots', 'bottle-carry', 'bottle-curl', 'bottle-raise', 'bridge', 'bulgarian-split', 'burpee', 'butt-kicks',
+    'butterfly-stretch', 'cable-kickback', 'cable-row', 'calf', 'calf-stretch', 'carry', 'chair-rise', 'check',
+    'chest-machine', 'chest-stretch', 'clamshell', 'curtsy-lunge', 'db-row', 'dead-bug', 'donkey-kick', 'floor-press',
+    'glute-stretch', 'goblet', 'half-split', 'hammer-curl', 'hamstring-stretch', 'hand-release-press', 'heel-digs', 'heel-taps',
+    'high-knees', 'hinge', 'hip-abduction', 'hip-flexor-stretch', 'hip-openers', 'hip-thrust', 'inchworm', 'incline-press',
+    'jab', 'kb-swing', 'knee-straight', 'kneeling-press', 'lat-pull', 'lateral-lunge', 'lateral-raise', 'lead-hook',
+    'leg-curl', 'leg-press', 'leg-swings-front', 'leg-swings-side', 'low-kick', 'march', 'mountain-climber', 'mt-stance',
+    'parry', 'pivot', 'plank', 'plank-tap', 'plank-up-down', 'prone-w', 'pull-through', 'push-up',
+    'quad-stretch', 'rdl', 'reverse-fly', 'reverse-lunge', 'roll', 'roundhouse', 'rower', 'seated-calf',
+    'shadow-bounce', 'shoulder-press', 'shoulder-roll', 'side-leg', 'side-lying-raise', 'side-plank', 'side-steps', 'single-leg-bridge',
+    'single-leg-rdl', 'skip-rope', 'slip', 'slow-climber', 'split-squat', 'squat', 'squat-jump', 'squat-thrust',
+    'stance-footwork', 'standing-curl', 'star-jacks', 'step-burpee', 'step-jacks', 'step-up', 'sumo-squat', 'switch-kick',
+    'teep', 'triceps', 'tuck-jump', 'upper-back-stretch', 'uppercut', 'walk', 'walking-lunge', 'wall-press',
+    'wall-sit', 'wall-slide'
   ]),
   arts: new Set(['bjj', 'boxing', 'karate', 'kickboxing', 'kung-fu', 'mma', 'muay-thai', 'taekwondo', 'wrestling'])
 };
