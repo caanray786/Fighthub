@@ -13,8 +13,34 @@ const apiUrl = path => (location.protocol.startsWith('http') ? '' : SITE_URL) + 
 
 function memberPremium() {
   const p = window.Clerk?.user?.publicMetadata?.premium;
+  if (!p) return null;
+  // A paused subscription keeps Premium until the end of the month already paid for
+  if (p.status === 'paused') return p.paidUntil && new Date(p.paidUntil) > new Date() ? p : null;
   // Year passes (one-off payments) also need an unexpired end date
-  return p && PREMIUM_STATUSES.includes(p.status) && (!p.expires || new Date(p.expires) > new Date()) ? p : null;
+  return PREMIUM_STATUSES.includes(p.status) && (!p.expires || new Date(p.expires) > new Date()) ? p : null;
+}
+
+// "Thinking of cancelling?": a break keeps members who would otherwise leave
+function pauseOffer(mine) {
+  return `<details class="card pause-offer"><summary><strong>Thinking of cancelling?</strong><span class="small">Take a break instead</span></summary>
+    <p class="small">Pause for up to 3 months. You keep Premium until ${esc(longDate(mine.renews))}, nothing is charged while you’re away, and your journal, goals and streaks are kept. It restarts by itself, or you can come back any time.</p>
+    <label class="field">Pause for<select id="pause-months">${[1, 2, 3].map(n => `<option value="${n}">${n} ${n === 1 ? 'month' : 'months'}</option>`).join('')}</select></label>
+    <button class="primary full" data-premium="pause" ${billing.busy ? 'disabled' : ''}>Pause my subscription</button>
+    <button class="full" data-premium="portal">No thanks, cancel instead</button>
+  </details>`;
+}
+
+function pausedMarkup(sub, note) {
+  const stillPaid = sub.paidUntil && new Date(sub.paidUntil) > new Date();
+  const monthly = billing.plans.find(p => p.id === 'monthly');
+  const price = !stillPaid && monthly ? ` (${money(monthly.amount, monthly.currency)} today)` : '';
+  return title('Fight Hub Premium', 'Taking a<br>break.') + note
+    + `<div class="card feature"><span class="badge">PAUSED</span>
+        <h3>Paused until ${esc(longDate(sub.resumes))}</h3>
+        <p class="small">${stillPaid ? `You keep Premium until ${esc(longDate(sub.paidUntil))}. ` : ''}Nothing is charged while you’re paused, and it restarts by itself on ${esc(longDate(sub.resumes))}. Your journal, goals and streaks are all kept.</p>
+        <button class="primary full" data-premium="resume" ${billing.busy ? 'disabled' : ''}>Resume now${price}</button>
+        <button class="full" data-premium="portal">Manage subscription</button></div>
+      <h3>Waiting for you when you’re back</h3>${list(INCLUDED)}`;
 }
 
 // With Stripe live, Premium is whatever the member's subscription says
@@ -51,6 +77,33 @@ async function billingCall(path, body) {
   return data;
 }
 
+/* ---- Refer a friend ----
+   An invite link (/app/?ref=...) is remembered on this phone until the friend
+   subscribes. The website decides if it applies (new members, monthly plan). */
+const REF_KEY = 'fight-hub-ref';
+(() => {
+  const ref = new URLSearchParams(location.search).get('ref');
+  if (ref && /^[A-Za-z0-9]{10,40}$/.test(ref)) { try { localStorage.setItem(REF_KEY, ref); } catch { /* private mode */ } }
+})();
+
+function inviteRef() {
+  let ref = '';
+  try { ref = localStorage.getItem(REF_KEY) || ''; } catch { /* ignore */ }
+  const own = window.Clerk?.user?.id?.replace(/^user_/, '');
+  return ref && ref !== own ? ref : '';
+}
+
+const inviteLink = () => (window.Clerk?.user?.id ? `${SITE_URL}/app/?ref=${window.Clerk.user.id.replace(/^user_/, '')}` : '');
+
+function inviteMarkup() {
+  if (!billing.live || !inviteLink()) return '';
+  const r = window.Clerk?.user?.publicMetadata?.referrals || {};
+  return `<div class="card invite-card"><span class="eyebrow">Invite a friend</span><h3>Give a friend a free month</h3>
+    <p class="small">Your friend gets their first month of monthly Premium free. When they pay for their first month, you get a month free too.</p>
+    ${r.joined || r.earned ? `<p class="small">Friends joined: ${r.joined || 0} · Free months earned: ${r.earned || 0}</p>` : ''}
+    <div class="row-buttons"><button class="primary" data-premium="invite">${icon('share')} Share invite</button><button data-premium="copy-invite">${icon('link')} Copy link</button></div></div>`;
+}
+
 // After Stripe Checkout: wait for the webhook to switch Premium on
 async function handleCheckoutReturn() {
   const params = new URLSearchParams(location.search);
@@ -59,6 +112,7 @@ async function handleCheckoutReturn() {
   billing.returnHandled = true;
   history.replaceState(history.state, '', location.pathname); // tidy the address
   if (result === 'cancelled') { billing.message = 'Checkout cancelled. You have not been charged.'; return go('premium'); }
+  if (result === 'success') { try { localStorage.removeItem(REF_KEY); } catch { /* ignore */ } }
   billing.message = result === 'success' ? 'Payment received. Switching on Premium…' : 'Updating your membership…';
   go('premium');
   for (let i = 0; i < 15; i++) {
@@ -74,7 +128,7 @@ async function handleCheckoutReturn() {
 }
 
 const INCLUDED = [
-  'Every fight session in all 9 disciplines, with the round timer',
+  'Every fight session in all 10 disciplines, including self-defence, with the round timer',
   'The full Splits and high kicks and Fighter roadwork programmes',
   'All 100+ illustrated exercises and 17 home and gym sessions',
   'HIIT: 25, 30 and 40 minutes at three levels',
@@ -103,6 +157,8 @@ function planCard(p) {
 function premiumMarkup() {
   const note = billing.message ? `<p class="status" role="status">${esc(billing.message)}</p>` : '';
   const mine = memberPremium();
+  const sub = window.Clerk?.user?.publicMetadata?.premium;
+  if (billing.live && sub?.status === 'paused') return pausedMarkup(sub, note);
   if (billing.live && mine) {
     if (mine.pass) {
       const left = daysUntil(mine.expires);
@@ -123,6 +179,8 @@ function premiumMarkup() {
           <h3>${mine.plan === 'yearly' ? 'Yearly' : 'Monthly'} plan</h3><p class="small">${esc(status)}</p>
           <button class="primary full" data-premium="portal">Manage subscription</button>
           <p class="small">Change plan, update your card, see invoices or cancel, on Stripe’s secure page.</p></div>
+        ${mine.status === 'active' && !mine.cancelAtPeriodEnd && mine.plan !== 'yearly' ? pauseOffer(mine) : ''}
+        ${inviteMarkup()}
         <h3>Everything included</h3>${list(INCLUDED)}
         <button class="full" data-fight="page" data-id="fight">Go to fight training</button>`;
   }
@@ -131,8 +189,9 @@ function premiumMarkup() {
     const trial = billing.trialDays;
     const after = sel ? `${money(sel.amount, sel.currency)} a ${sel.interval === 'year' ? 'year' : 'month'}` : '';
     return title('Fight Hub Premium', 'Train like a fighter.<br>Every day.') + note
+      + (inviteRef() ? `<div class="card invite-note"><span class="eyebrow">Friend invite</span><p class="small">${sel?.id === 'monthly' ? 'Your friend’s invite gives you your <strong>first month free</strong> on the monthly plan (for new members). You can cancel before it ends.' : 'Your friend’s invite gives you a free first month if you choose the monthly plan.'}</p></div>` : '')
       + `<div class="plan-options">${billing.plans.map(planCard).join('')}</div>
-        <button class="primary full" data-premium="checkout" ${billing.busy ? 'disabled' : ''}>${billing.busy ? 'Opening secure checkout…' : sel?.oneOff ? 'Get 12 months of Premium' : trial ? `Start ${trial}-day free trial` : 'Subscribe'}</button>
+        <button class="primary full" data-premium="checkout" ${billing.busy ? 'disabled' : ''}>${billing.busy ? 'Opening secure checkout…'   : sel?.oneOff ? 'Get 12 months of Premium' : inviteRef() ? 'Start my free month' : trial ? `Start ${trial}-day free trial` : 'Subscribe'}</button>
         <p class="small">${sel?.oneOff ? `One payment of ${money(sel.amount, sel.currency)} for 12 months of Premium. It does not renew automatically; we’ll remind you before it ends.` : `${trial ? `Free for ${trial} days, then ${after}. Cancel before the trial ends and you won’t be charged.` : `${after}.`} Renews automatically; cancel any time in your account.`} Payments are handled securely by Stripe.</p>
         <p class="small">By continuing you agree to our ${legalLink('terms', 'Terms')}. Changed your mind? Cancel within 14 days of your first payment for a full refund: see ${legalLink('cancellation', 'Cancellations and refunds')}.</p>
         <h3>Premium includes</h3>${list(INCLUDED)}
@@ -157,6 +216,10 @@ render = function () {
   const pill = document.querySelector('.premium-pill');
   if (pill) { const on = billing.live ? !!memberPremium() : training.premium; pill.textContent = on ? 'Premium' : 'Go Premium'; pill.classList.toggle('is-member', on); }
   if (signedIn() && billing.live !== null) handleCheckoutReturn();
+  if (state.page === 'account' && signedIn() && !screen.querySelector('.invite-card')) {
+    const journalCard = [...screen.querySelectorAll('.card h3')].find(h => h.textContent === 'Training journal')?.closest('.card');
+    journalCard?.insertAdjacentHTML('beforebegin', inviteMarkup());
+  }
   // Reminder on Today in the last 30 days of a year pass
   const pass = billing.live && memberPremium();
   if (state.page === 'today' && pass?.pass && daysUntil(pass.expires) <= 30 && !screen.querySelector('.renew-card')) {
@@ -170,6 +233,33 @@ document.addEventListener('click', async e => {
   if (!b) return;
   const a = b.dataset.premium;
   if (a === 'select') { billing.selected = b.dataset.id; return render(); }
+  if (a === 'invite' || a === 'copy-invite') {
+    const url = inviteLink();
+    const text = 'Train with me on Fight Hub. My invite gets you your first month of Premium free:';
+    try {
+      if (a === 'invite' && navigator.share) await navigator.share({ title: 'Fight Hub', text, url });
+      else { await navigator.clipboard.writeText(`${text} ${url}`); b.textContent = 'Link copied'; }
+    } catch { /* cancelled */ }
+    return;
+  }
+  if (a === 'pause' || a === 'resume') {
+    const months = Number(document.getElementById('pause-months')?.value || 1);
+    billing.busy = true;
+    billing.message = '';
+    render();
+    try {
+      const r = await billingCall('/api/billing-pause', a === 'pause' ? { action: 'pause', months } : { action: 'resume' });
+      await window.Clerk?.user?.reload();
+      applyPremium();
+      billing.message = a === 'pause'
+        ? `Paused. You keep Premium until ${longDate(r.paidUntil)}, and it restarts on ${longDate(r.resumes)}.`
+        : r.charged ? 'Welcome back. Your new month starts today.' : 'Welcome back. Your subscription is running again.';
+    } catch (err) {
+      billing.message = err.message;
+    }
+    billing.busy = false;
+    return render();
+  }
   if (a === 'renew') billing.selected = 'yearly';
   if (a === 'checkout' || a === 'portal' || a === 'renew') {
     billing.busy = true;
@@ -177,7 +267,7 @@ document.addEventListener('click', async e => {
     render();
     try {
       const pay = a === 'checkout' || a === 'renew';
-      const { url } = await billingCall(pay ? '/api/billing-checkout' : '/api/billing-portal', pay ? { plan: billing.selected } : {});
+      const { url } = await billingCall(pay ? '/api/billing-checkout' : '/api/billing-portal', pay ? { plan: billing.selected, ref: inviteRef() || undefined } : {});
       location.href = url;
     } catch (err) {
       billing.busy = false;

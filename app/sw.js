@@ -3,14 +3,14 @@
    fetched fresh when online and falls back to the last copy offline.
    Bump VERSION whenever app files change so phones pick up the update. */
 
-const VERSION = 'fight-hub-v23';
+const VERSION = 'fight-hub-v24';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest',
-  'base.css?v=23', 'glass.css?v=23', 'training.css?v=23', 'app.css?v=23',
-  'config.js', 'icons.js?v=23', 'core.js?v=23', 'training-data.js?v=23', 'exercise-content.js?v=23', 'exercise-media.js?v=23', 'female-media.js?v=23',
-  'training.js?v=23', 'interval-model.js?v=23', 'conditioning-model.js?v=23', 'hiit.js?v=23', 'guided-model.js?v=23', 'guided.js?v=23',
-  'exercise-experience.js?v=23', 'mobility.js?v=23', 'membership-model.js?v=23', 'membership.js?v=23', 'routine-model.js?v=23',
-  'routine.js?v=23', 'exercise-navigation.js?v=23', 'fight-data.js?v=23', 'fight.js?v=23', 'journal.js?v=23', 'account.js?v=23', 'premium.js?v=23', 'retention.js?v=23', 'coach.js?v=23', 'shell.js?v=23',
+  'base.css?v=24', 'glass.css?v=24', 'training.css?v=24', 'app.css?v=24',
+  'config.js', 'icons.js?v=24', 'core.js?v=24', 'training-data.js?v=24', 'exercise-content.js?v=24', 'exercise-media.js?v=24', 'female-media.js?v=24',
+  'training.js?v=24', 'interval-model.js?v=24', 'conditioning-model.js?v=24', 'hiit.js?v=24', 'guided-model.js?v=24', 'guided.js?v=24',
+  'exercise-experience.js?v=24', 'mobility.js?v=24', 'membership-model.js?v=24', 'membership.js?v=24', 'routine-model.js?v=24',
+  'routine.js?v=24', 'exercise-navigation.js?v=24', 'fight-data.js?v=24', 'fight.js?v=24', 'journal.js?v=24', 'account.js?v=24', 'premium.js?v=24', 'retention.js?v=24', 'recap.js?v=24', 'coach.js?v=24', 'reminders.js?v=24', 'shell.js?v=24',
   'assets/fight-hub-logo.png', 'icons/icon-192.png', 'icons/apple-touch-icon.png'
 ];
 
@@ -66,4 +66,26 @@ self.addEventListener('fetch', event => {
       return response;
     }))
   );
+});
+
+/* ---- Training reminders (sent by the website, shown even when the app is closed) ---- */
+self.addEventListener('push', event => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch { data = { body: event.data?.text() }; }
+  event.waitUntil(self.registration.showNotification(data.title || 'Fight Hub', {
+    body: data.body || 'Time to train.',
+    icon: 'icons/icon-192.png',
+    badge: 'icons/icon-192.png',
+    tag: data.tag || 'fight-hub',
+    data: { url: data.url || '/app/' }
+  }));
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = new URL(event.notification.data?.url || '/app/', self.location.origin).href;
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+    const open = list.find(c => c.url.startsWith(self.location.origin + '/app/'));
+    return open ? open.focus() : self.clients.openWindow(url);
+  }));
 });

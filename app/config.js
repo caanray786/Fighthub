@@ -5,6 +5,8 @@
    ElevenLabs) in this file: those live in Vercel's environment variables. */
 window.FIGHTHUB_CONFIG = {
   supabaseUrl: 'https://ewfuhrlgdivwtdremkdv.supabase.co',
+  // Public half of the notification key (the private half is in Vercel only)
+  vapidPublicKey: 'BEkxGGoDTa0zdT57y19JIO3oC4QwSITWiMARadiyWeujrLPelOKc5dt9LZJz8Bf4pLOZrJ3HbJ4nCOlJK39oPWI',
   supabaseAnonKey: 'sb_publishable_j9JDQxPwdCHhrw93Wn3j-Q_BKVpTCk1',
   // Live sign-in on fighthub.world; the test sign-in everywhere else (preview
   // versions and local testing), which matches the keys Vercel gives those versions

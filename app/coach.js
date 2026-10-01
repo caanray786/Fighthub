@@ -107,12 +107,12 @@ async function startCoach() {
     coach.maxMinutes = session.maxMinutes || 10;
     coach.conversation = await sdk.Conversation.startSession({
       signedUrl: session.signedUrl,
-      dynamicVariables: coachContext(),
+      dynamicVariables: { ...coachContext(), coach_memory: session.memory || 'No previous conversations yet.' },
       ...(session.voiceId ? { overrides: { tts: { voiceId: session.voiceId } } } : {}),
-      onConnect: () => { coach.state = 'listening'; startClock(); paintCoach(); },
+      onConnect: info => { coach.conversationId = info?.conversationId || null; coach.state = 'listening'; startClock(); paintCoach(); },
       onModeChange: ({ mode }) => { coach.state = mode === 'speaking' ? 'speaking' : 'listening'; paintCoach(); },
       onMessage: ({ message, source }) => { if (message) { coach.transcript.push({ who: source === 'ai' ? 'coach' : 'you', text: message }); if (coach.transcript.length > 300) coach.transcript.shift(); paintCoach(); } },
-      onDisconnect: () => { stopClock(); coach.conversation = null; coach.state = 'idle'; render(); },
+      onDisconnect: () => { stopClock(); rememberConversation(); coach.conversation = null; coach.state = 'idle'; render(); },
       onError: msg => { coach.message = typeof msg === 'string' ? msg : 'The coach had a problem. Please try again.'; paintCoach(); }
     });
   } catch (err) {
@@ -126,8 +126,17 @@ async function startCoach() {
   }
 }
 
+// Coach memory: tell the website which chat finished, so its summary can be
+// collected at the start of the next one
+function rememberConversation() {
+  const id = coach.conversationId || coach.conversation?.getId?.();
+  coach.conversationId = null;
+  if (id) billingCall('/api/coach-memory', { conversationId: id }).catch(() => { /* the next chat just won't mention it */ });
+}
+
 async function stopCoach() {
   stopClock();
+  rememberConversation();
   try { await coach.conversation?.endSession(); } catch { /* already ended */ }
   coach.conversation = null;
   coach.state = 'idle';
@@ -169,6 +178,13 @@ function savedChatsMarkup() {
     <p class="small">Saved conversations stay on this phone only.</p>`;
 }
 
+/* ---- What the coach remembers ---- */
+function memoryMarkup() {
+  const n = window.Clerk?.user?.publicMetadata?.coachMemoryCount || 0;
+  if (!n) return '';
+  return `<p class="small coach-memory">Your coach remembers a short summary of your last ${n === 1 ? 'chat' : `${n} chats`}. <button class="link-button" data-coach="forget">Forget ${n === 1 ? 'it' : 'them'}</button></p>`;
+}
+
 /* ---- Screen ---- */
 const COACH_STATUS = { idle: 'Tap to talk to your coach', connecting: 'Connecting…', listening: 'Listening: go ahead and talk', speaking: 'Your coach is speaking' };
 
@@ -201,7 +217,8 @@ function coachMarkup() {
         <li>“What should I train today?”</li><li>“How do I throw a better switch kick?”</li>
         <li>“I missed two sessions this week. Help me get back on track.”</li><li>“How do I recover after hard sparring?”</li></ul></details>
       ${savedChatsMarkup()}
-      <p class="draft-note">Your coach is an AI. It gives general training guidance, not medical advice. Your name, goal and recent journal are shared with the coach during the conversation.</p>`;
+      ${memoryMarkup()}
+      <p class="draft-note">Your coach is an AI. It gives general training guidance, not medical advice. Your name, goal and recent journal are shared with the coach during the conversation, and a short summary of each chat is kept so your coach can follow up next time.</p>`;
 }
 
 function transcriptMarkup(lines = coach.transcript) {
@@ -235,7 +252,7 @@ render = function () {
   }
 };
 
-document.addEventListener('click', e => {
+document.addEventListener('click', async e => {
   const b = e.target.closest('[data-coach]');
   if (!b) return;
   if (b.dataset.coach === 'start') startCoach();
@@ -247,6 +264,17 @@ document.addEventListener('click', e => {
     render();
   }
   if (b.dataset.coach === 'clear') { coach.transcript = []; coach.message = ''; render(); }
+  if (b.dataset.coach === 'forget') {
+    b.disabled = true;
+    try {
+      await billingCall('/api/coach-memory', { forget: true });
+      await window.Clerk?.user?.reload();
+      coach.message = 'Done. Your coach starts fresh next time.';
+    } catch (err) {
+      coach.message = err.message;
+    }
+    render();
+  }
   if (b.dataset.coach === 'delete-chat') {
     if (b.dataset.confirm !== 'yes') { b.dataset.confirm = 'yes'; b.textContent = 'Tap again to delete'; return; }
     storeChats(savedChats().filter(ch => ch.id !== b.dataset.id));

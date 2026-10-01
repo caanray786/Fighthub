@@ -72,6 +72,7 @@ body {
   background: linear-gradient(155deg, #c52a3b, #9a1026) !important;
   border-color: #ffffff30 !important;
   color: #fff;
+  white-space: nowrap;
 }
 
 /* ---- Screen ---- */
@@ -1018,4 +1019,65 @@ body[data-page=welcome] .account-button {
 .small a:hover,
 .small a:focus-visible {
   color: #f14b55;
+}
+
+/* ---- Pause instead of cancel ---- */
+.pause-offer summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.pause-offer[open] summary {
+  margin-bottom: 10px;
+}
+
+/* ---- Training reminders ---- */
+.reminder-days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.day-chip {
+  min-height: 38px !important;
+  padding: 6px 12px !important;
+  border-radius: 999px !important;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.day-chip[aria-pressed="true"] {
+  background: linear-gradient(155deg, #c52a3b, #9a1026) !important;
+  border-color: #ffffff40 !important;
+  color: #fff;
+}
+
+.row-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.row-buttons button {
+  flex: 1;
+}
+
+/* Self-defence: the last discipline fills the row */
+.fight-art:last-child:nth-child(even) {
+  grid-column: span 2;
+}
+
+.sd-basics {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.sd-basics li {
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #d8d8e0;
 }

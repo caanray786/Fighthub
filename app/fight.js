@@ -213,7 +213,7 @@ function fightSessionCard(s) {
 
 function hubMarkup() {
   return title('Fight training', 'Train like<br>a fighter.')
-    + `<p>Round-based sessions for nine disciplines, a real splits programme and fighter roadwork. The timer rings the bell, warns you at 10 seconds and calls each round.</p>
+    + `<p>Round-based sessions for nine martial arts plus self-defence, a real splits programme and fighter roadwork. The timer rings the bell, warns you at 10 seconds and calls each round.</p>
     <div class="fight-arts">${FightData.arts.map(a => `
       <button class="fight-art" data-fight="art" data-id="${a.id}" style="background-image: linear-gradient(to top, rgba(8,8,11,.92) 15%, rgba(8,8,11,.15) 75%), url('${artImage(a)}')">
         <strong>${esc(a.name)}</strong>
@@ -237,6 +237,7 @@ function artMarkup(a) {
       <span class="eyebrow">Fight training</span><h2 tabindex="-1">${esc(a.name)}</h2>
     </div>
     <p>${esc(a.about)}</p>
+    ${a.basics ? `<div class="card"><span class="eyebrow">Know the basics</span><ul class="sd-basics">${a.basics.map(b => `<li>${esc(b)}</li>`).join('')}</ul></div>` : ''}
     <div class="card feature"><span class="eyebrow">Your training week</span><p class="small">${esc(a.week)}</p></div>
     <h3 class="feed-heading">Sessions</h3>
     ${list.map(fightSessionCard).join('')}
