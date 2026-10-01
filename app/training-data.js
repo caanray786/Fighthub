@@ -114,6 +114,17 @@ const FightTraining = (() => {
     ['hip-abduction','Seated hip abduction','Glutes','Gym machine','Foundation','Control','A seated machine movement pushing the knees outward against the pads.'],
     ['walking-lunge','Walking lunge','Quads','Bodyweight','Intermediate','Lunge','Alternating forward lunges travelling along a clear, level route.']
   );
+  // Classic gym lifts (barbell, pull-up and dip bars)
+  rows.push(
+    ['back-squat','Barbell back squat','Quads','Barbell + rack','Intermediate','Squat','A squat with a barbell across the upper back, set up in a rack with safety bars.'],
+    ['deadlift','Barbell deadlift','Full body','Barbell','Intermediate','Hinge','Lifting a loaded barbell from the floor to standing with a long, braced back.'],
+    ['barbell-bench','Barbell bench press','Chest','Barbell + bench','Intermediate','Press','A horizontal press with a barbell on a flat bench, with safety arms or a spotter.'],
+    ['overhead-press','Barbell overhead press','Shoulders','Barbell','Intermediate','Press','Pressing a barbell from the shoulders to straight overhead while standing.'],
+    ['barbell-row','Bent-over barbell row','Back','Barbell','Intermediate','Pull','Rowing a barbell to the lower ribs from a braced, hinged position.'],
+    ['pull-up','Pull-up','Back','Pull-up bar','Advanced','Pull','Pulling your own body weight up to a bar until your chin clears it.'],
+    ['dip','Parallel bar dip','Chest','Dip bars','Advanced','Press','Lowering and pressing your body weight between parallel bars.'],
+    ['barbell-curl','Barbell curl','Arms','Barbell','Foundation','Curl','A standing curl with a straight or EZ barbell.']
+  );
   const alternatives={'burpee':'step-burpee','star-jacks':'step-jacks','high-knees':'march','tuck-jump':'march','squat-jump':'squat','butt-kicks':'standing-curl','squat-thrust':'step-burpee'};
   const exercises = rows.map(([id,name,body,equipment,level,pattern,description]) => ({id,name,body,equipment,level,pattern,description,status:'Editorial draft',home:['Bodyweight','None','Chair','Wall','Backpack','Water bottles','Resistance band'].includes(equipment),impact:pattern==='Jump'?'Jumping':'No jumping',alternative:alternatives[id]||null}));
   const templates = [
