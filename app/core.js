@@ -136,7 +136,7 @@ function render() {
     .map(([key, label]) => `<button data-go="${key}" ${state.page === key ? 'aria-current="page"' : ''}>${label}</button>`).join('');
   let html = '';
   if (state.page === 'welcome') html = title('Welcome to Fight Hub', 'Train like a fighter.<br>Follow the fight world.')
-    + `<p>Weekly routines, 85 illustrated exercises, HIIT sessions and martial-arts mobility, with the latest boxing, MMA and Muay Thai news alongside.</p>
+    + `<p>Weekly routines, over 100 illustrated exercises, HIIT sessions and martial-arts mobility, with the latest boxing, MMA and Muay Thai news alongside.</p>
       <div class="card feature"><div class="eyebrow">Free to start</div><h3>Train. Follow. Progress.</h3><p class="small">Starter workouts, a mobility introduction and your training log are free. Premium unlocks the full library, HIIT, weekly routines and the session builder.</p></div>
       <label class="check"><input type="checkbox" id="age"> I am 18 or over</label>
       <button class="primary full" id="start" disabled>Set up my training week</button>

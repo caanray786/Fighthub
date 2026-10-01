@@ -227,7 +227,7 @@ function paintAccountButton() {
 // The opening screen: who Fight Hub is for, then sign in or create an account
 function welcomeMarkup() {
   const intro = title('Welcome to Fight Hub', 'Train like a fighter.<br>Follow the fight world.')
-    + '<p>Fight training for nine martial arts, weekly routines, 85 illustrated exercises, HIIT, a splits programme and your training journal, with the latest fight news.</p>';
+    + '<p>Fight training for nine martial arts, weekly routines, over 100 illustrated exercises, HIIT, a splits programme and your training journal, with the latest fight news.</p>';
   if (['idle', 'loading'].includes(account.status)) return intro + '<p class="small" role="status">Loading sign-in…</p>';
   if (['offline', 'error'].includes(account.status)) {
     return intro + `<div class="card"><h3>You’re offline</h3><p class="small">Connect to the internet to sign in for the first time. After that, Fight Hub also works without a connection.</p><button class="full" data-account="retry">Try again</button></div>`;

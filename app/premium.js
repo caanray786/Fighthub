@@ -76,7 +76,7 @@ async function handleCheckoutReturn() {
 const INCLUDED = [
   'Every fight session in all 9 disciplines, with the round timer',
   'The full Splits and high kicks and Fighter roadwork programmes',
-  'All 85 illustrated exercises and 17 home and gym sessions',
+  'All 100+ illustrated exercises and 17 home and gym sessions',
   'HIIT: 25, 30 and 40 minutes at three levels',
   'Dated weekly routines and the custom session builder'
 ];
