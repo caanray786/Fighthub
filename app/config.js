@@ -6,5 +6,9 @@
 window.FIGHTHUB_CONFIG = {
   supabaseUrl: 'https://ewfuhrlgdivwtdremkdv.supabase.co',
   supabaseAnonKey: 'sb_publishable_j9JDQxPwdCHhrw93Wn3j-Q_BKVpTCk1',
-  clerkPublishableKey: 'pk_test_YW11c2VkLWFuY2hvdnktMjcyMC5jbGVyay5hY2NvdW50cy5kZXYk'
+  // Live sign-in on fighthub.world; the test sign-in everywhere else (preview
+  // versions and local testing), which matches the keys Vercel gives those versions
+  clerkPublishableKey: /(^|\.)fighthub\.world$/.test(location.hostname)
+    ? 'pk_live_Y2xlcmsuZmlnaHRodWIud29ybGQk'
+    : 'pk_test_YW11c2VkLWFuY2hvdnktMjcyMC5jbGVyay5hY2NvdW50cy5kZXYk'
 };

@@ -1,5 +1,11 @@
 {
   "redirects": [
-    { "source": "/app", "destination": "/app/", "permanent": true }
+    { "source": "/app", "destination": "/app/", "permanent": true },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "fighthub-swart.vercel.app" }],
+      "destination": "https://www.fighthub.world/:path*",
+      "permanent": true
+    }
   ]
 }
