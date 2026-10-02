@@ -116,7 +116,8 @@ const FightData = (() => {
     'stance-motion', 'technical-standup', 'ground-strikes', 'sit-out', 'shrimp',
     'bridge-roll', 'granby-roll', 'breakfall', 'lizard', 'couch-stretch',
     'pnf-hamstring', 'pnf-adductor', 'front-split-slide', 'frog', 'pancake',
-    'straddle-slide', 'cossack'
+    'straddle-slide', 'cossack',
+    'fence', 'palm-strike', 'wrist-escape', 'bear-hug-escape', 'scan-escape'
   ]);
 
   // ---- Disciplines ----
@@ -130,7 +131,7 @@ const FightData = (() => {
     { id: 'karate', name: 'Karate', image: 'karate', about: 'Kihon, the basics: stances, punches, blocks and kicks, drilled with precision and speed.', week: 'A good week: 3 kihon sessions, 2 flexibility sessions for kicks, 2 strength or conditioning sessions.' },
     { id: 'taekwondo', name: 'Taekwondo', image: 'taekwondo', about: 'Fast, high, precise kicking. Chamber control, speed and flexibility come first.', week: 'A good week: 3 kicking sessions, 3 flexibility sessions (splits programme), 2 strength sessions for the legs and core.' },
     { id: 'kungfu', name: 'Kung Fu & Sanda', image: 'kung-fu', about: 'Stance strength from traditional kung fu, and the kicks and punches of Sanda, China’s full-contact sport.', week: 'A good week: 2 stance-strength sessions, 2 Sanda sessions, 2 flexibility sessions and 2 runs.' },
-    { id: 'selfdefence', name: 'Self-defence', image: 'kickboxing', about: 'Practical basics for staying safe, for everyone: awareness, setting a boundary, breaking free from grabs and getting away. The aim is always to escape, never to win a fight.', week: 'A good week: 2 short self-defence sessions to keep the moves automatic, plus any 2 conditioning or strength sessions. Practise partner work slowly, and consider a local class for hands-on coaching.',
+    { id: 'selfdefence', name: 'Self-defence', image: 'self-defence', about: 'Practical basics for staying safe, for everyone: awareness, setting a boundary, breaking free from grabs and getting away. The aim is always to escape, never to win a fight.', week: 'A good week: 2 short self-defence sessions to keep the moves automatic, plus any 2 conditioning or strength sessions. Practise partner work slowly, and consider a local class for hands-on coaching.',
       basics: ['Awareness first: notice the exits, keep your phone charged, and trust your instincts.', 'Avoid and calm things down: keep your distance, use a calm voice, and hold your hands up open (the fence).', 'If you have to act, strike only to make a gap, then get away to people and light, and call 999.', 'The law in the UK allows reasonable force to protect yourself or others: only what is necessary, and only until you can get away.', 'Practise grabs and escapes slowly with a willing partner. A qualified class is the best way to learn.'] }
   ];
 

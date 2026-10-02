@@ -3,5 +3,9 @@ const ExerciseMedia=new Set(["chair-rise","wall-press","calf","side-leg","bottle
 ['hip-flexor-stretch','butterfly-stretch','half-split'].forEach(id=>ExerciseMedia.add(id));
 ExerciseMedia.add('leg-curl');
 // Glutes and legs exercises (checked and approved 30 Sep 2026)
-['band-walk', 'bulgarian-split', 'cable-kickback', 'curtsy-lunge', 'donkey-kick', 'fire-hydrant', 'hip-abduction', 'kb-swing', 'single-leg-bridge', 'single-leg-rdl', 'step-up', 'sumo-squat', 'walking-lunge', 'back-extension', 'b-stance-thrust', 'pull-through'].forEach(id=>ExerciseMedia.add(id));
+['band-walk', 'bulgarian-split', 'cable-kickback', 'curtsy-lunge', 'donkey-kick', 'hip-abduction', 'kb-swing', 'single-leg-bridge', 'single-leg-rdl', 'step-up', 'sumo-squat', 'walking-lunge', 'back-extension', 'b-stance-thrust', 'pull-through'].forEach(id=>ExerciseMedia.add(id));
+// Gym lifts (checked 2 Oct 2026; the barbell bench press picture is being redone)
+['back-squat', 'barbell-curl', 'barbell-row', 'deadlift', 'dip', 'overhead-press', 'pull-up'].forEach(id=>ExerciseMedia.add(id));
+// Being redone: shows the wrong movement
+ExerciseMedia.delete('fire-hydrant');
 if(typeof module!=='undefined')module.exports=ExerciseMedia;
