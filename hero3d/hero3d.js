@@ -322,9 +322,10 @@ function start() {
     [0.255, [0, 2.2, 0.15], [0, -8, -0.6]],
     [0.290, [0, -5, -1], [0, -12, -6]],
     [0.320, [0, -11, -6], [0, -15, -18]],
-    [0.345, [-3, -14.5, -16], [-8, -14, -60], [0, -14.5, -16], [0, -14, -60]],
-    [0.385, [-2, O.y, -44], [0, O.y, -60]],
-    [0.415, [0, O.y, -63], [0, O.y - 0.5, -80]],
+    [0.345, [0, -14.5, -16], [0, -17.5, -60], [0, -14.5, -16], [0, -20, -60]],
+    [0.372, [0, -14.5, -22], [0, -17, -60], [0, -14.5, -22], [0, -19, -60]],
+    [0.395, [-1.5, O.y, -44], [0, O.y, -60], [-0.5, O.y, -46], [0, O.y, -60]],
+    [0.418, [0, O.y, -63], [0, O.y - 0.5, -80]],
     [0.450, [-3, -14, -80], [7, -15, -94], [-1.5, -14, -80], [5, -15, -95]],
     [0.485, [2, -14, -100], [-7, -15, -114], [1, -14, -100], [-5, -15, -115]],
     [0.520, [0, -15.5, -120], [0, -8, -142]],
@@ -351,7 +352,8 @@ function start() {
     const local = Math.min(1, Math.max(0, (p - P[i]) / (P[i + 1] - P[i])));
     return (i + local) / (P.length - 1);
   };
-  const keyPos = i => new THREE.Vector3(...(mobile && KEYS[i][3] ? KEYS[i][3] : KEYS[i][1]));
+  // The camera position at a given point of the journey (by its progress value)
+  const keyPos = at => { const k = KEYS.find(key => key[0] === at); return new THREE.Vector3(...(mobile && k[3] ? k[3] : k[1])); };
 
   /* ================= LAYOUT (desktop or phone) ================= */
   const homes = new Map();
@@ -367,7 +369,7 @@ function start() {
       g.scale.setScalar(mobile ? 0.7 : 1);
     });
     // Phones on the right in TRAIN, turned towards the camera
-    const look = keyPos(19);
+    const look = keyPos(0.780);
     const spots = mobile ? [[4.4, -12.6, -252], [5.0, -14.0, -259], [4.6, -12.6, -266], [5.2, -14.0, -273]] : [[8.6, -13.2, -250], [9.4, -14.8, -257], [8.8, -13.0, -264], [9.6, -14.6, -271]];
     phones.forEach((g, i) => { g.position.set(...spots[i]); faceTowards(g, look); g.scale.setScalar(mobile ? 0.85 : 1.2); });
     for (const m of movers) homes.set(m, { p: m.position.clone(), q: m.quaternion.clone(), s: m.scale.x });
@@ -381,11 +383,17 @@ function start() {
     const box = new THREE.Box2();
     o.shapes[0].holes[0].getPoints().forEach(pt => box.expandByPoint(pt));
     const c = box.getCenter(new THREE.Vector2());
-    f.group.position.set(O.x - (o.mesh.position.x + c.x), O.y - c.y, O.z);
+    const fs = mobile ? 0.5 : 1; // smaller on phones so the whole word fits the screen
+    f.group.scale.setScalar(fs);
+    f.group.position.set(O.x - fs * (o.mesh.position.x + c.x), O.y - fs * c.y, O.z);
+    const cx = f.group.position.x; // the middle of the word (the O is left of it)
+    KEYS[KEYS.findIndex(k => k[0] === 0.345)] = [0.345, [cx * 0.6, -14.5, -16], [cx, -17.5, -60], [cx * 0.6, -14.5, -16], [cx, -20, -60]];
+    KEYS[KEYS.findIndex(k => k[0] === 0.372)] = [0.372, [cx * 0.45, -14.5, -22], [cx * 0.85, -17, -60], [cx * 0.45, -14.5, -22], [cx * 0.85, -19, -60]];
+    buildPath();
     const l = words.learn;
     l.group.position.set(0, -9, -142); l.group.rotation.x = 0.34;
     const t = words.train;
-    t.group.position.set(mobile ? -8 : -16, -19.5, -244); t.group.scale.setScalar(mobile ? 0.6 : 1); faceTowards(t.group, keyPos(17));
+    t.group.position.set(mobile ? -8 : -16, -19.5, -244); t.group.scale.setScalar(mobile ? 0.6 : 1); faceTowards(t.group, keyPos(0.690));
     const fin = words.finale;
     fin.group.position.set(0, -13.5, -305);
     fin.group.scale.setScalar(mobile ? 0.62 : 1);
@@ -421,8 +429,8 @@ function start() {
   const addFactMonuments = f => {
     if (factsShown || !font) return;
     factsShown = true;
-    if (f.fighters > 0) monument(f.fighters.toLocaleString('en-GB'), 'FIGHTERS', [12, -17.5, -93], 11);
-    if (f.events > 0) monument(String(f.events), f.events === 1 ? 'FIGHT NIGHT AHEAD' : 'FIGHT NIGHTS AHEAD', [-12, -17, -114], 12);
+    if (f.fighters > 0) monument(f.fighters.toLocaleString('en-GB'), 'FIGHTERS', [12, -17.5, -93], 0.450);
+    if (f.events > 0) monument(String(f.events), f.events === 1 ? 'FIGHT NIGHT AHEAD' : 'FIGHT NIGHTS AHEAD', [-12, -17, -114], 0.485);
   };
   const showFacts = f => {
     pendingFacts = f;
@@ -483,6 +491,9 @@ function start() {
   const scrollRange = () => Math.max(1, root.offsetHeight - stage.offsetHeight);
   const scrollProgress = () => Math.min(1, Math.max(0, -root.getBoundingClientRect().top / scrollRange()));
   let target = scrollProgress(), current = target;
+  let immersive = null;
+  const setImmersive = on => { if (on !== immersive) { immersive = on; document.body.classList.toggle('h3d-immersive', on); } };
+  setImmersive(target < 0.998);
 
   const lenis = window.Lenis && !matchMedia('(pointer: coarse)').matches ? new window.Lenis({ lerp: 0.09, wheelMultiplier: 0.9, anchors: true }) : null;
   const jump = (p, instant = false) => {
@@ -510,10 +521,24 @@ function start() {
   };
 
   /* ================= FRAME LOOP ================= */
-  const pos = new THREE.Vector3(), tgt = new THREE.Vector3(), tmpQ = new THREE.Quaternion(), faceCam = new THREE.Quaternion();
+  const pos = new THREE.Vector3(), tgt = new THREE.Vector3(), dir = new THREE.Vector3(), tmpQ = new THREE.Quaternion(), faceCam = new THREE.Quaternion();
+
+  // Point the camera along the path. While it looks steeply down (the dive into
+  // the logo) the top of the screen follows the direction of travel instead of
+  // the sky, so the picture never flips over.
+  const aim = (p, plain = false) => {
+    const t = curveT(p);
+    posCurve.getPoint(t, pos); tgtCurve.getPoint(t, tgt);
+    camera.position.copy(pos);
+    camera.position.y += Math.sin(time * 0.6) * 0.04; // a breath of handheld drift
+    dir.subVectors(tgt, pos).normalize();
+    const steep = plain ? 0 : smooth((-dir.y - 0.55) / 0.4);
+    camera.up.set(0, 1 - steep, -steep).normalize();
+    camera.lookAt(tgt);
+  };
   const ringCentre = new THREE.Vector3(0, -13.5, -311);
   let visible = true, last = performance.now(), time = 0;
-  new IntersectionObserver(([e]) => { visible = e.isIntersecting; }).observe(root);
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (!visible) setImmersive(false); }).observe(root);
 
   const frame = now => {
     requestAnimationFrame(frame);
@@ -522,15 +547,12 @@ function start() {
     if (!visible || document.hidden) return;
     time += dt;
     target = scrollProgress();
+    setImmersive(target < 0.998);
     current += (target - current) * (1 - Math.exp(-dt * 3.4));
     if (Math.abs(target - current) < 0.00005) current = target;
     const p = current;
 
-    const t = curveT(p);
-    posCurve.getPoint(t, pos); tgtCurve.getPoint(t, tgt);
-    camera.position.copy(pos);
-    camera.position.y += Math.sin(time * 0.6) * 0.04; // a breath of handheld drift
-    camera.lookAt(tgt);
+    aim(p);
 
     // Arena above the canvas, worlds below it
     const below = pos.y < MAT_Y - 0.05;
@@ -605,5 +627,7 @@ function start() {
   });
   resize();
 
-  window.fightHubHero = { jump, progress: () => current };
+  // jump(p) moves to a point in the journey; screenUp(p) is for checking the camera never flips
+  const screenUp = (p, plain) => { aim(p, plain); camera.updateMatrixWorld(); return new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1).toArray(); };
+  window.fightHubHero = { jump, progress: () => current, screenUp };
 }

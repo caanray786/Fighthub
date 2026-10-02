@@ -251,3 +251,11 @@ html.lenis, html.lenis body { height: auto; }
 @media (min-width: 701px) {
   .h3d-final { bottom: 9vh; }
 }
+
+/* Full screen: the site header slides away during the journey and returns at the end */
+body.h3d-immersive .navbar {
+  transform: translateY(-100%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
