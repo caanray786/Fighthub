@@ -43,11 +43,14 @@ export async function coachAgentSettings(key, agent, { fresh = false } = {}) {
       if (!allOn(cfg)) console.warn(`Coach: voice and language overrides not switched on (${res.status})`);
     }
     // The languages the agent can speak: its main one plus any added in "Additional languages"
-    const languages = [cfg.conversation_config?.agent?.language || 'en', ...Object.keys(cfg.conversation_config?.language_presets || {})];
-    agentInfo = { voice: switches(cfg).tts?.voice_id === true, language: switches(cfg).agent?.language === true, languages };
+    const presets = cfg.conversation_config?.language_presets || {};
+    const languages = [cfg.conversation_config?.agent?.language || 'en', ...Object.keys(presets)];
+    // A voice picked for one language in ElevenLabs may replace the member's chosen voice
+    const languageVoices = Object.fromEntries(Object.entries(presets).map(([code, p]) => [code, p?.overrides?.tts?.voice_id || '']).filter(([, v]) => v));
+    agentInfo = { voice: switches(cfg).tts?.voice_id === true, language: switches(cfg).agent?.language === true, languages, languageVoices };
   } catch (err) {
     console.warn(`Coach: agent settings check failed (${err.message}); using the default voice and language`);
-    agentInfo = { voice: false, language: false, languages: ['en'] };
+    agentInfo = { voice: false, language: false, languages: ['en'], languageVoices: {} };
   }
   return agentInfo;
 }
@@ -59,6 +62,17 @@ export const voiceOverrideAllowed = async (...args) => (await coachAgentSettings
 export function agentLanguage(info, lang) {
   if (!lang || lang === 'en' || !info.language) return '';
   return info.languages.find(code => code.toLowerCase() === lang || code.toLowerCase().startsWith(lang + '-')) || '';
+}
+
+// Why the member's chosen voice cannot be used, or '' when it can:
+// - 'not-set': ELEVENLABS_VOICE_MALE / ELEVENLABS_VOICE_FEMALE is missing in Vercel
+// - 'override-off': the agent does not allow the app to choose the voice
+// - 'language-voice': the agent has its own voice for this language, which may replace it
+export function voiceProblem(info, chosen, language) {
+  if (!chosen) return 'not-set';
+  if (!info.voice) return 'override-off';
+  const own = language && info.languageVoices?.[language];
+  return own && own !== chosen ? 'language-voice' : '';
 }
 
 // A private conversation address from ElevenLabs (valid 15 minutes). If
@@ -99,6 +113,9 @@ export async function POST(request) {
     const settings = await coachAgentSettings(key, agent);
     const voiceId = chosen && settings.voice ? chosen : '';
     const language = agentLanguage(settings, String(lang || '').toLowerCase());
+    const voiceIssue = voiceProblem(settings, chosen, language);
+    // One line per chat in the Vercel logs, so voice and language problems can be traced
+    console.log(`Coach session: ${voice === 'female' ? 'female' : 'male'} voice ${voiceIssue ? `problem (${voiceIssue})` : 'ok'}, language ${language || 'en'}`);
 
     const signedUrl = await getSignedUrl(key, agent);
 
@@ -111,6 +128,6 @@ export async function POST(request) {
       private_metadata: { coach: usage, coachMemory: memory },
       public_metadata: { coachUsage: usage, coachMemoryCount: memory.items.length }
     });
-    return json({ signedUrl, voiceId, language, remaining: limit - usage.sessions, limit, maxMinutes: sessionMinutes(), memory: memoryText(memory.items) });
+    return json({ signedUrl, voiceId, voiceIssue, language, remaining: limit - usage.sessions, limit, maxMinutes: sessionMinutes(), memory: memoryText(memory.items) });
   });
 }

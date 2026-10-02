@@ -110,7 +110,7 @@ test('coach sessions: refused until set up, and for anyone not signed in', async
   delete process.env.ELEVENLABS_API_KEY;
 });
 
-import { voiceOverrideAllowed, coachAgentSettings, agentLanguage } from '../api/coach-session.mjs';
+import { voiceOverrideAllowed, coachAgentSettings, agentLanguage, voiceProblem } from '../api/coach-session.mjs';
 
 // Fakes the ElevenLabs agent settings: GET returns them, PATCH applies them
 function fakeAgent(settings, { patchStatus = 200, conversation = {} } = {}) {
@@ -153,6 +153,19 @@ test('coach language: only languages the agent has been given are used', async (
   assert.equal(agentLanguage(info, 'de'), '', 'German not added to the agent yet');
   assert.equal(agentLanguage(info, 'en'), '');
   assert.equal(agentLanguage({ ...info, language: false }, 'es'), '', 'override switched off');
+  globalThis.fetch = realFetch;
+});
+
+test('coach voice: the reason a chosen voice cannot be used is reported', async () => {
+  fakeAgent({ overrides: { conversation_config_override: { tts: { voice_id: true }, agent: { language: true } } } },
+    { conversation: { language_presets: { fr: { overrides: { tts: { voice_id: 'frenchMan' } } }, es: { overrides: {} } } } });
+  const info = await coachAgentSettings('k', 'a', { fresh: true });
+  assert.deepEqual(info.languageVoices, { fr: 'frenchMan' });
+  assert.equal(voiceProblem(info, 'woman', ''), '');
+  assert.equal(voiceProblem(info, 'woman', 'es'), '');
+  assert.equal(voiceProblem(info, 'woman', 'fr'), 'language-voice');
+  assert.equal(voiceProblem(info, '', ''), 'not-set');
+  assert.equal(voiceProblem({ ...info, voice: false }, 'woman', ''), 'override-off');
   globalThis.fetch = realFetch;
 });
 

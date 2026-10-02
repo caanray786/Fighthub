@@ -107,6 +107,9 @@ async function startCoach() {
     coach.remaining = session.remaining;
     coach.limit = session.limit;
     coach.maxMinutes = session.maxMinutes || 10;
+    // Tell the member when the voice they chose could not be used for this chat
+    if (session.voiceIssue === 'language-voice') coach.message = 'In this language the coach may use its own voice instead of the one you chose.';
+    else if (session.voiceIssue) coach.message = 'Your chosen voice isn’t available right now, so the coach is using its standard voice.';
     coach.conversation = await sdk.Conversation.startSession({
       signedUrl: session.signedUrl,
       dynamicVariables: { ...coachContext(), coach_memory: session.memory || 'No previous conversations yet.', language: COACH_LANGUAGES[i18n.lang] || 'English' },
