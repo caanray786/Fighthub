@@ -22,7 +22,7 @@ export async function POST() {
         checked++;
         const due = isDue(settings, push, now);
         if (!due) return;
-        const message = reminderMessage(user.first_name, push, due);
+        const message = reminderMessage(user.first_name, push, due, settings.lang);
         const results = await Promise.all(push.subs.map(s => sendPush(s, message)));
         const subs = push.subs.filter((s, i) => results[i] !== 'gone');
         removed += push.subs.length - subs.length;

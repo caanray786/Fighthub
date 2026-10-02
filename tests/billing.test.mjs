@@ -110,16 +110,16 @@ test('coach sessions: refused until set up, and for anyone not signed in', async
   delete process.env.ELEVENLABS_API_KEY;
 });
 
-import { voiceOverrideAllowed } from '../api/coach-session.mjs';
+import { voiceOverrideAllowed, coachAgentSettings, agentLanguage } from '../api/coach-session.mjs';
 
 // Fakes the ElevenLabs agent settings: GET returns them, PATCH applies them
-function fakeAgent(settings, { patchStatus = 200 } = {}) {
+function fakeAgent(settings, { patchStatus = 200, conversation = {} } = {}) {
   const calls = [];
   globalThis.fetch = async (url, init = {}) => {
     const method = init.method || 'GET';
     calls.push({ method, body: init.body && JSON.parse(init.body) });
     if (method === 'PATCH' && patchStatus === 200) settings = JSON.parse(init.body).platform_settings;
-    return method === 'PATCH' ? new Response('{}', { status: patchStatus }) : new Response(JSON.stringify({ platform_settings: settings }));
+    return method === 'PATCH' ? new Response('{}', { status: patchStatus }) : new Response(JSON.stringify({ platform_settings: settings, conversation_config: conversation }));
   };
   return calls;
 }
@@ -129,18 +129,30 @@ test('coach voice: switched on when off, keeping every other agent setting', asy
   assert.equal(await voiceOverrideAllowed('k', 'a', { fresh: true }), true);
   const sent = calls.find(c => c.method === 'PATCH').body.platform_settings;
   assert.deepEqual(sent.auth, { enable_auth: true });
-  assert.deepEqual(sent.overrides.conversation_config_override, { agent: { first_message: false }, tts: { voice_id: true } });
+  assert.deepEqual(sent.overrides.conversation_config_override, { agent: { first_message: false, language: true }, tts: { voice_id: true } });
   globalThis.fetch = realFetch;
 });
 
 test('coach voice: already on means nothing is changed; if it cannot be switched on, the default voice is used', async () => {
-  let calls = fakeAgent({ overrides: { conversation_config_override: { tts: { voice_id: true } } } });
+  let calls = fakeAgent({ overrides: { conversation_config_override: { tts: { voice_id: true }, agent: { language: true } } } });
   assert.equal(await voiceOverrideAllowed('k', 'a', { fresh: true }), true);
   assert.ok(!calls.some(c => c.method === 'PATCH'));
   calls = fakeAgent({}, { patchStatus: 403 });
   assert.equal(await voiceOverrideAllowed('k', 'a', { fresh: true }), false);
   globalThis.fetch = async () => { throw new Error('offline'); };
   assert.equal(await voiceOverrideAllowed('k', 'a', { fresh: true }), false);
+  globalThis.fetch = realFetch;
+});
+
+test('coach language: only languages the agent has been given are used', async () => {
+  fakeAgent({}, { conversation: { agent: { language: 'en' }, language_presets: { es: {}, 'pt-br': {}, fr: {} } } });
+  const info = await coachAgentSettings('k', 'a', { fresh: true });
+  assert.deepEqual(info.languages, ['en', 'es', 'pt-br', 'fr']);
+  assert.equal(agentLanguage(info, 'es'), 'es');
+  assert.equal(agentLanguage(info, 'pt'), 'pt-br');
+  assert.equal(agentLanguage(info, 'de'), '', 'German not added to the agent yet');
+  assert.equal(agentLanguage(info, 'en'), '');
+  assert.equal(agentLanguage({ ...info, language: false }, 'es'), '', 'override switched off');
   globalThis.fetch = realFetch;
 });
 
@@ -282,7 +294,7 @@ test('pause endpoint needs sign-in', async () => {
 });
 
 // ---- Training reminders ----
-import { localParts, weekStart, isDue, reminderMessage } from '../api/_lib/reminders.mjs';
+import { localParts, weekStart, isDue, reminderMessage, testMessage } from '../api/_lib/reminders.mjs';
 
 test('reminders: local time follows the member\'s time zone, including summer time', () => {
   assert.deepEqual(localParts(new Date('2026-07-01T17:30:00Z'), 'Europe/London'), { weekday: 3, hour: 18, isoDate: '2026-07-01' });
@@ -311,6 +323,17 @@ test('reminders: messages use weekly progress when the app has sent it', () => {
   const general = reminderMessage('Sam', { week: { start: '2026-06-22', done: 3, goal: 3 } }, parts); // last week's numbers are ignored
   assert.ok(general.title && general.body && !/goal done/.test(general.title));
   assert.ok(!/[\u{1F300}-\u{1FAFF}]/u.test(JSON.stringify(general)), 'no emojis');
+});
+
+test('reminders: written in the member’s app language, English otherwise', () => {
+  const parts = { weekday: 3, hour: 18, isoDate: '2026-07-01' };
+  assert.match(reminderMessage('Sam', { week: { start: '2026-06-29', done: 1, goal: 3 } }, parts, 'es').body, /Te faltan 2 sesiones/);
+  assert.equal(reminderMessage('Sam', { week: { start: '2026-06-29', done: 3, goal: 3 } }, parts, 'de').title, 'Wochenziel geschafft');
+  assert.equal(reminderMessage('Sam', { week: { start: '2026-06-29', done: 3, goal: 3 } }, parts, 'xx').title, 'Weekly goal done');
+  assert.equal(testMessage({ days: [1, 3, 5], hour: 18 }).body, 'We’ll nudge you on Mon, Wed, Fri at 6pm.');
+  const fr = testMessage({ days: [1, 3, 5], hour: 18, lang: 'fr' });
+  assert.equal(fr.title, 'Rappels activés');
+  assert.match(fr.body, /lun\.?, mer\.?, ven\.? à 18:00/);
 });
 
 test('reminders: an hourly run sends to due members only and records it', async () => {

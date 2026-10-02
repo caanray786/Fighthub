@@ -1,4 +1,4 @@
-// POST /api/coach-session { voice: 'male' | 'female' }
+// POST /api/coach-session { voice: 'male' | 'female', lang: 'en' | 'es' | ... }
 // Starts a private voice-coach conversation (ElevenLabs) for a signed-in
 // Premium member. The ElevenLabs key stays here; the app only gets a
 // single-use signed address, valid for 15 minutes.
@@ -11,38 +11,54 @@ import { json, handle, httpError, hasPremium } from './_lib/http.mjs';
 import { memberFromRequest, getClerkUser, updateClerkMetadata } from './_lib/clerk.mjs';
 import { resolveMemory, memoryText } from './_lib/coach-memory.mjs';
 
-// ---- Male/female coach voice ----
-// The app asks for the member's chosen voice, which needs the agent's "voice
-// override" switched on. If it is off, it is switched on here: the agent's full
-// settings are read, only that one switch is changed, and everything is sent
-// back unchanged. If that cannot be done, the agent's default voice is used.
+// ---- Coach voice and language ----
+// The app asks for the member's chosen voice and language, which need the
+// agent's "voice" and "language" overrides switched on. If they are off, they
+// are switched on here: the agent's full settings are read, only those switches
+// are changed, and everything is sent back unchanged. If that cannot be done,
+// the agent's default voice and language are used.
 const AGENTS = 'https://api.elevenlabs.io/v1/convai/agents/';
-// Remembered while the server stays warm: "on" for good, "off" for 10 minutes
-let voiceOverride = null, checkedAt = 0;
+const OVERRIDES = { tts: 'voice_id', agent: 'language' };
+// Remembered for 10 minutes while the server stays warm
+let agentInfo = null, checkedAt = 0;
 
-export async function voiceOverrideAllowed(key, agent, { fresh = false } = {}) {
-  if (fresh) voiceOverride = null;
-  if (voiceOverride === true || (voiceOverride === false && Date.now() - checkedAt < 600000)) return voiceOverride;
+export async function coachAgentSettings(key, agent, { fresh = false } = {}) {
+  if (!fresh && agentInfo && Date.now() - checkedAt < 600000) return agentInfo;
   checkedAt = Date.now();
   const headers = { 'xi-api-key': key, 'Content-Type': 'application/json' };
   const url = AGENTS + encodeURIComponent(agent);
   const read = async () => { const r = await fetch(url, { headers }); if (!r.ok) throw new Error(`agent settings ${r.status}`); return r.json(); };
-  const allowed = cfg => cfg?.platform_settings?.overrides?.conversation_config_override?.tts?.voice_id === true;
+  const switches = cfg => cfg?.platform_settings?.overrides?.conversation_config_override || {};
+  const allOn = cfg => Object.entries(OVERRIDES).every(([part, name]) => switches(cfg)[part]?.[name] === true);
   try {
-    const cfg = await read();
-    if (allowed(cfg)) return (voiceOverride = true);
-    const settings = structuredClone(cfg.platform_settings || {});
-    settings.overrides ??= {};
-    settings.overrides.conversation_config_override ??= {};
-    settings.overrides.conversation_config_override.tts = { ...(settings.overrides.conversation_config_override.tts || {}), voice_id: true };
-    const res = await fetch(url, { method: 'PATCH', headers, body: JSON.stringify({ platform_settings: settings }) });
-    voiceOverride = res.ok && allowed(await read());
-    if (!voiceOverride) console.warn(`Coach: voice override not switched on (${res.status}); using the default voice`);
+    let cfg = await read();
+    if (!allOn(cfg)) {
+      const settings = structuredClone(cfg.platform_settings || {});
+      settings.overrides ??= {};
+      settings.overrides.conversation_config_override ??= {};
+      const wanted = settings.overrides.conversation_config_override;
+      for (const [part, name] of Object.entries(OVERRIDES)) wanted[part] = { ...(wanted[part] || {}), [name]: true };
+      const res = await fetch(url, { method: 'PATCH', headers, body: JSON.stringify({ platform_settings: settings }) });
+      if (res.ok) cfg = await read();
+      if (!allOn(cfg)) console.warn(`Coach: voice and language overrides not switched on (${res.status})`);
+    }
+    // The languages the agent can speak: its main one plus any added in "Additional languages"
+    const languages = [cfg.conversation_config?.agent?.language || 'en', ...Object.keys(cfg.conversation_config?.language_presets || {})];
+    agentInfo = { voice: switches(cfg).tts?.voice_id === true, language: switches(cfg).agent?.language === true, languages };
   } catch (err) {
-    console.warn(`Coach: voice override check failed (${err.message}); using the default voice`);
-    voiceOverride = false;
+    console.warn(`Coach: agent settings check failed (${err.message}); using the default voice and language`);
+    agentInfo = { voice: false, language: false, languages: ['en'] };
   }
-  return voiceOverride;
+  return agentInfo;
+}
+
+export const voiceOverrideAllowed = async (...args) => (await coachAgentSettings(...args)).voice;
+
+// The agent's code for the member's language (for example "pt" may be set up
+// as "pt-br"), or '' when the agent has not been given that language.
+export function agentLanguage(info, lang) {
+  if (!lang || lang === 'en' || !info.language) return '';
+  return info.languages.find(code => code.toLowerCase() === lang || code.toLowerCase().startsWith(lang + '-')) || '';
 }
 
 // A private conversation address from ElevenLabs (valid 15 minutes). If
@@ -78,9 +94,11 @@ export async function POST(request) {
     const limit = allowance();
     if (used >= limit) throw httpError(429, `You’ve used all ${limit} coach sessions this month. They reset on the 1st.`);
 
-    const { voice } = await request.json().catch(() => ({}));
+    const { voice, lang } = await request.json().catch(() => ({}));
     const chosen = (voice === 'female' ? process.env.ELEVENLABS_VOICE_FEMALE : process.env.ELEVENLABS_VOICE_MALE) || '';
-    const voiceId = chosen && (await voiceOverrideAllowed(key, agent)) ? chosen : '';
+    const settings = await coachAgentSettings(key, agent);
+    const voiceId = chosen && settings.voice ? chosen : '';
+    const language = agentLanguage(settings, String(lang || '').toLowerCase());
 
     const signedUrl = await getSignedUrl(key, agent);
 
@@ -93,6 +111,6 @@ export async function POST(request) {
       private_metadata: { coach: usage, coachMemory: memory },
       public_metadata: { coachUsage: usage, coachMemoryCount: memory.items.length }
     });
-    return json({ signedUrl, voiceId, remaining: limit - usage.sessions, limit, maxMinutes: sessionMinutes(), memory: memoryText(memory.items) });
+    return json({ signedUrl, voiceId, language, remaining: limit - usage.sessions, limit, maxMinutes: sessionMinutes(), memory: memoryText(memory.items) });
   });
 }

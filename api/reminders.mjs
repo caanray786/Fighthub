@@ -1,14 +1,11 @@
 // POST /api/reminders: a member's training reminders.
-// { on, days: [0-6], hour: 5-22, tz, subscription, unsubscribe, progress: { weekStart, done, goal }, test }
+// { on, days: [0-6], hour: 5-22, tz, lang, subscription, unsubscribe, progress: { weekStart, done, goal }, test }
 // The push subscription (this phone's address for notifications) is kept in
 // private metadata; the chosen days and time in public metadata for the app.
 import { json, handle, httpError } from './_lib/http.mjs';
 import { memberFromRequest, getClerkUser, updateClerkMetadata } from './_lib/clerk.mjs';
 import { isPushEndpoint, sendPush } from './_lib/webpush.mjs';
-import { DEFAULT_REMINDERS, validTimeZone } from './_lib/reminders.mjs';
-
-const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const clock = h => `${h % 12 || 12}${h < 12 ? 'am' : 'pm'}`;
+import { DEFAULT_REMINDERS, REMINDER_LANGUAGES, validTimeZone, testMessage } from './_lib/reminders.mjs';
 
 export async function POST(request) {
   return handle(async () => {
@@ -32,6 +29,7 @@ export async function POST(request) {
       if (!validTimeZone(body.tz)) throw httpError(400, 'Unknown time zone.');
       settings.tz = body.tz;
     }
+    if (typeof body.lang === 'string' && REMINDER_LANGUAGES[body.lang]) settings.lang = body.lang;
     if (body.subscription) {
       const s = body.subscription;
       if (!isPushEndpoint(s.endpoint) || typeof s.keys?.p256dh !== 'string' || typeof s.keys?.auth !== 'string' || s.keys.p256dh.length > 200 || s.keys.auth.length > 50) {
@@ -51,8 +49,7 @@ export async function POST(request) {
 
     let test = null;
     if (body.test && settings.on) {
-      const days = settings.days.map(d => DAY_NAMES[d]).join(', ');
-      const message = { title: 'Reminders are on', body: `We’ll nudge you on ${days} at ${clock(settings.hour)}.`, url: '/app/', tag: 'training-reminder' };
+      const message = testMessage(settings);
       const results = await Promise.all(push.subs.map(s => sendPush(s, message)));
       push.subs = push.subs.filter((s, i) => results[i] !== 'gone');
       test = results.includes('sent') ? 'sent' : 'failed';

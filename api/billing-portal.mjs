@@ -11,7 +11,7 @@ export async function POST(request) {
     const user = await getClerkUser(member.id);
     const customer = user.private_metadata?.stripe_customer_id;
     if (!customer) throw httpError(404, 'You do not have a subscription yet.');
-    const session = await stripe('/billing_portal/sessions', { customer, return_url: `${returnOrigin(request)}/app/?billing=updated` });
+    const session = await stripe('/billing_portal/sessions', { customer, locale: 'auto', return_url: `${returnOrigin(request)}/app/?billing=updated` });
     return json({ url: session.url });
   });
 }

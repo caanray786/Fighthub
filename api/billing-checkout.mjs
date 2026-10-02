@@ -38,6 +38,7 @@ export async function POST(request) {
       success_url: `${origin}/app/?checkout=success`,
       cancel_url: `${origin}/app/?checkout=cancelled`,
       client_reference_id: member.id,
+      locale: 'auto', // Stripe's pages follow the member's browser language
       metadata: { clerk_user_id: member.id, plan, ...(oneOff ? { pass: 'year' } : {}) },
       ...(oneOff
         ? { invoice_creation: { enabled: 'true' }, ...(customer ? {} : { customer_creation: 'always' }) } // receipt + a customer record for invoices
