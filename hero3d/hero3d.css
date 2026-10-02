@@ -63,9 +63,19 @@
   will-change: opacity, transform;
 }
 .h3d-copy.is-live { pointer-events: auto; }
-.h3d-intro { left: var(--h3d-side); bottom: 15vh; max-width: 640px; }
-.h3d-left { left: var(--h3d-side); top: 30%; max-width: 460px; }
-.h3d-right { right: var(--h3d-side); top: 30%; max-width: 460px; }
+/* Side text is centred top to bottom, clear of the chapter bar, so it never runs off the screen */
+.h3d-intro, .h3d-left, .h3d-right {
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 32px 0 92px;
+}
+.h3d-intro { left: var(--h3d-side); max-width: 640px; }
+.h3d-left { left: var(--h3d-side); max-width: 460px; }
+.h3d-right { right: var(--h3d-side); max-width: 460px; }
 .h3d-center { left: 0; right: 0; margin: 0 auto; width: min(720px, calc(100% - 32px)); text-align: center; }
 .h3d-low { bottom: 16vh; }
 .h3d-high { top: calc(var(--navbar-height) + 4vh); }
@@ -85,12 +95,12 @@
   margin: 14px 0 0;
   font-family: var(--font-heading);
   font-weight: 400;
-  font-size: clamp(46px, 7.2vw, 108px);
+  font-size: clamp(38px, min(7.2vw, 11.5vh), 108px);
   line-height: 0.92;
   letter-spacing: 0.01em;
   color: #fff;
 }
-.h3d-title { font-size: clamp(38px, 5vw, 72px); }
+.h3d-title { font-size: clamp(32px, min(5vw, 8.5vh), 72px); }
 .h3d-lede {
   margin: 16px 0 0;
   font: 400 clamp(15px, 1.25vw, 18px)/1.6 var(--font-body);
@@ -194,10 +204,22 @@
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 
+/* Short windows: tighter spacing */
+@media (max-height: 680px) {
+  .h3d-lede { margin-top: 10px; }
+  .h3d-cue { margin-top: 14px; }
+  .h3d .hero-buttons { margin-top: 16px; }
+  .h3d-intro, .h3d-left, .h3d-right { padding: 20px 0 80px; }
+}
+@media (max-height: 540px) {
+  .h3d-cue, .h3d-facts { display: none; }
+}
+
 @media (max-width: 700px) {
   .h3d { height: 780vh; }
+  .h3d-intro, .h3d-left, .h3d-right { display: block; top: auto; padding: 0; }
   .h3d-intro { bottom: 13vh; right: 16px; left: 16px; }
-  .h3d-left, .h3d-right { left: 16px; right: 16px; top: auto; bottom: 15vh; max-width: none; }
+  .h3d-left, .h3d-right { left: 16px; right: 16px; bottom: 15vh; max-width: none; }
   .h3d-high { top: calc(var(--navbar-height) + 2vh); }
   .h3d-low { bottom: 15vh; }
   .h3d-card { padding: 16px 18px; }
@@ -237,6 +259,7 @@ html.lenis, html.lenis body { height: auto; }
   position: relative;
   inset: auto;
   margin: 0 var(--h3d-side) 8vh;
+  padding: 0;
   opacity: 1 !important;
   visibility: visible !important;
   transform: none !important;

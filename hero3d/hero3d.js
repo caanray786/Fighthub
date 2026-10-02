@@ -218,7 +218,8 @@ function start() {
     sparkPos.set([p.x + Math.cos(a) * r, p.y + Math.sin(a) * r * 0.8, p.z + (Math.random() - 0.5) * 3], i * 3);
   }
   const sparkGeo = new THREE.BufferGeometry(); sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPos, 3));
-  portal.add(new THREE.Points(sparkGeo, new THREE.PointsMaterial({ size: 0.12, map: dot, color: 0xff6b78, transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending })));
+  const sparkMat = new THREE.PointsMaterial({ size: 0.12, map: dot, color: 0xff6b78, transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending });
+  portal.add(new THREE.Points(sparkGeo, sparkMat));
 
   /* ================= THE WORLDS (built once the font is in) ================= */
   const worlds = new THREE.Group(); scene.add(worlds);
@@ -557,7 +558,10 @@ function start() {
     // Arena above the canvas, worlds below it
     const below = pos.y < MAT_Y - 0.05;
     arena.visible = pos.y > -6;
-    portal.visible = p > 0.2 && p < 0.345;
+    // The tunnel dissolves as the camera comes out of it, before FOLLOW is revealed
+    const tunnelFade = 1 - smooth((p - 0.318) / 0.022);
+    portal.visible = p > 0.2 && tunnelFade > 0;
+    frameRed.opacity = 0.95 * tunnelFade; frameWhite.opacity = 0.45 * tunnelFade; sparkMat.opacity = 0.8 * tunnelFade;
     const worldOn = smooth((-pos.y - 2) / 8);
     for (const l of worldLights) l.intensity = l.userData.base * worldOn;
     spot.intensity = below ? 0 : 13 * (1 + smooth((p - 0.17) / 0.06) * 0.35);
