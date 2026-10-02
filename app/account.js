@@ -60,8 +60,15 @@ async function startAccounts() {
       await loadScript(`https://${fapi}/npm/@clerk/ui@1/dist/ui.browser.js`);
       await loadScript(`https://${fapi}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`, { 'data-clerk-publishable-key': key });
     }
+    // Sign-in screens in the member's language (Clerk's own translations)
+    let localization;
+    const clerkLocale = { es: ['es-ES', 'esES'], pt: ['pt-BR', 'ptBR'], fr: ['fr-FR', 'frFR'], de: ['de-DE', 'deDE'] }[i18n.lang];
+    if (clerkLocale) {
+      try { localization = (await import(`https://cdn.jsdelivr.net/npm/@clerk/localizations@4.21.2/dist/${clerkLocale[0]}.mjs`))[clerkLocale[1]]; } catch { /* English sign-in */ }
+    }
     await clerk().load({
       ui: { ClerkUI: window.__internal_ClerkUICtor },
+      ...(localization ? { localization } : {}),
       // Sign-in and sign-up both happen inside the app (not on Clerk's own pages)
       signInUrl: appUrl(),
       signUpUrl: appUrl(),
@@ -239,6 +246,7 @@ function welcomeMarkup() {
       ? '<div id="clerk-sign-in" class="clerk-mount"></div>'
       : '<p class="small">Fight Hub is for adults. Confirm you are 18 or over to sign in or create your account.</p>')
     + '<p class="small">Check each exercise is suitable for you before starting, and stop if you feel pain or unwell.</p>'
+    + `<label class="field welcome-language">${icon('globe')} Language<select id="app-language" translate="no">${LANGUAGES.map(([code, name]) => `<option value="${code}" ${code === i18n.lang ? 'selected' : ''}>${name}</option>`).join('')}</select></label>`
     + `<p class="small">By creating an account you agree to our ${legalLink('terms', 'Terms')} and ${legalLink('privacy', 'Privacy policy')}.</p>`;
 }
 
@@ -278,13 +286,18 @@ function accountMarkup() {
   }
   const u = clerk().user, p = account.profile || {};
   const art = FightData.arts.find(a => a.id === p.discipline);
-  return title('Your account', esc(p.display_name || u.firstName || 'Welcome back'))
+  return title('Your account', p.display_name || u.firstName ? `<span translate="no">${esc(p.display_name || u.firstName)}</span>` : 'Welcome back')
     + (account.message ? `<p class="status" role="status">${esc(account.message)}</p>` : '')
     + `<div class="card feature">
-        <span class="eyebrow">${esc(u.primaryEmailAddress?.emailAddress || '')}</span>
+        <span class="eyebrow" translate="no">${esc(u.primaryEmailAddress?.emailAddress || '')}</span>
         <h3>${esc(art ? art.name : 'General fitness')} · ${esc(p.level || 'Beginner')}</h3>
         <p class="small">${esc(p.goal || '')}${p.coach_voice ? ` · ${p.coach_voice === 'male' ? 'Male' : 'Female'} coach voice` : ''}</p>
         <button class="full" data-account="edit">Edit profile</button>
+      </div>
+      <div class="card">
+        <h3>Language</h3>
+        <label class="field">App language<select id="app-language" translate="no">${LANGUAGES.map(([code, name]) => `<option value="${code}" ${code === i18n.lang ? 'selected' : ''}>${name}</option>`).join('')}</select></label>
+        ${i18n.lang !== 'en' ? '<p class="small">Translated with AI, so some wording may be off. Tell us at support@fighthub.world if anything reads oddly.</p>' : ''}
       </div>
       <div class="card">
         <h3>Exercise pictures</h3>
@@ -293,7 +306,7 @@ function accountMarkup() {
       </div>
       <div class="card">
         <h3>Training journal</h3>
-        <p class="small">${account.sync.error ? esc(account.sync.error) : account.sync.last ? `Saved to your account · ${account.sync.last.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}` : 'Saving to your account…'}</p>
+        <p class="small">${account.sync.error ? esc(account.sync.error) : account.sync.last ? `Saved to your account · ${account.sync.last.toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit' })}` : 'Saving to your account…'}</p>
         <button class="full" data-account="sync">Sync now</button>
       </div>
       <button class="full" data-account="manage">Sign-in and security</button>
@@ -391,3 +404,6 @@ startAccounts();
 
 // Exercise pictures: saved on this device
 document.addEventListener('change', e => { if (e.target.id === 'picture-choice') setPictureChoice(e.target.value); });
+
+// Language: the whole app reloads in the new language
+document.addEventListener('change', e => { if (e.target.id === 'app-language' && e.target.value !== i18n.lang) setLanguage(e.target.value); });

@@ -24,7 +24,7 @@ function bodyChart(entries, units) {
   const min = Math.min(...pts.map(p => p.kg)), max = Math.max(...pts.map(p => p.kg));
   const span = Math.max(max - min, 1);
   const xy = pts.map((p, i) => [pad + (i * (w - 2 * pad)) / (pts.length - 1), h - pad - ((p.kg - min) / span) * (h - 2 * pad)]);
-  const short = d => dayFrom(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  const short = d => dayFrom(d).toLocaleDateString(appLocale(), { day: 'numeric', month: 'short' });
   return `<svg class="body-chart" viewBox="0 0 ${w} ${h + 18}" role="img" aria-label="Weight from ${BodyModel.weight(pts[0].kg, units)} to ${BodyModel.weight(pts[pts.length - 1].kg, units)}">
     <polyline points="${xy.map(p => p.join(',')).join(' ')}" fill="none" stroke="#f14b55" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
     ${xy.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.5" fill="#f14b55"/>`).join('')}
@@ -39,9 +39,9 @@ function bodyMarkup() {
   const latest = list[0], first = list[list.length - 1];
   const trend = BodyModel.weeklyTrend(d.entries);
   const summary = latest
-    ? `<div class="card feature"><span class="eyebrow">Latest · ${esc(dayFrom(latest.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }))}</span>
+    ? `<div class="card feature"><span class="eyebrow">Latest · ${esc(dayFrom(latest.date).toLocaleDateString(appLocale(), { day: 'numeric', month: 'long' }))}</span>
         <h3>${BodyModel.weight(latest.kg, u)}${latest.waistCm ? ` · waist ${BodyModel.waist(latest.waistCm, u)}` : ''}</h3>
-        ${list.length > 1 ? `<p class="small">${BodyModel.change(latest.kg - first.kg, u)} since ${esc(dayFrom(first.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }))}${trend !== null ? ` · about ${BodyModel.change(trend, u)} a week lately` : ''}</p>` : ''}
+        ${list.length > 1 ? `<p class="small">${BodyModel.change(latest.kg - first.kg, u)} since ${esc(dayFrom(first.date).toLocaleDateString(appLocale(), { day: 'numeric', month: 'short' }))}${trend !== null ? ` · about ${BodyModel.change(trend, u)} a week lately` : ''}</p>` : ''}
         <p class="small">${esc(BodyModel.paceNote(trend, memberGoal()))}</p>
         ${bodyChart(d.entries, u)}</div>`
     : '<div class="card feature"><h3>Start with today’s weigh-in</h3><p class="small">Weigh yourself once a week, on the same day and at the same time (for example, Monday morning). Your trend matters, not day-to-day ups and downs.</p></div>';
@@ -58,7 +58,7 @@ function bodyMarkup() {
         <button class="primary full" data-body="save">${icon('save')} Save weigh-in</button>
         <label class="field">Units<select id="body-units"><option value="kg" ${u === 'kg' ? 'selected' : ''}>Kilograms and centimetres</option><option value="st" ${u === 'st' ? 'selected' : ''}>Stone, pounds and inches</option></select></label>
       </div>`
-    + (list.length ? `<h3>Your weigh-ins</h3><div class="body-list">${list.slice(0, 20).map(e => `<div class="body-row"><span>${esc(dayFrom(e.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }))}</span><strong>${BodyModel.weight(e.kg, u)}</strong><span class="small">${e.waistCm ? BodyModel.waist(e.waistCm, u) : ''}</span><button class="link-button" data-body="delete" data-id="${esc(e.id)}" aria-label="Delete this weigh-in">${icon('x')}</button></div>`).join('')}</div>` : '')
+    + (list.length ? `<h3>Your weigh-ins</h3><div class="body-list">${list.slice(0, 20).map(e => `<div class="body-row"><span>${esc(dayFrom(e.date).toLocaleDateString(appLocale(), { weekday: 'short', day: 'numeric', month: 'short' }))}</span><strong>${BodyModel.weight(e.kg, u)}</strong><span class="small">${e.waistCm ? BodyModel.waist(e.waistCm, u) : ''}</span><button class="link-button" data-body="delete" data-id="${esc(e.id)}" aria-label="Delete this weigh-in">${icon('x')}</button></div>`).join('')}</div>` : '')
     + `<div class="row-buttons"><button data-go="nutrition">${icon('heart')} Eat to train</button><button data-plan="fat-loss">Fat loss programme</button></div>
       <p class="draft-note">Your weigh-ins stay on this phone only; they are not sent to Fight Hub. If you have, or have had, an eating disorder, or you have a medical condition, talk to your GP before trying to change your weight.</p>`;
 }

@@ -64,9 +64,9 @@ async function loadPlans() {
   if (state.page === 'premium') render();
 }
 
-const money = (amount, currency) => new Intl.NumberFormat(undefined, { style: 'currency', currency: currency.toUpperCase(), minimumFractionDigits: amount % 100 ? 2 : 0 }).format(amount / 100);
+const money = (amount, currency) => new Intl.NumberFormat(appLocale(), { style: 'currency', currency: currency.toUpperCase(), minimumFractionDigits: amount % 100 ? 2 : 0 }).format(amount / 100);
 const daysUntil = iso => Math.ceil((new Date(iso) - Date.now()) / 86400000);
-const longDate = iso => iso ? new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+const longDate = iso => iso ? new Date(iso).toLocaleDateString(appLocale(), { day: 'numeric', month: 'long', year: 'numeric' }) : '';
 
 async function billingCall(path, body) {
   const token = await window.Clerk?.session?.getToken();

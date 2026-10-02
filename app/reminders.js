@@ -34,7 +34,7 @@ async function pushSubscription(create) {
 }
 
 async function saveReminders(body) {
-  const r = await billingCall('/api/reminders', body);
+  const r = await billingCall('/api/reminders', { ...body, lang: i18n.lang }); // reminders are written in the app's language
   await window.Clerk?.user?.reload();
   return r;
 }
@@ -72,7 +72,7 @@ function syncReminderProgress() {
     let last = '';
     try { last = localStorage.getItem('fight-hub-reminder-progress') || ''; } catch { /* private mode */ }
     if (key === last) return;
-    billingCall('/api/reminders', { progress: p })
+    billingCall('/api/reminders', { progress: p, lang: i18n.lang })
       .then(() => { try { localStorage.setItem('fight-hub-reminder-progress', key); } catch { /* ignore */ } })
       .catch(() => { /* next save tries again */ });
   }, 3000);

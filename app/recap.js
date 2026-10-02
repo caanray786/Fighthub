@@ -20,7 +20,7 @@ function lastWeekRecap() {
 function recapMarkup(r) {
   const art = r.longest && FightData.arts.find(a => a.id === r.longest.art)?.name;
   const longest = r.longest?.minutes
-    ? `Longest session: ${esc(art || r.longest.type)}, ${r.longest.minutes} min on ${dayFrom(r.longest.date).toLocaleDateString('en-GB', { weekday: 'long' })}.`
+    ? `Longest session: ${esc(art || r.longest.type)}, ${r.longest.minutes} min on ${dayFrom(r.longest.date).toLocaleDateString(appLocale(), { weekday: 'long' })}.`
     : '';
   const headline = r.trained
     ? `${r.trained} ${r.trained === 1 ? 'session' : 'sessions'}${r.minutes ? ` · ${r.minutes} minutes` : ''}${r.rounds ? ` · ${r.rounds} rounds` : ''}`

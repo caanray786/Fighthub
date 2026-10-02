@@ -5,6 +5,8 @@
    The coach is told who the member is, their week, recent journal entries
    and this month's challenge, so it can motivate and keep them accountable. */
 
+// The member's app language, in words the coach's AI understands
+const COACH_LANGUAGES = { en: 'English', es: 'Spanish', pt: 'Brazilian Portuguese', fr: 'French', de: 'German' };
 const coach = { state: 'idle', conversation: null, transcript: [], message: '', remaining: null, limit: null, loading: null, maxMinutes: 10, endsAt: 0, clock: null, warned: false };
 const COACH_SDK = 'https://cdn.jsdelivr.net/npm/@elevenlabs/client@1.26.0/dist/lib.iife.js';
 
@@ -100,15 +102,19 @@ async function startCoach() {
     mic.getTracks().forEach(t => t.stop());
     const [sdk, session] = await Promise.all([
       loadCoachSdk(),
-      billingCall('/api/coach-session', { voice: account.profile?.coach_voice || 'male' })
+      billingCall('/api/coach-session', { voice: account.profile?.coach_voice || 'male', lang: i18n.lang })
     ]);
     coach.remaining = session.remaining;
     coach.limit = session.limit;
     coach.maxMinutes = session.maxMinutes || 10;
     coach.conversation = await sdk.Conversation.startSession({
       signedUrl: session.signedUrl,
-      dynamicVariables: { ...coachContext(), coach_memory: session.memory || 'No previous conversations yet.' },
-      ...(session.voiceId ? { overrides: { tts: { voiceId: session.voiceId } } } : {}),
+      dynamicVariables: { ...coachContext(), coach_memory: session.memory || 'No previous conversations yet.', language: COACH_LANGUAGES[i18n.lang] || 'English' },
+      overrides: {
+        ...(session.voiceId ? { tts: { voiceId: session.voiceId } } : {}),
+        // Only sent when the agent has this language under "Additional languages"
+        ...(session.language ? { agent: { language: session.language } } : {})
+      },
       onConnect: info => { coach.conversationId = info?.conversationId || null; coach.state = 'listening'; startClock(); paintCoach(); },
       onModeChange: ({ mode }) => { coach.state = mode === 'speaking' ? 'speaking' : 'listening'; paintCoach(); },
       onMessage: ({ message, source }) => { if (message) { coach.transcript.push({ who: source === 'ai' ? 'coach' : 'you', text: message }); if (coach.transcript.length > 300) coach.transcript.shift(); paintCoach(); } },
@@ -166,7 +172,7 @@ function savedChats() {
 function storeChats(list) {
   try { localStorage.setItem(CHATS_KEY, JSON.stringify(list.slice(0, 30))); return true; } catch { return false; }
 }
-const chatWhen = at => new Date(at).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const chatWhen = at => new Date(at).toLocaleString(appLocale(), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
 function savedChatsMarkup() {
   const chats = savedChats();
@@ -182,7 +188,8 @@ function savedChatsMarkup() {
 function memoryMarkup() {
   const n = window.Clerk?.user?.publicMetadata?.coachMemoryCount || 0;
   if (!n) return '';
-  return `<p class="small coach-memory">Your coach remembers a short summary of your last ${n === 1 ? 'chat' : `${n} chats`}. <button class="link-button" data-coach="forget">Forget ${n === 1 ? 'it' : 'them'}</button></p>`;
+  const note = n === 1 ? 'Your coach remembers a short summary of your last chat.' : `Your coach remembers a short summary of your last ${n} chats.`;
+  return `<p class="small coach-memory">${note} <button class="link-button" data-coach="forget">${n === 1 ? 'Forget it' : 'Forget them'}</button></p>`;
 }
 
 /* ---- Screen ---- */
@@ -200,7 +207,12 @@ function coachMarkup() {
   const month = new Date().toISOString().slice(0, 7);
   const limit = coach.limit || usage?.limit;
   const remaining = coach.remaining ?? (usage && limit ? (usage.month === month ? limit - usage.sessions : limit) : null);
-  const voice = account.profile?.coach_voice === 'female' ? 'Female' : 'Male';
+  // Whole sentences, so each one can be translated
+  const details = [
+    ...(remaining !== null && remaining !== undefined ? [`${remaining} of ${limit} coach sessions left this month`] : []),
+    `Up to ${coach.maxMinutes} minutes each`,
+    account.profile?.coach_voice === 'female' ? 'Female voice (change it in your profile).' : 'Male voice (change it in your profile).'
+  ];
   const active = coach.state !== 'idle';
   return title('Your coach', 'Talk it<br>through.')
     + `<div class="coach-stage" data-state="${coach.state}">
@@ -212,7 +224,7 @@ function coachMarkup() {
       ${coach.message ? `<p class="status" role="status">${esc(coach.message)}</p>` : ''}
       <div class="coach-transcript" id="coach-transcript">${transcriptMarkup()}</div>
       ${!active && coach.transcript.length ? `<div class="coach-chat-actions"><button class="primary" data-coach="save">${icon('save')} Save conversation</button><button data-coach="clear">${icon('trash')} Clear</button></div>` : ''}
-      <p class="small">${remaining !== null && remaining !== undefined ? `${remaining} of ${limit} coach sessions left this month · ` : ''}up to ${coach.maxMinutes} minutes each · ${voice} voice (change it in your profile).</p>
+      <p class="small">${details.join(' · ')}</p>
       <details><summary>What can I ask?</summary><ul>
         <li>“What should I train today?”</li><li>“How do I throw a better switch kick?”</li>
         <li>“I missed two sessions this week. Help me get back on track.”</li><li>“How do I recover after hard sparring?”</li></ul></details>
@@ -222,7 +234,7 @@ function coachMarkup() {
 }
 
 function transcriptMarkup(lines = coach.transcript) {
-  return lines.map(m => `<p class="coach-line ${m.who}"><strong>${m.who === 'coach' ? 'Coach' : 'You'}</strong>${esc(m.text)}</p>`).join('');
+  return lines.map(m => `<p class="coach-line ${m.who}"><strong>${m.who === 'coach' ? 'Coach' : 'You'}</strong><span translate="no">${esc(m.text)}</span></p>`).join('');
 }
 
 // Update just the live parts while talking (no full redraw)

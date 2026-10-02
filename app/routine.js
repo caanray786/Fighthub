@@ -4,7 +4,7 @@ const nextMonday=new Date(localDate()+'T12:00:00');nextMonday.setDate(nextMonday
 let routine={draft:{start:RoutineModel.iso(nextMonday),days:[1,3,5],location:'Gym',split:'split',level:'Starter'},plan:null,selected:0,message:''};
 try{const saved=JSON.parse(localStorage.getItem(routineStorage)||'null');if(saved?.plan){routine.plan=RoutineModel.build(saved.plan);routine.draft={...routine.plan,days:[...routine.plan.days]};}}catch{}
 const rbtn=(name,a,id='',cls='full')=>`<button class="${cls}" data-routine="${a}" data-id="${id}">${name}</button>`;
-const dayName=d=>new Date(d+'T12:00:00').toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'short'});
+const dayName=d=>new Date(d+'T12:00:00').toLocaleDateString(appLocale(),{weekday:'long',day:'numeric',month:'short'});
 const routineId=s=>'routine-'+routine.plan.start+'-'+routine.plan.location+'-'+routine.plan.split+'-'+s.date;
 function routineOverview(s){return `<ol class="routine-exercises">${s.ids.map(id=>`<li><strong>${ex(id).name}</strong>${training.premium?'<span class="small">'+ExerciseContent.target(ex(id),routine.plan.level,routine.plan.split)+'</span>'+act('Instructions & image','exercise',id):'<span class="small">Workload and demonstration included with Premium</span>'}</li>`).join('')}</ol>`;}
 function weekMarkup(){const p=routine.plan;if(!p)return title('My week','Build your<br>weekly routine.')+`<p>Choose three days. We’ll put a named workout and its exercises on each day.</p>${rbtn('Set up my routine','setup','','primary full')}`;

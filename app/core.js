@@ -68,7 +68,7 @@ window.addEventListener('popstate', e => {
 const button = (text, action, cls = '') => `<button class="${cls}" data-action="${action}">${text}</button>`;
 const title = (eyebrow, heading) => `<div class="eyebrow">${eyebrow}</div><h2 tabindex="-1">${heading}</h2>`;
 function week() {
-  return `<div class="week" aria-label="Your week">${['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => `<div class="day ${[0, 2, state.moved ? 5 : 4].includes(i) ? 'active' : ''}">${d}<b>${i + 1}</b></div>`).join('')}</div>`;
+  return `<div class="week" aria-label="Your week">${weekdayLetters().map((d, i) => `<div class="day ${[0, 2, state.moved ? 5 : 4].includes(i) ? 'active' : ''}">${d}<b>${i + 1}</b></div>`).join('')}</div>`;
 }
 
 /* ---- Live FightHub feed (news and the next fight night) ---- */
@@ -101,7 +101,7 @@ async function loadFeed() {
   }
 }
 
-const niceDate = d => new Date(d + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+const niceDate = d => new Date(d + 'T12:00:00').toLocaleDateString(appLocale(), { weekday: 'short', day: 'numeric', month: 'short' });
 
 function feedMarkup() {
   const chips = `<div class="chips">${Object.keys(FEED_SPORTS).map(s => `<button data-sport="${s}" aria-pressed="${state.interest === s}">${s}</button>`).join('')}</div>`;

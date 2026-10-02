@@ -47,7 +47,8 @@ const BodyModel = (() => {
       return 'Holding steady. To build muscle, eat a little more and keep adding weight to your lifts.';
     }
     if (Math.abs(kgPerWeek) < 0.1) return 'Your weight is steady.';
-    return `Your weight is ${kgPerWeek < 0 ? 'coming down' : 'going up'} by about ${Math.abs(kgPerWeek).toFixed(1)} kg a week.`;
+    const kg = Math.abs(kgPerWeek).toFixed(1);
+    return kgPerWeek < 0 ? `Your weight is coming down by about ${kg} kg a week.` : `Your weight is going up by about ${kg} kg a week.`;
   }
 
   return { toKg, toCm, validKg, validCm, weight, change, waist, weeklyTrend, paceNote };

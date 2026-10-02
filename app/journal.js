@@ -72,10 +72,10 @@ function journalMarkup() {
       <button class="primary full" data-journal="new">${icon('plus')} Log a session</button>
       ${sorted.length ? sorted.map(e => `
         <button class="journal-entry" data-journal="edit" data-id="${esc(e.id)}">
-          <span class="eyebrow">${esc(dayFrom(e.date).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' }))} · ${esc(e.type)}${e.art ? ' · ' + esc((FightData.arts.find(a => a.id === e.art) || {}).name || e.art) : ''}</span>
-          <strong>${esc(e.did || e.type)}</strong>
+          <span class="eyebrow">${esc(dayFrom(e.date).toLocaleDateString(appLocale(), { weekday: 'short', day: 'numeric', month: 'short' }))} · ${esc(e.type)}${e.art ? ' · ' + esc((FightData.arts.find(a => a.id === e.art) || {}).name || e.art) : ''}</span>
+          <strong${e.did ? ' translate="no"' : ''}>${esc(e.did || e.type)}</strong>
           <span class="small">${[e.minutes && `${e.minutes} min`, e.rounds && `${e.rounds} rounds`, e.rpe && `Effort ${e.rpe}/10`, e.energy && `Energy: ${ENERGY[e.energy]}`].filter(Boolean).join(' · ')}</span>
-          ${e.notes ? `<span class="journal-note">${esc(e.notes)}</span>` : ''}
+          ${e.notes ? `<span class="journal-note" translate="no">${esc(e.notes)}</span>` : ''}
         </button>`).join('') : `<div class="card"><h3>Your first entry</h3><p class="small">Log every session: at the gym, in class, on the pads, sparring or out running. Note what you worked on and what to fix next time. It is the best way to stay accountable and see your progress.</p></div>`}
       ${training.history.length ? `<button class="full" data-go="progress">App session history (${training.history.length})</button>` : ''}
       ${typeof signedIn === 'function' && signedIn()

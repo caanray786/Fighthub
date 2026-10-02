@@ -45,7 +45,7 @@ function monthChallenge(date = new Date()) {
   const prefix = isoDay(date).slice(0, 7);
   const done = c.measure(journal.entries.filter(e => e.date.startsWith(prefix)));
   const daysLeft = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate() - date.getDate();
-  return { ...c, month: date.toLocaleDateString(undefined, { month: 'long' }), done: Math.min(done, c.target), complete: done >= c.target, daysLeft };
+  return { ...c, month: date.toLocaleDateString(appLocale(), { month: 'long' }), done: Math.min(done, c.target), complete: done >= c.target, daysLeft };
 }
 
 /* ---- Achievements ---- */
@@ -135,7 +135,7 @@ function weekCard() {
   return `<div class="card week-card">
     <div class="row"><span class="eyebrow">Your week</span><button class="link-button" data-retention="goal">Goal: ${retention.goal} days</button></div>
     <h3>${done >= retention.goal ? 'Weekly goal done.' : `${done} of ${retention.goal} training days`}</h3>
-    <div class="week-dots">${week.map((d, i) => `<span class="${days.has(d) ? 'on' : ''} ${d === today ? 'today' : ''}"><b>${'MTWTFSS'[i]}</b></span>`).join('')}</div>
+    <div class="week-dots">${week.map((d, i) => `<span class="${days.has(d) ? 'on' : ''} ${d === today ? 'today' : ''}"><b>${weekdayLetters()[i]}</b></span>`).join('')}</div>
     <p class="small">${streak > 1 ? `${streak}-week goal streak. Keep it going.` : done >= retention.goal ? 'Goal met. Rest well or add a bonus session.' : 'Every session counts: gym, class, run or here in the app.'}</p>
     <div class="challenge-line"><span class="small"><strong>${esc(c.month)} challenge:</strong> ${esc(c.name)}</span><span class="small">${c.done}/${c.target}</span></div>
     <div class="meter"><span style="width:${Math.round((c.done / c.target) * 100)}%"></span></div>
