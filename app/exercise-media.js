@@ -3,10 +3,8 @@ const ExerciseMedia=new Set(["chair-rise","wall-press","calf","side-leg","bottle
 ['hip-flexor-stretch','butterfly-stretch','half-split'].forEach(id=>ExerciseMedia.add(id));
 // Glutes and legs exercises (checked and approved 30 Sep 2026)
 ['band-walk', 'bulgarian-split', 'cable-kickback', 'curtsy-lunge', 'donkey-kick', 'hip-abduction', 'kb-swing', 'single-leg-bridge', 'single-leg-rdl', 'step-up', 'sumo-squat', 'walking-lunge', 'back-extension', 'b-stance-thrust', 'pull-through'].forEach(id=>ExerciseMedia.add(id));
-// Gym lifts (checked 2 Oct 2026; the barbell bench press picture is being redone)
+// Gym lifts (checked 2 Oct 2026; the barbell bench press was redone and added 3 Oct)
 ['back-squat', 'barbell-curl', 'barbell-row', 'deadlift', 'dip', 'overhead-press', 'pull-up'].forEach(id=>ExerciseMedia.add(id));
-// Withdrawn 3 Oct 2026 for a redo: the pad is on the front of the shins (a leg extension)
-ExerciseMedia.delete('leg-curl');
 // Redone and checked 3 Oct 2026
-['fire-hydrant', 'frog-pump'].forEach(id=>ExerciseMedia.add(id));
+['fire-hydrant', 'frog-pump', 'leg-curl', 'barbell-bench'].forEach(id=>ExerciseMedia.add(id));
 if(typeof module!=='undefined')module.exports=ExerciseMedia;
