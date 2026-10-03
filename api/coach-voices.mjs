@@ -5,11 +5,13 @@
 // - languageVoices: voices set for particular languages in the agent
 // Shows voice names and IDs only (not secret); never the API key.
 import { json, handle, httpError } from './_lib/http.mjs';
+import { looksLikeVoiceId } from './coach-session.mjs';
 
 const API = 'https://api.elevenlabs.io/v1/';
 
 async function voiceInfo(key, id) {
   if (!id) return { set: false };
+  if (!looksLikeVoiceId(id)) return { set: true, id, problem: 'This is not a voice ID. Paste the voice ID from ElevenLabs (20 or so letters and numbers).' };
   const res = await fetch(`${API}voices/${encodeURIComponent(id)}`, { headers: { 'xi-api-key': key } });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {

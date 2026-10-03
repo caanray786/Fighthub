@@ -64,6 +64,10 @@ export function agentLanguage(info, lang) {
   return info.languages.find(code => code.toLowerCase() === lang || code.toLowerCase().startsWith(lang + '-')) || '';
 }
 
+// ElevenLabs voice IDs are 20 or so letters and numbers (for example lUTamkMw7gOzZbFIwmq4).
+// Anything else in the Vercel setting is a mistake and is treated as not set.
+export const looksLikeVoiceId = id => /^[A-Za-z0-9]{15,40}$/.test(String(id || ''));
+
 // Why the member's chosen voice cannot be used, or '' when it can:
 // - 'not-set': ELEVENLABS_VOICE_MALE / ELEVENLABS_VOICE_FEMALE is missing in Vercel
 // - 'override-off': the agent does not allow the app to choose the voice
@@ -109,7 +113,8 @@ export async function POST(request) {
     if (used >= limit) throw httpError(429, `You’ve used all ${limit} coach sessions this month. They reset on the 1st.`);
 
     const { voice, lang } = await request.json().catch(() => ({}));
-    const chosen = (voice === 'female' ? process.env.ELEVENLABS_VOICE_FEMALE : process.env.ELEVENLABS_VOICE_MALE) || '';
+    const setting = (voice === 'female' ? process.env.ELEVENLABS_VOICE_FEMALE : process.env.ELEVENLABS_VOICE_MALE) || '';
+    const chosen = looksLikeVoiceId(setting) ? setting : '';
     const settings = await coachAgentSettings(key, agent);
     const voiceId = chosen && settings.voice ? chosen : '';
     const language = agentLanguage(settings, String(lang || '').toLowerCase());

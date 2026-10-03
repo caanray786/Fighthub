@@ -496,10 +496,10 @@ import { GET as coachVoices } from '../api/coach-voices.mjs';
 
 test('coach voices: names, genders and per-language voices are reported', async () => {
   process.env.ELEVENLABS_API_KEY = 'k'; process.env.ELEVENLABS_AGENT_ID = 'a';
-  process.env.ELEVENLABS_VOICE_MALE = 'man1'; process.env.ELEVENLABS_VOICE_FEMALE = 'man2';
-  const voices = { man1: { name: 'Brian', labels: { gender: 'male', accent: 'american' } }, man2: { name: 'Daniel', labels: { gender: 'male', accent: 'british' } }, def: { name: 'Eric', labels: { gender: 'male' } } };
+  process.env.ELEVENLABS_VOICE_MALE = 'maleVoice0000000001A'; process.env.ELEVENLABS_VOICE_FEMALE = 'maleVoice0000000002B';
+  const voices = { maleVoice0000000001A: { name: 'Brian', labels: { gender: 'male', accent: 'american' } }, maleVoice0000000002B: { name: 'Daniel', labels: { gender: 'male', accent: 'british' } }, defaultVoice00000003: { name: 'Eric', labels: { gender: 'male' } } };
   globalThis.fetch = async url => {
-    if (url.includes('/convai/agents/')) return new Response(JSON.stringify({ conversation_config: { tts: { voice_id: 'def', model_id: 'eleven_flash_v2_5' }, language_presets: { fr: { overrides: { tts: { voice_id: 'gone' } } } } }, platform_settings: { overrides: { conversation_config_override: { tts: { voice_id: true } } } } }));
+    if (url.includes('/convai/agents/')) return new Response(JSON.stringify({ conversation_config: { tts: { voice_id: 'defaultVoice00000003', model_id: 'eleven_flash_v2_5' }, language_presets: { fr: { overrides: { tts: { voice_id: 'missingVoice00000004' } } } } }, platform_settings: { overrides: { conversation_config_override: { tts: { voice_id: true } } } } }));
     const id = decodeURIComponent(url.split('/voices/')[1]);
     return voices[id] ? new Response(JSON.stringify(voices[id])) : new Response('{"detail":"not found"}', { status: 404 });
   };
@@ -512,4 +512,12 @@ test('coach voices: names, genders and per-language voices are reported', async 
   assert.equal(body.appMayChooseVoice, true);
   globalThis.fetch = realFetch;
   for (const k of ['ELEVENLABS_API_KEY', 'ELEVENLABS_AGENT_ID', 'ELEVENLABS_VOICE_MALE', 'ELEVENLABS_VOICE_FEMALE']) delete process.env[k];
+});
+
+test('coach voice: a setting that is not a voice ID counts as not set', async () => {
+  const { looksLikeVoiceId } = await import('../api/coach-session.mjs');
+  assert.equal(looksLikeVoiceId('lUTamkMw7gOzZbFIwmq4'), true);
+  assert.equal(looksLikeVoiceId('ELEVENLABS_VOICE_FEMALE'), false);
+  assert.equal(looksLikeVoiceId(''), false);
+  assert.equal(looksLikeVoiceId('voice id with spaces'), false);
 });
