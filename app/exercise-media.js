@@ -6,6 +6,6 @@ ExerciseMedia.add('leg-curl');
 ['band-walk', 'bulgarian-split', 'cable-kickback', 'curtsy-lunge', 'donkey-kick', 'hip-abduction', 'kb-swing', 'single-leg-bridge', 'single-leg-rdl', 'step-up', 'sumo-squat', 'walking-lunge', 'back-extension', 'b-stance-thrust', 'pull-through'].forEach(id=>ExerciseMedia.add(id));
 // Gym lifts (checked 2 Oct 2026; the barbell bench press picture is being redone)
 ['back-squat', 'barbell-curl', 'barbell-row', 'deadlift', 'dip', 'overhead-press', 'pull-up'].forEach(id=>ExerciseMedia.add(id));
-// Being redone: shows the wrong movement
-ExerciseMedia.delete('fire-hydrant');
+// Redone and checked 3 Oct 2026
+['fire-hydrant', 'frog-pump'].forEach(id=>ExerciseMedia.add(id));
 if(typeof module!=='undefined')module.exports=ExerciseMedia;
