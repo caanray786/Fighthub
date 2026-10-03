@@ -3,14 +3,14 @@
    fetched fresh when online and falls back to the last copy offline.
    Bump VERSION whenever app files change so phones pick up the update. */
 
-const VERSION = 'fight-hub-v34';
+const VERSION = 'fight-hub-v35';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest',
-  'base.css?v=34', 'glass.css?v=34', 'training.css?v=34', 'app.css?v=34',
-  'config.js', 'i18n.js?v=34', 'icons.js?v=34', 'core.js?v=34', 'training-data.js?v=34', 'exercise-content.js?v=34', 'exercise-media.js?v=34', 'female-media.js?v=34', 'body-model.js?v=34',
-  'training.js?v=34', 'interval-model.js?v=34', 'conditioning-model.js?v=34', 'hiit.js?v=34', 'guided-model.js?v=34', 'guided.js?v=34',
-  'exercise-experience.js?v=34', 'mobility.js?v=34', 'membership-model.js?v=34', 'membership.js?v=34', 'routine-model.js?v=34',
-  'routine.js?v=34', 'exercise-navigation.js?v=34', 'fight-data.js?v=34', 'fight.js?v=34', 'journal.js?v=34', 'account.js?v=34', 'premium.js?v=34', 'retention.js?v=34', 'recap.js?v=34', 'coach.js?v=34', 'reminders.js?v=34', 'bodyplan.js?v=34', 'shell.js?v=34',
+  'base.css?v=35', 'glass.css?v=35', 'training.css?v=35', 'app.css?v=35',
+  'config.js', 'i18n.js?v=35', 'icons.js?v=35', 'core.js?v=35', 'training-data.js?v=35', 'exercise-content.js?v=35', 'exercise-media.js?v=35', 'female-media.js?v=35', 'body-model.js?v=35',
+  'training.js?v=35', 'interval-model.js?v=35', 'conditioning-model.js?v=35', 'hiit.js?v=35', 'guided-model.js?v=35', 'guided.js?v=35',
+  'exercise-experience.js?v=35', 'mobility.js?v=35', 'membership-model.js?v=35', 'membership.js?v=35', 'routine-model.js?v=35',
+  'routine.js?v=35', 'exercise-navigation.js?v=35', 'fight-data.js?v=35', 'fight.js?v=35', 'journal.js?v=35', 'account.js?v=35', 'premium.js?v=35', 'retention.js?v=35', 'recap.js?v=35', 'coach.js?v=35', 'reminders.js?v=35', 'bodyplan.js?v=35', 'shell.js?v=35',
   'assets/fight-hub-logo.png', 'icons/icon-192.png', 'icons/apple-touch-icon.png'
 ];
 

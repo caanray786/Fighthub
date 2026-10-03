@@ -523,8 +523,8 @@ test('coach voice: a setting that is not a voice ID counts as not set', async ()
 });
 
 // ---- Admin portal: members ----
-import { GET as adminMembers, summarise, premiumLabel } from '../api/admin-members.mjs';
-import { countryFrom, nextLocation } from '../api/member-seen.mjs';
+import { GET as adminMembers, summarise, premiumLabel } from '../api/members.mjs';
+import { countryFrom, nextLocation } from '../api/members.mjs';
 
 function fakeServices({ admin = true, sessionsCountry = 'IE' } = {}) {
   const calls = [];
@@ -544,7 +544,7 @@ function fakeServices({ admin = true, sessionsCountry = 'IE' } = {}) {
   };
   return calls;
 }
-const adminRequest = (token = 'admin-token') => new Request('https://x/api/admin-members', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+const adminRequest = (token = 'admin-token') => new Request('https://x/api/members', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
 
 test('admin members: only signed-in administrators get the list', async () => {
   fakeServices();
@@ -577,7 +577,7 @@ test('admin members: who joined, from where, how, and who invited them', async (
 });
 
 test('member seen: the country from the connection, kept only when it changes', () => {
-  const req = code => new Request('https://x/api/member-seen', { method: 'POST', headers: code ? { 'x-vercel-ip-country': code } : {} });
+  const req = code => new Request('https://x/api/members', { method: 'POST', headers: code ? { 'x-vercel-ip-country': code } : {} });
   assert.equal(countryFrom(req('gb')), 'GB');
   assert.equal(countryFrom(req('XX')), '');
   assert.equal(countryFrom(req('')), '');
@@ -591,4 +591,11 @@ test('member seen: the country from the connection, kept only when it changes', 
   assert.equal(premiumLabel({ status: 'trialing' }), 'Free trial');
   assert.equal(premiumLabel({ status: 'active', pass: true, expires: new Date(Date.now() + 864e5).toISOString() }), 'Year pass');
   assert.equal(summarise([]).total, 0);
+});
+
+// Vercel's plan allows at most 12 server functions (files directly in api/)
+test('the site stays within Vercel’s 12 server functions', async () => {
+  const { readdirSync } = await import('node:fs');
+  const functions = readdirSync(new URL('../api/', import.meta.url)).filter(f => f.endsWith('.mjs'));
+  assert.ok(functions.length <= 12, `${functions.length} functions: ${functions.join(', ')}. Merge some before deploying.`);
 });

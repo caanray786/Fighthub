@@ -2,7 +2,7 @@
    FightHub — Admin: Members
    Everyone who has signed up to the Fight Hub app: when they joined, which
    country they connect from, how they signed up, their plan and who invited
-   them. Read from /api/admin-members, which only answers signed-in admins.
+   them. Read from /api/members, which only answers signed-in admins.
    ============================================ */
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     el('btn-refresh').disabled = true;
     try {
       const { data } = await dataStore.supabaseClient.auth.getSession();
-      const res = await fetch('../api/admin-members', { headers: { Authorization: `Bearer ${data.session?.access_token || ''}` } });
+      const res = await fetch('../api/members', { headers: { Authorization: `Bearer ${data.session?.access_token || ''}` } });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body.error || `Members could not be loaded (error ${res.status}).`);
       members = body.members || [];

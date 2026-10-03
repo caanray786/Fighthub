@@ -159,7 +159,7 @@ async function memberApi(path, { method = 'GET', body, prefer } = {}) {
 function noteVisit() {
   const key = `${clerk().user.id}:${new Date().toISOString().slice(0, 10)}`;
   if (stored('fight-hub-seen') === key || typeof billingCall !== 'function') return;
-  billingCall('/api/member-seen').then(() => store('fight-hub-seen', key)).catch(() => {});
+  billingCall('/api/members').then(() => store('fight-hub-seen', key)).catch(() => {});
 }
 
 async function loadProfile() {

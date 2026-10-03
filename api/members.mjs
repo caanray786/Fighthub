@@ -1,11 +1,16 @@
-// GET /api/admin-members: everyone who has signed up to Fight Hub, for the
-// admin portal's Members page. Admins only (see _lib/admin.mjs).
-// Country: where the member's connection came from when they last opened the
-// app (member-seen.mjs). For members who have not opened it since that was
+// /api/members: Fight Hub members, in one function (Vercel allows 12 per site).
+//
+// GET (admin portal, admins only): everyone who has signed up, for the Members
+// page. Country: where the member's connection came from when they last opened
+// the app (POST below). For members who have not opened it since that was
 // added, the country Clerk saw at their latest sign-in is used once and saved.
+//
+// POST (a signed-in member, from the app at most once a day per phone): notes
+// the country their connection comes from, using Vercel's x-vercel-ip-country
+// header. Only the country is kept: no IP address, city or exact location.
 import { json, handle, hasPremium } from './_lib/http.mjs';
 import { requireAdmin } from './_lib/admin.mjs';
-import { listClerkUsers, listUserSessions, updateClerkMetadata, primaryEmail } from './_lib/clerk.mjs';
+import { memberFromRequest, getClerkUser, listClerkUsers, listUserSessions, updateClerkMetadata, primaryEmail } from './_lib/clerk.mjs';
 
 const DAY = 86400000;
 const LOOKUPS_PER_REQUEST = 40; // sign-in lookups for members with no country yet
@@ -111,5 +116,31 @@ export async function GET(request) {
 
     const members = users.map(u => toMember(u, invitedBy.get(u.id) || ''));
     return json({ members, summary: summarise(members), updated: new Date().toISOString() }, 200, { 'Cache-Control': 'no-store' });
+  });
+}
+
+// ---- The country a member connects from ----
+export function countryFrom(request) {
+  const code = (request.headers.get('x-vercel-ip-country') || '').trim().toUpperCase();
+  return /^[A-Z]{2}$/.test(code) && code !== 'XX' ? code : '';
+}
+
+// { country: latest, first: the country they joined from, at, firstAt, source }
+export function nextLocation(previous, country, now = new Date()) {
+  const seen = previous || {};
+  if (!country || (seen.country === country && seen.first && seen.source === 'app')) return null;
+  const at = now.toISOString();
+  return { country, at, first: seen.first || country, firstAt: seen.firstAt || at, source: 'app' };
+}
+
+export async function POST(request) {
+  return handle(async () => {
+    const member = await memberFromRequest(request);
+    const country = countryFrom(request);
+    if (!country) return json({ ok: true, country: '' });
+    const user = await getClerkUser(member.id);
+    const location = nextLocation(user.private_metadata?.location, country);
+    if (location) await updateClerkMetadata(member.id, { private_metadata: { location } });
+    return json({ ok: true, country });
   });
 }
