@@ -490,3 +490,26 @@ test('referrals: the first-month-free coupon is created when missing', async () 
   globalThis.fetch = realFetch;
   delete process.env.STRIPE_SECRET_KEY; delete process.env.CLERK_SECRET_KEY;
 });
+
+// ---- Coach voice check ----
+import { GET as coachVoices } from '../api/coach-voices.mjs';
+
+test('coach voices: names, genders and per-language voices are reported', async () => {
+  process.env.ELEVENLABS_API_KEY = 'k'; process.env.ELEVENLABS_AGENT_ID = 'a';
+  process.env.ELEVENLABS_VOICE_MALE = 'man1'; process.env.ELEVENLABS_VOICE_FEMALE = 'man2';
+  const voices = { man1: { name: 'Brian', labels: { gender: 'male', accent: 'american' } }, man2: { name: 'Daniel', labels: { gender: 'male', accent: 'british' } }, def: { name: 'Eric', labels: { gender: 'male' } } };
+  globalThis.fetch = async url => {
+    if (url.includes('/convai/agents/')) return new Response(JSON.stringify({ conversation_config: { tts: { voice_id: 'def', model_id: 'eleven_flash_v2_5' }, language_presets: { fr: { overrides: { tts: { voice_id: 'gone' } } } } }, platform_settings: { overrides: { conversation_config_override: { tts: { voice_id: true } } } } }));
+    const id = decodeURIComponent(url.split('/voices/')[1]);
+    return voices[id] ? new Response(JSON.stringify(voices[id])) : new Response('{"detail":"not found"}', { status: 404 });
+  };
+  const body = await (await coachVoices()).json();
+  assert.equal(body.female.name, 'Daniel');
+  assert.equal(body.female.gender, 'male', 'a male voice set as the female one shows up');
+  assert.equal(body.agentDefault.name, 'Eric');
+  assert.match(body.languageVoices.fr.problem, /No voice/);
+  assert.deepEqual(body.agentLanguages, ['en', 'fr']);
+  assert.equal(body.appMayChooseVoice, true);
+  globalThis.fetch = realFetch;
+  for (const k of ['ELEVENLABS_API_KEY', 'ELEVENLABS_AGENT_ID', 'ELEVENLABS_VOICE_MALE', 'ELEVENLABS_VOICE_FEMALE']) delete process.env[k];
+});

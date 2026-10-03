@@ -266,6 +266,7 @@ function profileForm() {
       <label class="field">Your name<input type="text" name="display_name" maxlength="60" required value="${esc(p.display_name || u.firstName || '')}"></label>
       <label class="field">Gender<select name="gender" required>${opt([['', 'Choose'], ['male', 'Male'], ['female', 'Female'], ['unspecified', 'Prefer not to say']], gender)}</select></label>
       <label class="field">Coach voice<select name="coach_voice" required>${opt([['', 'Choose'], ['male', 'Male voice'], ['female', 'Female voice']], p.coach_voice || (gender === 'unspecified' ? '' : gender))}</select></label>
+      <label class="field">App language<select name="app_language" translate="no">${LANGUAGES.map(([code, name]) => `<option value="${code}" ${code === i18n.lang ? 'selected' : ''}>${name}</option>`).join('')}</select></label>
       <label class="field">Main discipline<select name="discipline">${opt([['', 'General fitness'], ...FightData.arts.map(a => [a.id, a.name])], p.discipline || '')}</select></label>
       <label class="field">Main goal<select name="goal">${opt(GOALS.map(g => [g, g]), p.goal || GOALS[0])}</select></label>
       <label class="field">Experience<select name="level">${opt(LEVELS.map(l => [l, l]), p.level || 'Beginner')}</select></label>
@@ -313,7 +314,8 @@ function accountMarkup() {
       <button class="full" data-account="signout">Sign out</button>
       <button class="full account-danger" data-account="delete">Delete my account</button>
       <p class="small">Deleting cancels any monthly subscription straight away and removes your profile, your journal in your account and your sign-in. Any Premium time left is lost, and it cannot be undone.</p>
-      <p class="small legal-links">${legalLinks()}</p>`;
+      <p class="small legal-links">${legalLinks()}</p>
+      <p class="small app-version">App version ${I18N_VERSION}</p>`;
 }
 
 function mountSignIn() {
@@ -353,6 +355,7 @@ document.addEventListener('submit', async e => {
     goal: f.get('goal'),
     level: f.get('level')
   };
+  const lang = f.get('app_language');
   const isNew = !account.profile?.user_id;
   const btn = e.target.querySelector('button[type=submit]');
   btn.disabled = true;
@@ -361,7 +364,10 @@ document.addEventListener('submit', async e => {
     await saveProfile(p);
     account.editing = false;
     account.message = '';
-    if (isNew) { state.mode = 'train'; saveApp(); return go('today'); }
+    if (isNew) { state.mode = 'train'; saveApp(); }
+    // A new language reloads the app in that language
+    if (lang && lang !== i18n.lang) return setLanguage(lang);
+    if (isNew) return go('today');
     render();
   } catch (err) {
     btn.disabled = false;
