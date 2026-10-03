@@ -1,11 +1,12 @@
 /* Published draft assets; professional technique review remains pending. */
 const ExerciseMedia=new Set(["chair-rise","wall-press","calf","side-leg","bottle-curl","biceps-curl","wall-slide","shoulder-roll","star-jacks","incline-press","push-up","floor-press","bench-press","chest-machine","band-row","db-row","cable-row","lat-pull","assisted-pull","shoulder-press","lateral-raise","reverse-fly","hammer-curl","band-curl","triceps","squat","goblet","split-squat","leg-press","bridge","hip-thrust","hinge","rdl","seated-calf","dead-bug","bird-dog","plank","side-plank","carry","walk","bike","rower","march","ankle","burpee","step-burpee","step-jacks","high-knees","tuck-jump","squat-jump","heel-digs","side-steps","butt-kicks","standing-curl","mountain-climber","slow-climber","reverse-lunge","lateral-lunge","wall-sit","kneeling-press","plank-tap","heel-taps","clamshell","side-lying-raise","bridge-march","prone-w","backpack-squat","backpack-row","backpack-hinge","bottle-raise","bottle-carry","squat-thrust","hand-release-press","bear-crawl","plank-up-down","calf-stretch","hamstring-stretch","quad-stretch","chest-stretch","glute-stretch","upper-back-stretch"]);
 ['hip-flexor-stretch','butterfly-stretch','half-split'].forEach(id=>ExerciseMedia.add(id));
-ExerciseMedia.add('leg-curl');
 // Glutes and legs exercises (checked and approved 30 Sep 2026)
 ['band-walk', 'bulgarian-split', 'cable-kickback', 'curtsy-lunge', 'donkey-kick', 'hip-abduction', 'kb-swing', 'single-leg-bridge', 'single-leg-rdl', 'step-up', 'sumo-squat', 'walking-lunge', 'back-extension', 'b-stance-thrust', 'pull-through'].forEach(id=>ExerciseMedia.add(id));
 // Gym lifts (checked 2 Oct 2026; the barbell bench press picture is being redone)
 ['back-squat', 'barbell-curl', 'barbell-row', 'deadlift', 'dip', 'overhead-press', 'pull-up'].forEach(id=>ExerciseMedia.add(id));
+// Withdrawn 3 Oct 2026 for a redo: the pad is on the front of the shins (a leg extension)
+ExerciseMedia.delete('leg-curl');
 // Redone and checked 3 Oct 2026
 ['fire-hydrant', 'frog-pump'].forEach(id=>ExerciseMedia.add(id));
 if(typeof module!=='undefined')module.exports=ExerciseMedia;
