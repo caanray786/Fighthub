@@ -123,6 +123,7 @@ async function onAccountChange() {
   saveApp();
   await loadProfile();
   syncJournal();
+  noteVisit();
   if (!account.profile && account.profileLoaded) {
     // New member (or the profile could not be reached): the profile page comes first,
     // so the coach knows who they are and any problem is shown, not hidden
@@ -151,6 +152,14 @@ async function memberApi(path, { method = 'GET', body, prefer } = {}) {
   });
   if (!res.ok) { const err = new Error(`Account service ${res.status}`); err.status = res.status; throw err; }
   return res.status === 204 || method !== 'GET' ? null : res.json();
+}
+
+// Once a day per phone, the website notes which country the member connects from
+// (the country only, for the admin portal's member list). Failures are ignored.
+function noteVisit() {
+  const key = `${clerk().user.id}:${new Date().toISOString().slice(0, 10)}`;
+  if (stored('fight-hub-seen') === key || typeof billingCall !== 'function') return;
+  billingCall('/api/member-seen').then(() => store('fight-hub-seen', key)).catch(() => {});
 }
 
 async function loadProfile() {
