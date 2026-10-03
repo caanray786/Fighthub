@@ -92,6 +92,7 @@ function highlightActiveNav() {
   const currentFile = window.location.pathname.split('/').pop() || 'index.html';
   const navMap = {
     'index.html': 'nav-dashboard',
+    'members.html': 'nav-members',
     'fighters.html': 'nav-fighters',
     'articles.html': 'nav-articles',
     'events.html': 'nav-events',

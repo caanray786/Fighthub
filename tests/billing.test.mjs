@@ -521,3 +521,74 @@ test('coach voice: a setting that is not a voice ID counts as not set', async ()
   assert.equal(looksLikeVoiceId(''), false);
   assert.equal(looksLikeVoiceId('voice id with spaces'), false);
 });
+
+// ---- Admin portal: members ----
+import { GET as adminMembers, summarise, premiumLabel } from '../api/admin-members.mjs';
+import { countryFrom, nextLocation } from '../api/member-seen.mjs';
+
+function fakeServices({ admin = true, sessionsCountry = 'IE' } = {}) {
+  const calls = [];
+  globalThis.fetch = async (url, init = {}) => {
+    calls.push({ url, method: init.method || 'GET', body: init.body && JSON.parse(init.body) });
+    if (url.includes('/rpc/is_admin')) {
+      if (admin === 'expired') return new Response('{"message":"JWT expired"}', { status: 401 });
+      return new Response(JSON.stringify(admin));
+    }
+    if (url.includes('/v1/users?')) return new Response(JSON.stringify(url.includes('offset=0') ? [
+      { id: 'user_a', first_name: 'Sam', last_name: 'Lee', created_at: Date.now() - 2 * 86400000, last_active_at: Date.now(), primary_email_address_id: 'e1', email_addresses: [{ id: 'e1', email_address: 'sam@example.com' }], external_accounts: [{ provider: 'oauth_google' }], public_metadata: { premium: { status: 'active', plan: 'monthly' } }, private_metadata: { location: { country: 'GB', first: 'GB' }, referredFriends: ['user_b'] } },
+      { id: 'user_b', first_name: 'Ana', created_at: Date.now() - 40 * 86400000, primary_email_address_id: 'e2', email_addresses: [{ id: 'e2', email_address: 'ana@example.com' }], public_metadata: {}, private_metadata: {} }
+    ] : []));
+    if (url.includes('/v1/sessions?')) return new Response(JSON.stringify(sessionsCountry ? [{ updated_at: 1, latest_activity: { country: sessionsCountry, city: 'Dublin' } }] : []));
+    if (url.includes('/metadata')) return new Response('{}');
+    return new Response('{}', { status: 404 });
+  };
+  return calls;
+}
+const adminRequest = (token = 'admin-token') => new Request('https://x/api/admin-members', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+
+test('admin members: only signed-in administrators get the list', async () => {
+  fakeServices();
+  assert.equal((await adminMembers(adminRequest(''))).status, 401);
+  fakeServices({ admin: false });
+  assert.equal((await adminMembers(adminRequest())).status, 403);
+  fakeServices({ admin: 'expired' });
+  assert.equal((await adminMembers(adminRequest())).status, 401);
+  globalThis.fetch = realFetch;
+});
+
+test('admin members: who joined, from where, how, and who invited them', async () => {
+  const calls = fakeServices();
+  const res = await adminMembers(adminRequest());
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('cache-control'), 'no-store');
+  const { members, summary } = await res.json();
+  const sam = members.find(m => m.id === 'user_a'), ana = members.find(m => m.id === 'user_b');
+  assert.deepEqual([sam.name, sam.email, sam.country, sam.method, sam.plan, sam.premium], ['Sam Lee', 'sam@example.com', 'GB', 'Google', 'Monthly', true]);
+  assert.deepEqual([ana.country, ana.method, ana.plan, ana.invitedBy], ['IE', 'Email', 'Free', 'Sam Lee']);
+  // Ana's country came from her latest sign-in and is saved, without the city
+  const saved = calls.find(c => c.url.includes('/users/user_b/metadata'));
+  assert.equal(saved.body.private_metadata.location.country, 'IE');
+  assert.ok(!JSON.stringify(saved.body).includes('Dublin'));
+  assert.ok(!calls.some(c => c.url.includes('/sessions?user_id=user_a')), 'no lookup when the country is known');
+  assert.deepEqual([summary.total, summary.last7, summary.last30, summary.premium], [2, 1, 1, 1]);
+  assert.deepEqual(summary.countries, [{ code: 'GB', count: 1 }, { code: 'IE', count: 1 }]);
+  assert.equal(summary.daily.length, 30);
+  globalThis.fetch = realFetch;
+});
+
+test('member seen: the country from the connection, kept only when it changes', () => {
+  const req = code => new Request('https://x/api/member-seen', { method: 'POST', headers: code ? { 'x-vercel-ip-country': code } : {} });
+  assert.equal(countryFrom(req('gb')), 'GB');
+  assert.equal(countryFrom(req('XX')), '');
+  assert.equal(countryFrom(req('')), '');
+  const now = new Date('2026-10-03T12:00:00Z');
+  const first = nextLocation(null, 'GB', now);
+  assert.deepEqual(first, { country: 'GB', at: now.toISOString(), first: 'GB', firstAt: now.toISOString(), source: 'app' });
+  assert.equal(nextLocation(first, 'GB', now), null, 'same country: nothing to save');
+  const moved = nextLocation(first, 'ES', now);
+  assert.equal(moved.country, 'ES');
+  assert.equal(moved.first, 'GB', 'the country they joined from is kept');
+  assert.equal(premiumLabel({ status: 'trialing' }), 'Free trial');
+  assert.equal(premiumLabel({ status: 'active', pass: true, expires: new Date(Date.now() + 864e5).toISOString() }), 'Year pass');
+  assert.equal(summarise([]).total, 0);
+});

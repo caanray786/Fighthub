@@ -1162,3 +1162,23 @@
   height: 40px;
   object-fit: contain;
 }
+
+/* ---- Members ---- */
+.members-status { margin: 0 0 var(--space-lg); padding: var(--space-md); border-radius: var(--radius-sm); background: var(--admin-card); border: 1px solid var(--admin-border); color: var(--admin-text-muted); font-size: 0.9rem; }
+.members-status.is-error { border-color: var(--admin-error); color: var(--admin-error); }
+.admin-page .muted { color: var(--admin-text-muted); }
+.signup-chart { display: flex; align-items: flex-end; gap: 4px; height: 230px; padding-top: var(--space-sm); }
+.signup-chart span { flex: 1; min-height: 2px; background: var(--admin-accent); border-radius: 3px 3px 0 0; opacity: 0.85; }
+.signup-chart span:hover { opacity: 1; }
+.chart-foot { display: flex; justify-content: space-between; gap: var(--space-md); margin-top: var(--space-sm); font-size: 0.8rem; color: var(--admin-text-muted); }
+.country-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-sm); max-height: 260px; overflow-y: auto; }
+.country-row { display: grid; grid-template-columns: 1fr auto; gap: 4px var(--space-md); font-size: 0.9rem; }
+.country-row small { color: var(--admin-text-muted); font-size: 0.75rem; }
+.country-bar { grid-column: 1 / -1; height: 5px; border-radius: 3px; background: var(--admin-accent-light); overflow: hidden; }
+.country-bar i { display: block; height: 100%; background: var(--admin-accent); border-radius: 3px; }
+.panel-note { margin-top: var(--space-md); font-size: 0.8rem; color: var(--admin-text-muted); }
+.table-count { margin: 0 0 var(--space-sm); font-size: 0.85rem; color: var(--admin-text-muted); }
+/* No action buttons on the members table, so nothing is pinned to the right */
+.members-table tbody td:last-child,
+.members-table thead th:last-child { position: static; box-shadow: none; background: transparent; }
+.members-table tbody tr:hover td:last-child { background: transparent; }

@@ -60,6 +60,9 @@ export const getClerkUser = id => clerkApi(`/users/${encodeURIComponent(id)}`);
 // One page of members, newest first (for scheduled jobs such as reminders)
 export const listClerkUsers = (offset = 0, limit = 100) => clerkApi(`/users?limit=${limit}&offset=${offset}&order_by=-created_at`);
 
+// A member's recent sign-ins; each has latest_activity with the country Clerk saw
+export const listUserSessions = id => clerkApi(`/sessions?user_id=${encodeURIComponent(id)}&limit=10`);
+
 // Merges into the member's Clerk metadata (public: readable by the app; private: server only)
 export const updateClerkMetadata = (id, metadata) =>
   clerkApi(`/users/${encodeURIComponent(id)}/metadata`, { method: 'PATCH', body: metadata });
