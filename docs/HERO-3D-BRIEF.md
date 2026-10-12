@@ -62,7 +62,8 @@ screen-recording and sharing.
 
 ### Scene 1: the ring photo (the opening shot)
 - Since 12 October 2026 the opening is the owner's photo of a real spotlit ring
-  in a dark arena:  (192 KB), with   (99 KB) for phones. It replaced the earlier 3D ring, which looked blocky.
+  in a dark arena: `hero3d/ring-3840.webp` (192 KB), with `ring-2400.webp`
+  (99 KB) for phones. It replaced the earlier 3D ring, which looked blocky.
 - The photo fills the screen with the ring on the right. The headline sits on
   the left: "Train like a fighter. Follow the fight world." It has the live
   facts line and a "scroll to step into the ring" cue.
