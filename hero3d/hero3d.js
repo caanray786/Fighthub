@@ -1,6 +1,6 @@
 /* FightHub 3D hero: one scroll-driven camera journey.
-   The visitor starts in a dark, empty arena with a single spotlit ring, steps
-   through the ropes, dives through the FightHub logo on the canvas into a
+   The visitor starts on a photo of a spotlit ring in a dark arena (.h3d-photo),
+   pushes in towards it and dives through the FightHub logo on the canvas into a
    portal, then travels through three chapters: FOLLOW (the fight world, with
    live data), LEARN (every discipline) and TRAIN (the app). Everything then
    converges on FIGHT HUB and the call to action, and the normal homepage
@@ -25,7 +25,7 @@ function start() {
 
   let renderer = null;
   if (!reduce) {
-    try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' }); } catch { renderer = null; }
+    try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' }); } catch { renderer = null; }
   }
   if (!renderer) { root.classList.add('h3d-static'); return; }
 
@@ -35,11 +35,9 @@ function start() {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.shadowMap.enabled = !mobile;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.setClearColor(0x050506, 0);
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x050506);
   scene.fog = new THREE.Fog(0x050506, 22, 105);
   const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 400);
 
@@ -47,7 +45,7 @@ function start() {
   const loaderText = root.querySelector('.h3d-loader-pct');
   const loaderBar = root.querySelector('.h3d-loader-bar i');
   let loaded = 0;
-  const NEEDED = 2; // font and logo
+  const NEEDED = 2; // font and the opening photo
   const step = () => {
     loaded++;
     const pct = Math.round((loaded / NEEDED) * 100);
@@ -88,100 +86,64 @@ function start() {
   const loadImage = src => new Promise((resolve, reject) => { const i = new Image(); i.onload = () => resolve(i); i.onerror = reject; i.src = BASE + src; });
   const faceTowards = (obj, from) => { obj.rotation.y = Math.atan2(from.x - obj.position.x, from.z - obj.position.z); };
 
-  /* ================= SCENE 1: THE ARENA ================= */
-  const arena = new THREE.Group();
-  scene.add(arena);
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(320, 320), new THREE.MeshStandardMaterial({ color: 0x0b0b0d, roughness: 0.55, metalness: 0.25, envMap, envMapIntensity: 0.12 }));
-  floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; arena.add(floor);
-
-  // The ring: platform, canvas with the logo, corner posts, pads and ropes
-  const MAT_Y = 1.4, HALF = 6.7;
-  const apron = canvasTexture(1024, 128, (g, w, h) => {
-    g.fillStyle = '#0b0b0d'; g.fillRect(0, 0, w, h);
-    g.fillStyle = '#e63946'; g.fillRect(0, 0, w, 7);
-    g.font = '64px "Bebas Neue", Impact, sans-serif'; g.fillStyle = '#26262c'; g.textBaseline = 'middle';
-    for (let x = 30; x < w; x += 330) g.fillText('FIGHT HUB', x, h / 2 + 6);
-  });
-  const matCanvas = document.createElement('canvas'); matCanvas.width = matCanvas.height = 1024;
-  const drawMat = logo => {
-    const g = matCanvas.getContext('2d'), w = 1024;
-    g.fillStyle = '#1d1d21'; g.fillRect(0, 0, w, w);
-    for (let i = 0; i < 9000; i++) { g.fillStyle = `rgba(255,255,255,${Math.random() * 0.025})`; g.fillRect(Math.random() * w, Math.random() * w, 2, 2); }
-    g.strokeStyle = '#141417'; g.lineWidth = 70; g.strokeRect(35, 35, w - 70, w - 70);
-    g.strokeStyle = '#e63946'; g.lineWidth = 5; g.strokeRect(74, 74, w - 148, w - 148);
-    g.beginPath(); g.arc(w / 2, w / 2, 300, 0, Math.PI * 2); g.lineWidth = 6; g.stroke();
-    if (logo) g.drawImage(logo, w / 2 - 260, w / 2 - 260, 520, 520);
-    matTexture.needsUpdate = true;
+  /* ================= SCENE 1: THE RING PHOTO ================= */
+  // The opening shot is a photo (in the markup). The camera "pushes in" by
+  // scaling it towards the logo on the canvas; the flash covers the moment it
+  // gives way to the 3D tunnel. Dust in the 3D layer drifts in front of it.
+  const photo = root.querySelector('.h3d-photo-inner');
+  const photoBox = root.querySelector('.h3d-photo');
+  const IMG_W = 3840, IMG_H = 2041;
+  const LOGO = [0.6875, 0.627]; // centre of the logo on the canvas, as a share of the photo
+  const RING_WIDTH = 0.64;     // the ring's share of the photo's width (framed on narrow screens)
+  const lerp = (a, b, t) => a + (b - a) * t;
+  let photoKey = '';
+  const placePhoto = p => {
+    if (!photo) return;
+    const w = stage.clientWidth, h = stage.clientHeight;
+    const wide = w / h >= 1.15;
+    // Wide screens: the whole photo fills the screen. Narrow: the ring fills the width, in the upper part
+    const s0 = wide ? Math.max(w / IMG_W, h / IMG_H) : w / (RING_WIDTH * IMG_W);
+    // Wide: the photo's right edge on the screen's right, so the ring sits clear of the headline
+    const f0 = wide ? [1, 0.5] : [0.68, 0.58], a0 = wide ? [1, 0.5] : [0.5, 0.34];
+    // A slow push in towards the ring, then an accelerating dive into the logo
+    const logoFill = (1.35 * w) / (0.237 * IMG_W * s0);
+    const push = smooth(p / 0.17);
+    const dive = Math.min(1, Math.max(0, (p - 0.15) / 0.115));
+    const zoom = Math.exp(lerp(0, Math.log(1.45), push) + lerp(0, Math.log(Math.max(1.5, logoFill * 1.8) / 1.45), dive * dive));
+    const k = smooth(p / 0.235);
+    const fx = lerp(f0[0], LOGO[0], k), fy = lerp(f0[1], LOGO[1], k);
+    const ax = lerp(a0[0], 0.5, k), ay = lerp(a0[1], 0.5, k);
+    const sc = s0 * zoom;
+    let tx = ax * w - fx * IMG_W * sc, ty = ay * h - fy * IMG_H * sc;
+    // Never show the photo's edges once it is bigger than the screen
+    if (IMG_W * sc >= w) tx = Math.min(0, Math.max(w - IMG_W * sc, tx));
+    if (IMG_H * sc >= h) ty = Math.min(0, Math.max(h - IMG_H * sc, ty));
+    const key = `${tx.toFixed(1)},${ty.toFixed(1)},${sc.toFixed(5)}`;
+    if (key !== photoKey) { photoKey = key; photo.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${sc})`; }
+    const fade = 1 - smooth((p - 0.251) / 0.009);
+    photoBox.style.opacity = fade.toFixed(3);
+    photoBox.style.visibility = fade > 0 ? 'visible' : 'hidden';
   };
-  const matTexture = new THREE.CanvasTexture(matCanvas); matTexture.colorSpace = THREE.SRGBColorSpace; matTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-  drawMat(null);
-  loadImage('images/logo-500.png').then(drawMat).catch(() => {}).finally(step);
-  const apronMat = new THREE.MeshStandardMaterial({ map: apron, roughness: 0.7 });
-  const platform = new THREE.Mesh(new THREE.BoxGeometry(HALF * 2 + 0.6, MAT_Y, HALF * 2 + 0.6), [
-    apronMat, apronMat, new THREE.MeshStandardMaterial({ map: matTexture, roughness: 0.85 }), apronMat, apronMat, apronMat
-  ]);
-  platform.position.y = MAT_Y / 2; platform.castShadow = platform.receiveShadow = true; arena.add(platform);
-  const posts = new THREE.CylinderGeometry(0.17, 0.17, 5, 18);
-  const pad = new THREE.CylinderGeometry(0.34, 0.34, 2.8, 24);
-  const padRed = new THREE.MeshStandardMaterial({ color: RED, roughness: 0.5 });
-  const padDark = new THREE.MeshStandardMaterial({ color: 0x1a1a1e, roughness: 0.55 });
-  [[1, 1], [-1, 1], [1, -1], [-1, -1]].forEach(([sx, sz], i) => {
-    const p = new THREE.Mesh(posts, chrome); p.position.set(sx * HALF, MAT_Y + 2.5, sz * HALF); p.castShadow = true; arena.add(p);
-    const c = new THREE.Mesh(pad, i === 0 || i === 3 ? padRed : padDark); c.position.set(sx * HALF, MAT_Y + 2.15, sz * HALF); c.castShadow = true; arena.add(c);
-  });
-  const ropeGeo = new THREE.CylinderGeometry(0.055, 0.055, HALF * 2, 10);
-  const ropeWhite = new THREE.MeshStandardMaterial({ color: 0xd8d8dd, roughness: 0.45 });
-  const ropeRed = new THREE.MeshStandardMaterial({ color: RED, roughness: 0.4, emissive: RED, emissiveIntensity: 0.15 });
-  [1, 2, 3].forEach(level => {
-    const y = MAT_Y + level;
-    for (const side of [0, 1, 2, 3]) {
-      const r = new THREE.Mesh(ropeGeo, level === 3 ? ropeRed : ropeWhite);
-      r.castShadow = true;
-      if (side < 2) { r.rotation.z = Math.PI / 2; r.position.set(0, y, side ? HALF : -HALF); } else { r.rotation.x = Math.PI / 2; r.position.set(side === 2 ? HALF : -HALF, y, 0); }
-      arena.add(r);
-    }
-  });
+  const photoReady = new Promise(resolve => {
+    const img = root.querySelector('.h3d-photo img');
+    if (!img) return resolve();
+    const done = () => (img.decode ? img.decode().catch(() => {}) : Promise.resolve()).then(resolve);
+    if (img.complete && img.naturalWidth) done(); else { img.addEventListener('load', done, { once: true }); img.addEventListener('error', resolve, { once: true }); }
+  }).then(step);
 
-  // Empty seating in the dark, rising in tiers, with a thin red light strip
-  const tiers = mobile ? 5 : 9;
-  const seatSpots = [];
-  for (let k = 0; k < tiers; k++) {
-    const r = 21 + k * 2.1, n = Math.floor((Math.PI * 2 * r) / 1.35);
-    for (let i = 0; i < n; i++) if (i % 14 !== 0) seatSpots.push([r, (i / n) * Math.PI * 2, 0.45 + k * 1.05]);
-  }
-  const seats = new THREE.InstancedMesh(new THREE.BoxGeometry(1.05, 0.9, 1.0), new THREE.MeshStandardMaterial({ color: 0x0d0d10, roughness: 0.8 }), seatSpots.length);
-  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), v = new THREE.Vector3(), s1 = new THREE.Vector3(1, 1, 1);
-  seatSpots.forEach(([r, a, y], i) => {
-    q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -a + Math.PI / 2);
-    seats.setMatrixAt(i, m4.compose(v.set(Math.cos(a) * r, y, Math.sin(a) * r), q, s1));
-  });
-  arena.add(seats);
-  const strip = new THREE.Mesh(new THREE.TorusGeometry(19.6, 0.03, 6, 160), new THREE.MeshBasicMaterial({ color: 0x6e1a22 }));
-  strip.rotation.x = Math.PI / 2; strip.position.y = 0.05; arena.add(strip);
-
-  // The spotlight, its visible beam and dust in the light
-  const spot = new THREE.SpotLight(0xfff4ea, 13, 0, 0.42, 0.6, 0);
-  spot.position.set(0, 32, 0); spot.target.position.set(0, 0, 0);
-  spot.castShadow = !mobile; spot.shadow.mapSize.set(1024, 1024); spot.shadow.camera.near = 12; spot.shadow.camera.far = 40; spot.shadow.bias = -0.0004;
-  arena.add(spot, spot.target);
-  const beam = new THREE.Mesh(new THREE.ConeGeometry(12.5, 31, 64, 1, true), new THREE.ShaderMaterial({
-    uniforms: { uColor: { value: new THREE.Color(0xfff1e6) }, uOpacity: { value: 0.13 } },
-    vertexShader: 'varying float vY; varying vec3 vN; varying vec3 vV; void main(){ vY = uv.y; vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }',
-    fragmentShader: 'uniform vec3 uColor; uniform float uOpacity; varying float vY; varying vec3 vN; varying vec3 vV; void main(){ float edge = pow(abs(dot(vN, vV)), 2.2); float fade = smoothstep(1.0, 0.82, vY) * smoothstep(0.0, 0.12, vY); gl_FragColor = vec4(uColor, uOpacity * edge * fade * (0.55 + 0.45 * vY)); }',
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide
-  }));
-  beam.position.y = 32 - 15.5; arena.add(beam);
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), v = new THREE.Vector3();
   const dot = glowTexture('rgba(255,255,255,1)', 'rgba(255,255,255,0)');
-  const dustCount = mobile ? 350 : 1100;
+  // Dust between the camera and the ring, streaming past as the camera dives
+  const dustCount = mobile ? 300 : 900;
   const dustPos = new Float32Array(dustCount * 3);
   for (let i = 0; i < dustCount; i++) {
-    const r = Math.sqrt(Math.random()) * 9, a = Math.random() * Math.PI * 2;
-    dustPos.set([Math.cos(a) * r, 1.6 + Math.random() * 24, Math.sin(a) * r], i * 3);
+    const r = 1.2 + Math.sqrt(Math.random()) * 9, a = Math.random() * Math.PI * 2;
+    dustPos.set([Math.cos(a) * r, 3 + Math.random() * 23, Math.sin(a) * r], i * 3);
   }
   const dustGeo = new THREE.BufferGeometry(); dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
-  const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({ size: 0.09, map: dot, transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending, color: 0xfff1e6 }));
-  arena.add(dust);
-  const hemi = new THREE.HemisphereLight(0x9aa0b4, 0x050505, 0.35);
+  const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({ size: 0.075, map: dot, transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending, color: 0xfff1e6, fog: false }));
+  scene.add(dust);
+  const hemi = new THREE.HemisphereLight(0x9aa0b4, 0x050505, 0.18);
   scene.add(hemi);
 
   /* ================= SCENE 2: THE PORTAL ================= */
@@ -315,11 +277,10 @@ function start() {
   // [progress, camera position, look-at point]; mobile overrides where framing differs
   const O = new THREE.Vector3(0, -14, -60); // centre of the O in FOLLOW (the word is placed to match)
   const KEYS = [
-    [0.000, [-3, 9.5, 31], [-10.5, 2.6, 0], [0, 14, 40], [0, -3.5, 0]],
-    [0.075, [2.5, 6.8, 20], [0, 3.2, 0], [1.5, 8, 26], [0, 3, 0]],
-    [0.135, [0.6, 3.9, 10.5], [0, 3.9, 0]],
-    [0.175, [0, 3.9, 4.0], [0, 2.6, -3]],
-    [0.215, [0, 10.5, 0.9], [0, 1.4, 0], [0, 13.5, 1.0], [0, 1.4, 0]],
+    // The photo is the opening shot; the 3D camera descends with it, so the dust parallax matches
+    [0.000, [0, 27, 0.7], [0, 0, 0]],
+    [0.120, [0, 20, 0.6], [0, 0, 0]],
+    [0.200, [0, 11, 0.4], [0, -1.5, 0]],
     [0.255, [0, 2.2, 0.15], [0, -8, -0.6]],
     [0.290, [0, -5, -1], [0, -12, -6]],
     [0.320, [0, -11, -6], [0, -15, -18]],
@@ -555,19 +516,19 @@ function start() {
 
     aim(p);
 
-    // Arena above the canvas, worlds below it
-    const below = pos.y < MAT_Y - 0.05;
-    arena.visible = pos.y > -6;
+    // The photo until the flash, then the 3D world on its dark background
+    placePhoto(p);
+    const inWorld = p > 0.252;
+    renderer.setClearAlpha(inWorld ? 1 : 0);
+    worlds.visible = inWorld;
+    dust.visible = p < 0.27;
     // The tunnel dissolves as the camera comes out of it, before FOLLOW is revealed
     const tunnelFade = 1 - smooth((p - 0.318) / 0.022);
-    portal.visible = p > 0.2 && tunnelFade > 0;
+    portal.visible = inWorld && tunnelFade > 0;
     frameRed.opacity = 0.95 * tunnelFade; frameWhite.opacity = 0.45 * tunnelFade; sparkMat.opacity = 0.8 * tunnelFade;
     const worldOn = smooth((-pos.y - 2) / 8);
     for (const l of worldLights) l.intensity = l.userData.base * worldOn;
-    spot.intensity = below ? 0 : 13 * (1 + smooth((p - 0.17) / 0.06) * 0.35);
-    beam.material.uniforms.uOpacity.value = 0.13 * (1 - smooth((p - 0.2) / 0.05) * 0.5);
     dust.rotation.y = time * 0.02;
-    hemi.intensity = below ? 0.18 : 0.26;
 
     // Cubes drift, phones float
     cubeData.forEach((c, i) => {
@@ -615,15 +576,17 @@ function start() {
     camera.aspect = w / h;
     if (was !== mobile || !posCurve) layout();
     camera.updateProjectionMatrix();
+    photoKey = '';
+    placePhoto(current);
   };
   addEventListener('resize', resize);
 
   /* ================= GO ================= */
-  fetch(BASE + 'hero3d/bebas-neue.json').then(r => r.json()).then(json => {
+  const fontReady = fetch(BASE + 'hero3d/bebas-neue.json').then(r => r.json()).then(json => {
     font = new Font(json);
     buildWords();
-  }).catch(() => {}).finally(() => {
-    step();
+  }).catch(() => {}).finally(step);
+  Promise.all([fontReady, photoReady]).then(() => {
     resize();
     root.classList.add('h3d-ready');
     requestAnimationFrame(frame);

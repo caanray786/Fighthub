@@ -60,30 +60,27 @@ screen-recording and sharing.
 
 ## Scenes
 
-### Scene 1: the arena (the opening shot)
-- A dark, empty arena: black floor, tiers of empty seats fading into darkness,
-  and a thin red light strip around the floor.
-- One boxing ring in a single white spotlight from above, with a visible light
-  beam and dust drifting in it.
-- The ring has chrome posts, red and black corner pads, white ropes with a red
-  top rope, and a dark canvas with the FightHub logo in the centre. The apron
-  carries a red edge and FIGHT HUB lettering.
-- The camera opens on a wide shot with the ring to the right. The headline sits
-  on the left: "Train like a fighter. Follow the fight world." It has a short
-  line about what FightHub covers, the live facts line (fighters, disciplines,
-  upcoming events) and a "scroll to step into the ring" cue.
-- The mood is calm, heavy and expectant, like the minute before a fight.
+### Scene 1: the ring photo (the opening shot)
+- Since 12 October 2026 the opening is the owner's photo of a real spotlit ring
+  in a dark arena:  (192 KB), with   (99 KB) for phones. It replaced the earlier 3D ring, which looked blocky.
+- The photo fills the screen with the ring on the right. The headline sits on
+  the left: "Train like a fighter. Follow the fight world." It has the live
+  facts line and a "scroll to step into the ring" cue.
+- On phones, the ring fills the width in the upper part of the screen, with
+  its edges fading into the dark, and the headline sits below it.
+- The spotlights breathe gently (a soft glow over the light sources), and dust
+  drifts in front of the photo in the 3D layer.
 
-### Scene 2: through the ropes, into the logo
-- Scrolling pushes the camera in. It drops to rope height and passes between
-  the middle and top ropes ("Step through the ropes.").
-- Inside the ring the camera rises and looks straight down at the logo.
-  The spotlight swells.
-- The camera dives into the logo. A white-to-red flash covers the moment it
-  passes through the canvas.
-- A tunnel of glowing red and white rounded squares follows, shaped like the
-  ring, with sparks around it. This is accelerated portal travel: the
-  fastest-feeling moment.
+### Scene 2: into the logo
+- Scrolling pushes in slowly towards the ring ("Step into the ring."), then
+  accelerates into the FightHub logo on the canvas until it fills the screen.
+- A white-to-red flash covers the hand-off from the photo to the 3D tunnel of
+  glowing red and white ring squares, with sparks. This is the fastest-feeling
+  moment.
+- How it works: the photo is an image layer behind a transparent WebGL
+  canvas. hero3d.js scales it towards the logo's position (69% across, 63%
+  down the photo), while the 3D camera descends through the dust towards the
+  tunnel. That's why the dust's movement matches the push-in.
 
 ### Scene 3: FOLLOW (the fight world)
 - Giant chrome FOLLOW standing on a dark floor with a faint red grid, with red
@@ -197,7 +194,7 @@ the only colour, and no logos or recognisable real people.
 
 ## Phases
 1. Shell, master scroll timeline, loading screen and chapter bar: done.
-2. Arena, ring and logo portal: done.
+2. Opening ring (photo since 12 Oct) and logo portal: done.
 3. FOLLOW, with live cards and number monuments: done.
 4. LEARN, with the discipline gallery: done.
 5. TRAIN, with app phones: done.
