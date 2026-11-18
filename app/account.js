@@ -261,7 +261,10 @@ function welcomeMarkup() {
 
 // Terms, privacy and cancellation pages live on the website
 const legalLink = (page, label) => `<a href="${SITE_URL}/${page}.html" target="_blank" rel="noopener">${label}</a>`;
-const legalLinks = () => [legalLink('terms', 'Terms'), legalLink('privacy', 'Privacy'), legalLink('cancellation', 'Cancellations and refunds')].join(' · ');
+// 'Cookie settings' reopens the website's cookie banner (/js/analytics.js)
+const legalLinks = () => [legalLink('terms', 'Terms'), legalLink('privacy', 'Privacy'), legalLink('cancellation', 'Cancellations and refunds'), '<a href="#" data-cookie-settings>Cookie settings</a>'].join(' · ');
+// The cookie banner's text comes from the website; listed here so the app translates it
+const COOKIE_BANNER_TEXT = ['Cookies', 'We’d like to use Google Analytics cookies to count visits and see which pages help most. They’re only set if you accept.', 'Privacy policy', 'Reject', 'Accept'];
 
 const opt = (values, selected) => values.map(([v, label]) => `<option value="${esc(v)}" ${v === selected ? 'selected' : ''}>${esc(label)}</option>`).join('');
 
